@@ -4,6 +4,7 @@ session_start();
 
 require_once "model/Database.php";
 require_once "model/giangvien/monhoc.model.php";
+require_once "model/giangvien/baithi.model.php"; // Load luôn model bài thi
 
 $user_role = $_SESSION['user']['vaitro'] ?? '';
 $act = $_GET['act'] ?? 'dashboard';
@@ -29,7 +30,7 @@ switch ($act) {
         header("Location: index.php?act=login");
         exit;
 
-        // --- QUẢN LÝ MÔN HỌC (Dùng Modal) ---
+        // --- QUẢN LÝ MÔN HỌC ---
     case 'quanly-monhoc':
         require_once "controller/giangvien/monhoc.controller.php";
         $result = monhoc_index();
@@ -39,7 +40,6 @@ switch ($act) {
         break;
 
     case 'monhoc-save':
-        // Xử lý cả THÊM và SỬA từ Modal gửi về
         require_once "controller/giangvien/monhoc.controller.php";
         monhoc_save();
         exit;
@@ -47,6 +47,27 @@ switch ($act) {
     case 'monhoc-delete':
         require_once "controller/giangvien/monhoc.controller.php";
         monhoc_delete();
+        exit;
+
+        // --- QUẢN LÝ BÀI THI ---
+    case 'quanly-baithi':
+    case 'quanly-dethi': // Cho phép cả 2 tên act để tránh 404
+        require_once "controller/giangvien/baithi.controller.php";
+        $result = baithi_index();
+        $title = $result['title'];
+        $view = $result['view'];
+        $list_baithi = $result['data'];
+        $list_monhoc = getAll_monhoc(); // Lấy từ baithi.model.php
+        break;
+
+    case 'baithi-save':
+        require_once "controller/giangvien/baithi.controller.php";
+        baithi_save();
+        exit;
+
+    case 'baithi-delete':
+        require_once "controller/giangvien/baithi.controller.php";
+        baithi_delete();
         exit;
 
     default:
