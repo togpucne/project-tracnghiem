@@ -51,6 +51,13 @@ switch ($act) {
 
         // --- QUẢN LÝ BÀI THI ---
     case 'quanly-baithi':
+        require_once "controller/giangvien/baithi.controller.php";
+        $result = baithi_index();
+        $title = $result['title'];
+        $view = $result['view'];
+        $list_baithi = $result['data'];
+        $list_monhoc = getAll_monhoc(); // Hàm này nằm trong baithi.model.php tui vừa gộp ở trên
+        break;
     case 'quanly-dethi': // Cho phép cả 2 tên act để tránh 404
         require_once "controller/giangvien/baithi.controller.php";
         $result = baithi_index();
