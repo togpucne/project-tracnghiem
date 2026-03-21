@@ -50,21 +50,27 @@ switch ($act) {
         exit;
 
         // --- QUẢN LÝ BÀI THI ---
+    // --- QUẢN LÝ BÀI THI ---
     case 'quanly-baithi':
+    case 'quanly-dethi': 
         require_once "controller/giangvien/baithi.controller.php";
-        $result = baithi_index();
+        
+        // Gọi hàm index từ controller để lấy dữ liệu đã được lọc theo ID người dùng
+        $result = baithi_index(); 
+        
         $title = $result['title'];
         $view = $result['view'];
-        $list_baithi = $result['data'];
-        $list_monhoc = getAll_monhoc(); // Hàm này nằm trong baithi.model.php tui vừa gộp ở trên
+        $list_baithi = $result['data'];      
+        $list_monhoc = $result['list_monhoc']; // KHÔNG gọi getAll_monhoc() ở đây nữa
         break;
-    case 'quanly-dethi': // Cho phép cả 2 tên act để tránh 404
         require_once "controller/giangvien/baithi.controller.php";
+        // Gọi hàm index từ controller để lấy đủ dữ liệu đã lọc
         $result = baithi_index();
+
         $title = $result['title'];
         $view = $result['view'];
-        $list_baithi = $result['data'];
-        $list_monhoc = getAll_monhoc(); // Lấy từ baithi.model.php
+        $list_baithi = $result['data']; // Danh sách bài thi đã lọc
+        $list_monhoc = $result['list_monhoc']; // Danh sách môn học đã lọc (Lấy từ mảng result trả về)
         break;
 
     case 'baithi-save':

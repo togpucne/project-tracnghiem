@@ -1,12 +1,19 @@
 <?php
-function getAll_baithi()
+function getAll_baithi($id_nguoidung) // Thêm tham số nhận ID người dùng
 {
     $conn = Database::connect();
+    // Thêm JOIN với bảng monhoc và điều kiện WHERE để lọc theo id_nguoidung
     $sql = "SELECT bt.*, mh.tenmonhoc 
             FROM baithi bt 
             JOIN monhoc mh ON bt.id_monhoc = mh.id_monhoc 
+            WHERE mh.id_nguoidung = ? 
             ORDER BY bt.id_baithi DESC";
-    $result = $conn->query($sql);
+            
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_nguoidung);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
     $data = [];
     if ($result) {
         while ($row = $result->fetch_assoc()) {
@@ -17,12 +24,17 @@ function getAll_baithi()
     return $data;
 }
 
-// Hàm lấy danh sách môn học cho dropdown
-function getAll_monhoc()
+function getAll_monhoc($id_nguoidung) // Thêm tham số nhận ID người dùng
 {
     $conn = Database::connect();
-    $sql = "SELECT id_monhoc, tenmonhoc FROM monhoc ORDER BY tenmonhoc ASC";
-    $result = $conn->query($sql);
+    // Chỉ lấy những môn do chính người này tạo
+    $sql = "SELECT id_monhoc, tenmonhoc FROM monhoc WHERE id_nguoidung = ? ORDER BY tenmonhoc ASC";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_nguoidung);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
     $data = [];
     if ($result) {
         while ($row = $result->fetch_assoc()) {
@@ -32,7 +44,6 @@ function getAll_monhoc()
     $conn->close();
     return $data;
 }
-
 function save_baithi($data)
 {
     $conn = Database::connect();

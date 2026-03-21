@@ -3,10 +3,14 @@ require_once "model/giangvien/baithi.model.php";
 
 function baithi_index()
 {
+    // 1. Lấy ID từ Session (Phúc kiểm tra kỹ tên key 'id_nguoidung' trong Session của ông nhé)
+    $id_nguoidung = $_SESSION['user']['id_nguoidung'] ?? 0;
+
     return [
         'title' => 'Quản lý Bài thi',
         'view' => 'views/giangvien/baithi/list.php',
-        'data' => getAll_baithi()
+        'data' => getAll_baithi($id_nguoidung),      // Truyền ID vào đây
+        'list_monhoc' => getAll_monhoc($id_nguoidung) // Truyền ID vào đây luôn
     ];
 }
 
