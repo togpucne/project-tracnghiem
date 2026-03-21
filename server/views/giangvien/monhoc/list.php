@@ -22,7 +22,8 @@
         </thead>
         <tbody>
             <?php if (!empty($list_monhoc)): ?>
-            <?php $stt = 1; foreach ($list_monhoc as $mon): ?>
+            <?php $stt = 1;
+                foreach ($list_monhoc as $mon): ?>
             <tr style="border-bottom: 1px solid #ced4da;" onmouseover="this.style.backgroundColor='#f8f9fa'"
                 onmouseout="this.style.backgroundColor='transparent'">
                 <td style="padding: 15px; text-align: center; border-right: 1px solid #ced4da; font-weight: 600;">
@@ -40,9 +41,11 @@
                             style="color: #856404; background: #fff3cd; border: 1px solid #ffeeba; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: 600;">Sửa</a>
                         <a href="index.php?act=monhoc-copy&id=<?= $mon['id_monhoc'] ?>"
                             style="color: #004085; background: #cce5ff; border: 1px solid #b8daff; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: 600;">Chép</a>
-                        <a href="index.php?act=monhoc-delete&id=<?= $mon['id_monhoc'] ?>"
-                            onclick="return confirm('Xác nhận xóa môn học này?')"
-                            style="color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: 600;">Xóa</a>
+                        <a href="javascript:void(0)"
+                            onclick="showDeleteModal(<?= $mon['id_monhoc'] ?>, '<?= htmlspecialchars($mon['tenmonhoc']) ?>')"
+                            style="color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: 600;">
+                            Xóa
+                        </a>
                     </div>
                 </td>
             </tr>
@@ -56,3 +59,45 @@
         </tbody>
     </table>
 </div>
+
+
+<div id="deleteModal"
+    style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div
+        style="background: white; padding: 30px; border-radius: 12px; width: 400px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); text-align: center;">
+        <div style="color: #e74c3c; font-size: 50px; margin-bottom: 15px;">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <h3 style="margin-bottom: 10px; color: #333;">Xác nhận xóa?</h3>
+        <p style="color: #666; margin-bottom: 25px;">Bạn có chắc chắn muốn xóa môn học <br><strong id="del_name"
+                style="color: #000;"></strong>?</p>
+
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <a id="confirmDeleteBtn" href="#"
+                style="background: #e74c3c; color: white; padding: 10px 25px; border-radius: 6px; text-decoration: none; font-weight: 600;">Xóa
+                ngay</a>
+            <button onclick="closeDeleteModal()"
+                style="background: #eee; border: none; color: #333; padding: 10px 25px; border-radius: 6px; font-weight: 600; cursor: pointer;">Hủy</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showDeleteModal(id, name) {
+    document.getElementById('del_name').innerText = name;
+    document.getElementById('confirmDeleteBtn').href = 'index.php?act=monhoc-delete&id=' + id;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+// Đóng modal khi click ra ngoài
+window.onclick = function(event) {
+    let modal = document.getElementById('deleteModal');
+    if (event.target == modal) {
+        closeDeleteModal();
+    }
+}
+</script>
