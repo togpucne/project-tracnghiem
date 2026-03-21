@@ -18,10 +18,11 @@ if (isset($_POST['btn_login'])) {
             // 3. CHỐT CHẶN VAI TRÒ: Chỉ cho phép giangvien hoặc admin
             if ($user['vaitro'] == 'giangvien' || $user['vaitro'] == 'admin') {
                 $_SESSION['user'] = [
-                    'id' => $user['id_nguoidung'],
+                    'id_nguoidung' => $user['id_nguoidung'],
                     'ten' => $user['ten'],
                     'vaitro' => $user['vaitro']
                 ];
+
                 header("Location: index.php?act=dashboard");
                 exit;
             } else {
@@ -38,7 +39,7 @@ if (isset($_POST['btn_login'])) {
 ?>
 
 <?php if (isset($error)): ?>
-<div style="color: red; text-align: center; margin-bottom: 10px;"><?php echo $error; ?></div>
+    <div style="color: red; text-align: center; margin-bottom: 10px;"><?php echo $error; ?></div>
 <?php endif; ?>
 
 <!DOCTYPE html>

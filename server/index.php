@@ -1,7 +1,8 @@
 <?php
+ob_start(); // 1. Fix lỗi "Cannot modify header information"
 session_start();
 
-// 1. Nạp file Database ngay từ đầu để dùng cho toàn hệ thống
+// Nạp file Database
 require_once "model/Database.php";
 
 $user_role = $_SESSION['user']['vaitro'] ?? '';
@@ -13,39 +14,65 @@ if (!isset($_SESSION['user']) && $act != 'login') {
     exit;
 }
 
-// 3. Thiết lập View và Title
+// 3. Xử lý logic điều hướng (Controller)
 switch ($act) {
     case 'login':
         $title = "Đăng nhập";
         $view = "views/auth/login.php";
         break;
+
     case 'dashboard':
         $title = "Bảng điều khiển";
         $view = ($user_role == 'admin') ? "views/admin/dashboard.php" : "views/giangvien/dashboard.php";
         break;
+
     case 'dangxuat':
         session_destroy();
         header("Location: index.php?act=login");
         exit;
+        // Kết thúc case dangxuat ở đây
+
+        // --- QUẢN LÝ MÔN HỌC (GIẢNG VIÊN) ---
+    case 'quanly-monhoc':
+        require_once "controller/giangvien/monhoc.controller.php";
+        $result = monhoc_index();
+
+        $title = $result['title'];
+        $view = $result['view'];
+        $list_monhoc = $result['data'];
+        break;
+
+    case 'monhoc-add':
+        $title = "Thêm Môn học";
+        $view = "views/giangvien/monhoc/add.php";
+        break;
+
+    case 'monhoc-edit':
+        require_once "controller/giangvien/monhoc.controller.php";
+        // Giả sử hàm này lấy dữ liệu môn học cụ thể theo ID
+        // $monhoc = monhoc_edit($_GET['id']);
+
+        $title = "Sửa Môn học";
+        $view = "views/giangvien/monhoc/add.php";
+        break;
+
     default:
         $view = "views/404.php";
         break;
 }
 
-// 4. HIỂN THỊ GIAO DIỆN TRONG server/index.php
+// 4. HIỂN THỊ GIAO DIỆN
 if ($act == 'login' || $view == "views/404.php") {
-    // Nếu là trang Login hoặc trang 404 thì hiện file view trực tiếp (Full Screen)
-    // Không include header.php hay footer.php ở đây
     include $view;
 } else {
-    // Các trang bình thường thì mới có khung Header/Sidebar/Footer
+    // Nạp Header (Sidebar nằm trong này)
     include "views/layouts/header.php";
 
-    if (file_exists($view)) {
+    if (isset($view) && file_exists($view)) {
         include $view;
     } else {
-        // Nếu file không tồn tại, tự động chuyển sang trang 404 full screen
-        header("Location: index.php?act=404"); // Bạn có thể thêm case 404 vào switch
+        // Chuyển hướng nếu không tìm thấy file view
+        header("Location: index.php?act=404");
         exit;
     }
 
