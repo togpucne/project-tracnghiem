@@ -38,37 +38,41 @@ function getAll_monhoc_with_user($id_nguoidung, $vaitro)
     return $list;
 }
 
-/**
- * Kiểm tra trùng tên môn học (Gắt: bỏ dấu, bỏ khoảng trắng, bỏ ký tự đặc biệt)
- */
-function isDuplicateMonHoc($tenmonhoc)
+
+function isDuplicateMonHoc($tenmonhoc, $exclude_id = 0)
 {
     $conn = Database::connect();
 
-    // Hàm dọn dẹp chuỗi: viết thường, xóa sạch ký tự không phải chữ/số
+    // Hàm dọn dẹp chuỗi: viết thường, xóa sạch ký tự không phải chữ/số để so sánh gắt
     $normalize = function ($str) {
         $str = mb_strtolower($str, 'UTF-8');
+        // Loại bỏ dấu tiếng Việt (nếu cần Phúc có thể thêm hàm bỏ dấu ở đây)
         return preg_replace('/[^a-z0-9]/', '', $str);
     };
 
     $search = $normalize($tenmonhoc);
 
-    $sql = "SELECT tenmonhoc FROM monhoc";
-    $result = $conn->query($sql);
+    // Lấy tất cả trừ chính môn đang sửa
+    $sql = "SELECT id_monhoc, tenmonhoc FROM monhoc WHERE id_monhoc != ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $exclude_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result) {
         while ($row = $result->fetch_assoc()) {
             if ($search === $normalize($row['tenmonhoc'])) {
+                $stmt->close();
                 $conn->close();
                 return true;
             }
         }
     }
 
+    $stmt->close();
     $conn->close();
     return false;
 }
-
 /**
  * Thêm môn học mới
  */
@@ -106,6 +110,38 @@ function delete_monhoc($id_monhoc, $id_nguoidung, $vaitro)
         $stmt->bind_param("i", $id_monhoc);
     }
 
+    $result = $stmt->execute();
+    $stmt->close();
+    $conn->close();
+    return $result;
+}
+
+/**
+ * Lấy thông tin chi tiết 1 môn học
+ */
+function getOne_monhoc($id)
+{
+    $conn = Database::connect();
+    $sql = "SELECT * FROM monhoc WHERE id_monhoc = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    $conn->close();
+    return $result;
+}
+
+/**
+ * Cập nhật tên môn học
+ */
+function update_monhoc($id, $tenmonhoc)
+{
+    $conn = Database::connect();
+    $tenmonhoc = trim($tenmonhoc);
+    $sql = "UPDATE monhoc SET tenmonhoc = ? WHERE id_monhoc = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("si", $tenmonhoc, $id);
     $result = $stmt->execute();
     $stmt->close();
     $conn->close();

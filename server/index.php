@@ -3,6 +3,7 @@ ob_start();
 session_start();
 
 require_once "model/Database.php";
+require_once "model/giangvien/monhoc.model.php";
 
 $user_role = $_SESSION['user']['vaitro'] ?? '';
 $act = $_GET['act'] ?? 'dashboard';
@@ -28,7 +29,7 @@ switch ($act) {
         header("Location: index.php?act=login");
         exit;
 
-        // --- DI CHUYỂN CÁC CASE QUẢN LÝ LÊN TRÊN ---
+        // --- QUẢN LÝ MÔN HỌC (Dùng Modal) ---
     case 'quanly-monhoc':
         require_once "controller/giangvien/monhoc.controller.php";
         $result = monhoc_index();
@@ -37,40 +38,37 @@ switch ($act) {
         $list_monhoc = $result['data'];
         break;
 
-    case 'monhoc-add':
-        $title = "Thêm Môn học";
-        $view = "views/giangvien/monhoc/add.php";
-        break;
-
     case 'monhoc-save':
+        // Xử lý cả THÊM và SỬA từ Modal gửi về
         require_once "controller/giangvien/monhoc.controller.php";
-        monhoc_save(); // Hàm này sẽ header() chuyển hướng nên không cần $view
+        monhoc_save();
         exit;
+
     case 'monhoc-delete':
         require_once "controller/giangvien/monhoc.controller.php";
         monhoc_delete();
-        break;
-    case 'monhoc-edit':
-        require_once "controller/giangvien/monhoc.controller.php";
-        $title = "Sửa Môn học";
-        $view = "views/giangvien/monhoc/add.php";
-        break;
+        exit;
 
     default:
+        $title = "404 - Không tìm thấy";
         $view = "views/404.php";
         break;
 }
 
-// 4. HIỂN THỊ GIAO DIỆN
+// HIỂN THỊ GIAO DIỆN
 if ($act == 'login' || $view == "views/404.php") {
-    include $view;
+    if (file_exists($view)) {
+        include $view;
+    } else {
+        echo "Trang không tồn tại!";
+    }
 } else {
     include "views/layouts/header.php";
     if (isset($view) && file_exists($view)) {
         include $view;
     } else {
-        header("Location: index.php?act=404");
-        exit;
+        echo "View không tồn tại: $view";
     }
     include "views/layouts/footer.php";
 }
+ob_end_flush();

@@ -16,40 +16,37 @@ function monhoc_index()
     ];
 }
 
-
-function monhoc_save()
-{
+function monhoc_save() {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $tenmonhoc = $_POST['tenmonhoc'] ?? '';
-        $id_nguoidung = $_SESSION['user']['id_nguoidung'] ?? 0; // Lấy từ Session bạn đã sửa
+        $id_monhoc = $_POST['id_monhoc'] ?? 0;
+        $tenInput = trim($_POST['tenmonhoc'] ?? '');
+        $id_nguoidung = $_SESSION['user']['id_nguoidung'] ?? 0;
 
-        // 1. Kiểm tra để trống
-        if (empty(trim($tenmonhoc))) {
+        if (empty($tenInput)) {
             $_SESSION['error'] = "Tên môn học không được để trống!";
-            header("Location: index.php?act=monhoc-add");
+            header("Location: " . $_SERVER['HTTP_REFERER']);
             exit;
         }
 
-        // 2. Kiểm tra trùng tên (Bỏ khoảng trắng, viết thường)
-        if (isDuplicateMonHoc($tenmonhoc)) {
-            $_SESSION['error'] = "Môn học này đã tồn tại trên hệ thống!";
-            header("Location: index.php?act=monhoc-add");
+        // Truyền $id_monhoc vào để nếu đang sửa môn A, đặt tên vẫn là A thì không báo trùng
+        if (isDuplicateMonHoc($tenInput, $id_monhoc)) {
+            $_SESSION['error'] = "Tên môn học này đã tồn tại trong hệ thống!";
+            header("Location: " . $_SERVER['HTTP_REFERER']);
             exit;
         }
 
-        // 3. Thực hiện thêm
-        if (insert_monhoc($tenmonhoc, $id_nguoidung)) {
-            $_SESSION['success'] = "Thêm môn học thành công!";
-            header("Location: index.php?act=quanly-monhoc");
+        if ($id_monhoc > 0) {
+            update_monhoc($id_monhoc, $tenInput);
+            $_SESSION['success'] = "Cập nhật môn học thành công!";
         } else {
-            $_SESSION['error'] = "Có lỗi xảy ra, vui lòng thử lại.";
-            header("Location: index.php?act=monhoc-add");
+            insert_monhoc($tenInput, $id_nguoidung);
+            $_SESSION['success'] = "Thêm môn học mới thành công!";
         }
+        
+        header("Location: index.php?act=quanly-monhoc");
         exit;
     }
 }
-
-
 function monhoc_delete()
 {
     $id_monhoc = $_GET['id'] ?? 0;
