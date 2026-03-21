@@ -9,14 +9,17 @@ function getAll_monhoc_with_user($id_nguoidung, $vaitro)
     $conn = Database::connect();
     $list = [];
 
-    $sql = "SELECT m.*, n.ten as ten_nguoi_tao 
+    // SQL mới: Đếm số bài thi từ bảng baithi
+    $sql = "SELECT m.*, COUNT(b.id_baithi) as so_bai_thi 
             FROM monhoc m 
-            LEFT JOIN nguoidung n ON m.id_nguoidung = n.id_nguoidung";
+            LEFT JOIN baithi b ON m.id_monhoc = b.id_monhoc";
 
+    // Lọc theo người dùng nếu không phải admin
     if ($vaitro !== 'admin') {
         $sql .= " WHERE m.id_nguoidung = ?";
     }
-    $sql .= " ORDER BY m.id_monhoc DESC";
+
+    $sql .= " GROUP BY m.id_monhoc ORDER BY m.id_monhoc DESC";
 
     $stmt = $conn->prepare($sql);
     if ($vaitro !== 'admin') {
@@ -25,6 +28,7 @@ function getAll_monhoc_with_user($id_nguoidung, $vaitro)
 
     $stmt->execute();
     $result = $stmt->get_result();
+
     while ($row = $result->fetch_assoc()) {
         $list[] = $row;
     }
