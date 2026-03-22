@@ -95,6 +95,7 @@ switch ($act) {
 
     // Xóa câu hỏi
     case 'cauhoi-delete':
+        $_GET['act'] = 'cauhoi-delete';
         require_once "controller/giangvien/cauhoi.controller.php";
         break;
 
