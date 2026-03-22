@@ -73,18 +73,35 @@ function isDuplicateMonHoc($tenmonhoc, $exclude_id = 0)
     $conn->close();
     return false;
 }
-/**
- * Thêm môn học mới
- */
-function insert_monhoc($tenmonhoc, $id_nguoidung)
+function insert_monhoc($tenmonhoc, $id_nguoidung, $mieuta = null)
 {
     $conn = Database::connect();
     $tenmonhoc = trim($tenmonhoc);
+    $mieuta = !empty($mieuta) ? trim($mieuta) : null; // Nếu rỗng thì gán null
 
-    $sql = "INSERT INTO monhoc (tenmonhoc, id_nguoidung, ngaythem) VALUES (?, ?, NOW())";
+    $sql = "INSERT INTO monhoc (tenmonhoc, id_nguoidung, mieuta, ngaythem) VALUES (?, ?, ?, NOW())";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("si", $tenmonhoc, $id_nguoidung);
+    $stmt->bind_param("sis", $tenmonhoc, $id_nguoidung, $mieuta);
 
+    $result = $stmt->execute();
+    $stmt->close();
+    $conn->close();
+    return $result;
+}
+
+/**
+ * Cập nhật môn học (Cập nhật cả tên và miêu tả)
+ */
+function update_monhoc($id, $tenmonhoc, $mieuta = null)
+{
+    $conn = Database::connect();
+    $tenmonhoc = trim($tenmonhoc);
+    $mieuta = !empty($mieuta) ? trim($mieuta) : null;
+
+    $sql = "UPDATE monhoc SET tenmonhoc = ?, mieuta = ? WHERE id_monhoc = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssi", $tenmonhoc, $mieuta, $id);
+    
     $result = $stmt->execute();
     $stmt->close();
     $conn->close();
@@ -127,22 +144,6 @@ function getOne_monhoc($id)
     $stmt->bind_param("i", $id);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    $conn->close();
-    return $result;
-}
-
-/**
- * Cập nhật tên môn học
- */
-function update_monhoc($id, $tenmonhoc)
-{
-    $conn = Database::connect();
-    $tenmonhoc = trim($tenmonhoc);
-    $sql = "UPDATE monhoc SET tenmonhoc = ? WHERE id_monhoc = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("si", $tenmonhoc, $id);
-    $result = $stmt->execute();
     $stmt->close();
     $conn->close();
     return $result;

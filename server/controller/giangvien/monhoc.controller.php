@@ -16,11 +16,13 @@ function monhoc_index()
     ];
 }
 
-function monhoc_save() {
+function monhoc_save()
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_monhoc = $_POST['id_monhoc'] ?? 0;
         $tenInput = trim($_POST['tenmonhoc'] ?? '');
         $id_nguoidung = $_SESSION['user']['id_nguoidung'] ?? 0;
+        $mieuta = $_POST['mieuta'] ?? null; // Lấy dữ liệu từ textarea
 
         if (empty($tenInput)) {
             $_SESSION['error'] = "Tên môn học không được để trống!";
@@ -36,13 +38,13 @@ function monhoc_save() {
         }
 
         if ($id_monhoc > 0) {
-            update_monhoc($id_monhoc, $tenInput);
+            update_monhoc($id_monhoc, $tenInput,  $mieuta);
             $_SESSION['success'] = "Cập nhật môn học thành công!";
         } else {
-            insert_monhoc($tenInput, $id_nguoidung);
+            insert_monhoc($tenInput, $id_nguoidung,  $mieuta);
             $_SESSION['success'] = "Thêm môn học mới thành công!";
         }
-        
+
         header("Location: index.php?act=quanly-monhoc");
         exit;
     }
