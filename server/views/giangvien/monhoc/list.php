@@ -9,70 +9,82 @@
     </div>
 
     <?php if (isset($_SESSION['success'])): ?>
-        <div
-            style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
-            <i class="fas fa-check-circle"></i> <?= $_SESSION['success'];
+    <div
+        style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+        <i class="fas fa-check-circle"></i> <?= $_SESSION['success'];
                                                 unset($_SESSION['success']); ?>
-        </div>
+    </div>
     <?php endif; ?>
     <?php if (isset($_SESSION['error'])): ?>
-        <div
-            style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
-            <i class="fas fa-exclamation-triangle"></i> <?= $_SESSION['error'];
+    <div
+        style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+        <i class="fas fa-exclamation-triangle"></i> <?= $_SESSION['error'];
                                                         unset($_SESSION['error']); ?>
-        </div>
+    </div>
     <?php endif; ?>
 
     <table style="width: 100%; border-collapse: collapse; border: 1px solid #ced4da;">
         <thead>
             <tr style="background: #f8f9fa; border-bottom: 2px solid #adb5bd; text-align: left;">
                 <th style="padding: 15px; width: 60px; text-align: center; border-right: 1px solid #ced4da;">STT</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da;">Tên môn học</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da; text-align: center;">Số bài thi</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da;">Ngày thêm</th>
+                <th style="padding: 15px; border-right: 1px solid #ced4da; width: 200px;">Tên môn học</th>
+                <th style="padding: 15px; border-right: 1px solid #ced4da;">Miêu tả</th>
+                <th style="padding: 15px; border-right: 1px solid #ced4da; text-align: center; width: 120px;">Số bài thi
+                </th>
+                <th style="padding: 15px; border-right: 1px solid #ced4da; width: 130px;">Ngày thêm</th>
                 <th style="padding: 15px; width: 180px; text-align: center;">Thao tác</th>
             </tr>
         </thead>
         <tbody>
             <?php if (!empty($list_monhoc)): ?>
-                <?php $stt = 1;
+            <?php $stt = 1;
                 foreach ($list_monhoc as $mon): ?>
-                    <tr style="border-bottom: 1px solid #ced4da;" onmouseover="this.style.backgroundColor='#f8f9fa'"
-                        onmouseout="this.style.backgroundColor='transparent'">
-                        <td style="padding: 15px; text-align: center; border-right: 1px solid #ced4da; font-weight: 600;">
-                            <?= $stt++ ?></td>
-                        <td style="padding: 15px; border-right: 1px solid #ced4da; font-weight: 500;">
-                            <?= htmlspecialchars($mon['tenmonhoc']) ?></td>
-                        <td style="padding: 15px; border-right: 1px solid #ced4da; text-align: center;">
-                            <span
-                                style="background: #e1f5fe; color: #0288d1; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #b3e5fc;">
-                                <?= $mon['so_bai_thi'] ?> bài thi
-                            </span>
-                        </td>
-                        <td style="padding: 15px; border-right: 1px solid #ced4da; color: #555; font-size: 0.9rem;">
-                            <?= ($mon['ngaythem']) ? date("d/m/Y", strtotime($mon['ngaythem'])) : '---' ?>
-                        </td>
-                        <td style="padding: 15px; text-align: center;">
-                            <div style="display: flex; justify-content: center; gap: 8px;">
-                                <button
-                                    onclick="openFormModal(<?= $mon['id_monhoc'] ?>, '<?= htmlspecialchars($mon['tenmonhoc']) ?>', '<?= htmlspecialchars($mon['mieuta'] ?? '') ?>')"
-                                    style="color: #856404; background: #fff3cd; border: 1px solid #ffeeba; padding: 6px 14px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
-                                    Sửa
-                                </button>
-                                <button
-                                    onclick="showDeleteModal(<?= $mon['id_monhoc'] ?>, '<?= htmlspecialchars($mon['tenmonhoc']) ?>', <?= $mon['so_bai_thi'] ?>)"
-                                    style="color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; padding: 6px 14px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
-                                    Xóa
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
+            <tr style="border-bottom: 1px solid #ced4da;" onmouseover="this.style.backgroundColor='#f8f9fa'"
+                onmouseout="this.style.backgroundColor='transparent'">
+                <td style="padding: 15px; text-align: center; border-right: 1px solid #ced4da; font-weight: 600;">
+                    <?= $stt++ ?></td>
+                <td style="padding: 15px; border-right: 1px solid #ced4da; font-weight: 500;">
+                    <?= htmlspecialchars($mon['tenmonhoc']) ?></td>
+                <td style="padding: 15px; border-right: 1px solid #ced4da; font-size: 0.9rem; color: #666;">
+                    <?php if (!empty($mon['mieuta'])): ?>
+                    <div style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                        title="<?= htmlspecialchars($mon['mieuta']) ?>">
+                        <?= htmlspecialchars($mon['mieuta']) ?>
+                    </div>
+                    <?php else: ?>
+                    <span style="color: #ccc; font-style: italic; font-size: 0.85rem;">(Chưa có miêu tả)</span>
+                    <?php endif; ?>
+                </td>
+                <td style="padding: 15px; border-right: 1px solid #ced4da; text-align: center;">
+                    <span
+                        style="background: #e1f5fe; color: #0288d1; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #b3e5fc;">
+                        <?= $mon['so_bai_thi'] ?> bài thi
+                    </span>
+                </td>
+                <td style="padding: 15px; border-right: 1px solid #ced4da; color: #555; font-size: 0.9rem;">
+                    <?= ($mon['ngaythem']) ? date("d/m/Y", strtotime($mon['ngaythem'])) : '---' ?>
+                </td>
+                <td style="padding: 15px; text-align: center;">
+                    <div style="display: flex; justify-content: center; gap: 8px;">
+                        <button
+                            onclick="openFormModal(<?= $mon['id_monhoc'] ?>, '<?= htmlspecialchars($mon['tenmonhoc']) ?>', '<?= htmlspecialchars($mon['mieuta'] ?? '') ?>')"
+                            style="color: #856404; background: #fff3cd; border: 1px solid #ffeeba; padding: 6px 14px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                            Sửa
+                        </button>
+                        <button
+                            onclick="showDeleteModal(<?= $mon['id_monhoc'] ?>, '<?= htmlspecialchars($mon['tenmonhoc']) ?>', <?= $mon['so_bai_thi'] ?>)"
+                            style="color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; padding: 6px 14px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                            Xóa
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <?php endforeach; ?>
             <?php else: ?>
-                <tr>
-                    <td colspan="5" style="padding: 40px; text-align: center; color: #999; font-style: italic;">Chưa có môn
-                        học nào.</td>
-                </tr>
+            <tr>
+                <td colspan="5" style="padding: 40px; text-align: center; color: #999; font-style: italic;">Chưa có môn
+                    học nào.</td>
+            </tr>
             <?php endif; ?>
         </tbody>
     </table>
@@ -130,68 +142,68 @@
 </div>
 
 <script>
-    function openFormModal(id = null, name = '', description = '') {
-        const modal = document.getElementById('formModal');
-        const title = document.getElementById('formTitle');
-        const inputId = document.getElementById('form_id_monhoc');
-        const inputName = document.getElementById('form_tenmonhoc');
-        const inputDesc = document.getElementById('form_mieuta'); // Thêm dòng này
-        const submitBtn = document.getElementById('formSubmitBtn');
+function openFormModal(id = null, name = '', description = '') {
+    const modal = document.getElementById('formModal');
+    const title = document.getElementById('formTitle');
+    const inputId = document.getElementById('form_id_monhoc');
+    const inputName = document.getElementById('form_tenmonhoc');
+    const inputDesc = document.getElementById('form_mieuta'); // Thêm dòng này
+    const submitBtn = document.getElementById('formSubmitBtn');
 
-        if (id) {
-            title.innerText = "Chỉnh sửa môn học";
-            inputId.value = id;
-            inputName.value = name;
-            inputDesc.value = description; // Gán miêu tả cũ vào form khi sửa
-            submitBtn.innerText = "Cập nhật ngay";
-            submitBtn.style.background = "#f39c12";
-        } else {
-            title.innerText = "Thêm môn học mới";
-            inputId.value = "";
-            inputName.value = "";
-            inputDesc.value = ""; // Xóa trắng khi thêm mới
-            submitBtn.innerText = "Lưu môn học";
-            submitBtn.style.background = "#3498db";
-        }
-
-        modal.style.display = 'flex';
-        inputName.focus();
+    if (id) {
+        title.innerText = "Chỉnh sửa môn học";
+        inputId.value = id;
+        inputName.value = name;
+        inputDesc.value = description; // Gán miêu tả cũ vào form khi sửa
+        submitBtn.innerText = "Cập nhật ngay";
+        submitBtn.style.background = "#f39c12";
+    } else {
+        title.innerText = "Thêm môn học mới";
+        inputId.value = "";
+        inputName.value = "";
+        inputDesc.value = ""; // Xóa trắng khi thêm mới
+        submitBtn.innerText = "Lưu môn học";
+        submitBtn.style.background = "#3498db";
     }
 
-    function closeFormModal() {
-        document.getElementById('formModal').style.display = 'none';
-    }
+    modal.style.display = 'flex';
+    inputName.focus();
+}
 
-    // --- XỬ LÝ MODAL XÓA ---
-    function showDeleteModal(id, name, count) {
-        const modal = document.getElementById('deleteModal');
-        const icon = document.getElementById('modalIcon');
-        const btn = document.getElementById('confirmDeleteBtn');
+function closeFormModal() {
+    document.getElementById('formModal').style.display = 'none';
+}
 
-        if (count > 0) {
-            icon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #f39c12;"></i>';
-            document.getElementById('deleteTitle').innerText = "Không thể xóa!";
-            document.getElementById('deleteBody').innerHTML =
-                `Môn <strong>${name}</strong> có <strong>${count} bài thi</strong>. Hãy xóa bài thi trước.`;
-            btn.style.display = 'none';
-        } else {
-            icon.innerHTML = '<i class="fas fa-trash-alt" style="color: #e74c3c;"></i>';
-            document.getElementById('deleteTitle').innerText = "Xác nhận xóa?";
-            document.getElementById('deleteBody').innerHTML =
-                `Xóa môn <strong>${name}</strong>? Thao tác này không thể hoàn tác.`;
-            btn.style.display = 'inline-block';
-            btn.href = 'index.php?act=monhoc-delete&id=' + id;
-        }
-        modal.style.display = 'flex';
-    }
+// --- XỬ LÝ MODAL XÓA ---
+function showDeleteModal(id, name, count) {
+    const modal = document.getElementById('deleteModal');
+    const icon = document.getElementById('modalIcon');
+    const btn = document.getElementById('confirmDeleteBtn');
 
-    function closeDeleteModal() {
-        document.getElementById('deleteModal').style.display = 'none';
+    if (count > 0) {
+        icon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #f39c12;"></i>';
+        document.getElementById('deleteTitle').innerText = "Không thể xóa!";
+        document.getElementById('deleteBody').innerHTML =
+            `Môn <strong>${name}</strong> có <strong>${count} bài thi</strong>. Hãy xóa bài thi trước.`;
+        btn.style.display = 'none';
+    } else {
+        icon.innerHTML = '<i class="fas fa-trash-alt" style="color: #e74c3c;"></i>';
+        document.getElementById('deleteTitle').innerText = "Xác nhận xóa?";
+        document.getElementById('deleteBody').innerHTML =
+            `Xóa môn <strong>${name}</strong>? Thao tác này không thể hoàn tác.`;
+        btn.style.display = 'inline-block';
+        btn.href = 'index.php?act=monhoc-delete&id=' + id;
     }
+    modal.style.display = 'flex';
+}
 
-    // Đóng modal khi click ra ngoài
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('formModal')) closeFormModal();
-        if (event.target == document.getElementById('deleteModal')) closeDeleteModal();
-    }
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+// Đóng modal khi click ra ngoài
+window.onclick = function(event) {
+    if (event.target == document.getElementById('formModal')) closeFormModal();
+    if (event.target == document.getElementById('deleteModal')) closeDeleteModal();
+}
 </script>
