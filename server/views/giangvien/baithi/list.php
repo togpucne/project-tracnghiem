@@ -37,6 +37,7 @@
                 <th style="padding: 12px; text-align: left;">Môn học</th>
                 <th style="padding: 12px; text-align: center;">Số câu</th>
                 <th style="padding: 12px; text-align: center;">Thời gian làm</th>
+                <th style="padding: 12px; text-align: center;">Câu hỏi</th> <!-- Cột mới -->
                 <th style="padding: 12px; text-align: center;">Thao tác</th>
             </tr>
         </thead>
@@ -55,26 +56,38 @@
                         </td>
                         <td style="padding: 12px; text-align: center;"><i class="far fa-clock"></i> <?= $bt['thoigianlam'] ?>
                             phút</td>
+
+                        <!-- Cột Câu hỏi - Nút bấm để vào quản lý câu hỏi -->
+                        <td style="padding: 12px; text-align: center;">
+                            <a href="index.php?act=cauhoi-list&id_baithi=<?= $bt['id_baithi'] ?>&ten_baithi=<?= urlencode($bt['ten_baithi']) ?>"
+                                style="background: #3498db; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; display: inline-block;">
+                                <i class="fas fa-list"></i> Quản lý câu hỏi
+                            </a>
+                        </td>
+
                         <td style="padding: 12px; text-align: center;">
                             <button onclick='openExamModal(<?= json_encode($bt) ?>)'
-                                style="background: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;"><i
-                                    class="fas fa-edit"></i> Sửa</button>
+                                style="background: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
                             <a href="index.php?act=baithi-delete&id=<?= $bt['id_baithi'] ?>"
                                 onclick="return confirm('Xóa bài này?')"
-                                style="background: #e74c3c; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; display: inline-block;"><i
-                                    class="fas fa-trash"></i> Xóa</a>
+                                style="background: #e74c3c; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; display: inline-block;">
+                                <i class="fas fa-trash"></i> Xóa
+                            </a>
                         </td>
                     </tr>
                 <?php endforeach;
             else: ?>
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 20px;">Chưa có dữ liệu.</td>
+                    <td colspan="7" style="text-align: center; padding: 20px;">Chưa có dữ liệu.</td>
                 </tr>
             <?php endif; ?>
         </tbody>
     </table>
 </div>
 
+<!-- Modal Thêm/Sửa Bài Thi (giữ nguyên như cũ) -->
 <div id="examModal"
     style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
     <div style="background: white; padding: 30px; border-radius: 10px; width: 650px;">
@@ -135,7 +148,6 @@
         </form>
     </div>
 </div>
-
 
 <script>
     // Hàm định dạng ngày giờ địa phương cho input datetime-local (YYYY-MM-DDTHH:mm)
@@ -205,11 +217,11 @@
             document.getElementById('m_ten').value = "";
             document.getElementById('m_cau').value = "10";
             document.getElementById('m_time').value = "15";
-            document.getElementById('m_status').value = "Đang mở"; // Auto Đang mở
+            document.getElementById('m_status').value = "Đang mở";
 
             // Mặc định ngày hiện tại
             startInput.value = currentStr;
-            startInput.min = currentStr; // Không cho chọn lùi về trước
+            startInput.min = currentStr;
 
             endInput.value = "";
             endInput.min = currentStr;

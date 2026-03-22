@@ -4,7 +4,8 @@ session_start();
 
 require_once "model/Database.php";
 require_once "model/giangvien/monhoc.model.php";
-require_once "model/giangvien/baithi.model.php"; // Load luôn model bài thi
+require_once "model/giangvien/baithi.model.php";
+require_once "model/giangvien/cauhoi.model.php"; // Thêm model câu hỏi
 
 $user_role = $_SESSION['user']['vaitro'] ?? '';
 $act = $_GET['act'] ?? 'dashboard';
@@ -50,27 +51,17 @@ switch ($act) {
         exit;
 
         // --- QUẢN LÝ BÀI THI ---
-    // --- QUẢN LÝ BÀI THI ---
     case 'quanly-baithi':
-    case 'quanly-dethi': 
+    case 'quanly-dethi':
         require_once "controller/giangvien/baithi.controller.php";
-        
+
         // Gọi hàm index từ controller để lấy dữ liệu đã được lọc theo ID người dùng
-        $result = baithi_index(); 
-        
-        $title = $result['title'];
-        $view = $result['view'];
-        $list_baithi = $result['data'];      
-        $list_monhoc = $result['list_monhoc']; // KHÔNG gọi getAll_monhoc() ở đây nữa
-        break;
-        require_once "controller/giangvien/baithi.controller.php";
-        // Gọi hàm index từ controller để lấy đủ dữ liệu đã lọc
         $result = baithi_index();
 
         $title = $result['title'];
         $view = $result['view'];
-        $list_baithi = $result['data']; // Danh sách bài thi đã lọc
-        $list_monhoc = $result['list_monhoc']; // Danh sách môn học đã lọc (Lấy từ mảng result trả về)
+        $list_baithi = $result['data'];
+        $list_monhoc = $result['list_monhoc'];
         break;
 
     case 'baithi-save':
@@ -82,6 +73,32 @@ switch ($act) {
         require_once "controller/giangvien/baithi.controller.php";
         baithi_delete();
         exit;
+
+        // ========== QUẢN LÝ CÂU HỎI (THÊM MỚI) ==========
+
+        // Danh sách câu hỏi của bài thi
+    case 'cauhoi-list':
+        require_once "controller/giangvien/cauhoi.controller.php";
+        // Controller sẽ tự xử lý và gán $view, $title, $list_cauhoi, $baithi
+        break;
+
+    // Thêm câu hỏi
+    case 'cauhoi-add':
+        require_once "controller/giangvien/cauhoi.controller.php";
+        // Controller xử lý thêm và redirect
+        break;
+
+    // Sửa câu hỏi
+    case 'cauhoi-edit':
+        require_once "controller/giangvien/cauhoi.controller.php";
+        break;
+
+    // Xóa câu hỏi
+    case 'cauhoi-delete':
+        require_once "controller/giangvien/cauhoi.controller.php";
+        break;
+
+    // ========== KẾT THÚC QUẢN LÝ CÂU HỎI ==========
 
     default:
         $title = "404 - Không tìm thấy";
