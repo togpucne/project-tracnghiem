@@ -9,14 +9,16 @@ $title = "Quản lý câu hỏi: " . htmlspecialchars($ten_baithi);
     <?php if (isset($_SESSION['error'])): ?>
     <div class="alert alert-danger"
         style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+        <?= $_SESSION['error'];
+            unset($_SESSION['error']); ?>
     </div>
     <?php endif; ?>
 
     <?php if (isset($_SESSION['success'])): ?>
     <div class="alert alert-success"
         style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <?= $_SESSION['success']; unset($_SESSION['success']); ?>
+        <?= $_SESSION['success'];
+            unset($_SESSION['success']); ?>
     </div>
     <?php endif; ?>
 
@@ -30,7 +32,7 @@ $title = "Quản lý câu hỏi: " . htmlspecialchars($ten_baithi);
             </p>
         </div>
         <div>
-            <a href="index.php?act=baithi-list"
+            <a href="index.php?act=quanly-dethi"
                 style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; margin-right: 10px;">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
@@ -46,11 +48,11 @@ $title = "Quản lý câu hỏi: " . htmlspecialchars($ten_baithi);
         <table style="width: 100%; border-collapse: collapse;">
             <thead style="background: #f8f9fa;">
                 <tr>
-                    <th style="padding: 12px; text-align: center; width: 60px;">STT</th>
-                    <th style="padding: 12px; text-align: left;">Nội dung câu hỏi</th>
-                    <th style="padding: 12px; text-align: center; width: 100px;">Độ khó</th>
-                    <th style="padding: 12px; text-align: center; width: 120px;">Số đáp án</th>
-                    <th style="padding: 12px; text-align: center; width: 120px;">Thao tác</th>
+                    <th style="padding: 12px; text-align: center; width: 50px;">STT</th>
+                    <th style="padding: 12px; text-align: left; width: 35%;">Nội dung câu hỏi</th>
+                    <th style="padding: 12px; text-align: left;">Đáp án</th>
+                    <th style="padding: 12px; text-align: center; width: 80px;">Độ khó</th>
+                    <th style="padding: 12px; text-align: center; width: 100px;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -62,20 +64,31 @@ $title = "Quản lý câu hỏi: " . htmlspecialchars($ten_baithi);
                     </td>
                 </tr>
                 <?php else: ?>
-                <?php $stt = 1; foreach ($list_cauhoi as $ch): ?>
+                <?php $stt = 1;
+                    foreach ($list_cauhoi as $ch): ?>
                 <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 12px; text-align: center;"><?= $stt++ ?> </td>
+                    <td style="padding: 12px; text-align: center;"><?= $stt++ ?></td>
                     <td style="padding: 12px;">
                         <strong><?= htmlspecialchars($ch['noidungcauhoi']) ?></strong>
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            <?php 
-                                    $dapan_text = [];
-                                    foreach ($ch['dapan'] as $d) {
-                                        $dapan_text[] = ($d['dapandung'] == 1 ? '✅ ' : '○ ') . htmlspecialchars($d['noidungdapan']);
-                                    }
-                                    echo implode(' | ', $dapan_text);
-                                    ?>
+                    </td>
+                    <td style="padding: 12px;">
+                        <?php
+                                // Hiển thị các đáp án dưới dạng radio
+                                foreach ($ch['dapan'] as $d):
+                                    $is_correct = ($d['dapandung'] == 1);
+                                    // Radio checked nếu là đáp án đúng
+                                    $checked = $is_correct ? 'checked disabled' : 'disabled';
+                                    $radio_style = $is_correct ? 'color: #27ae60;' : 'color: #999;';
+                                ?>
+                        <div style="margin: 5px 0; display: flex; align-items: center;">
+                            <input type="radio" <?= $checked ?> style="margin-right: 8px; cursor: default;">
+                            <span style="<?= $radio_style ?>"><?= htmlspecialchars($d['noidungdapan']) ?></span>
+                            <?php if ($is_correct): ?>
+                            <span
+                                style="background: #27ae60; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 8px;">Đúng</span>
+                            <?php endif; ?>
                         </div>
+                        <?php endforeach; ?>
                     </td>
                     <td style="padding: 12px; text-align: center;">
                         <?php
@@ -92,16 +105,13 @@ $title = "Quản lý câu hỏi: " . htmlspecialchars($ten_baithi);
                         </span>
                     </td>
                     <td style="padding: 12px; text-align: center;">
-                        <?= count($ch['dapan']) ?> đáp án
-                    </td>
-                    <td style="padding: 12px; text-align: center;">
                         <button onclick="openEditModal(<?= htmlspecialchars(json_encode($ch)) ?>)"
                             style="background: #f39c12; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
                             <i class="fas fa-edit"></i> Sửa
                         </button>
                         <a href="index.php?act=cauhoi-delete&id=<?= $ch['id_cauhoi'] ?>&id_baithi=<?= $id_baithi ?>"
                             onclick="return confirm('Xóa câu hỏi này?')"
-                            style="background: #e74c3c; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-block;">
+                            style="background: #e74c3c; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-block; margin-left: 5px;">
                             <i class="fas fa-trash"></i> Xóa
                         </a>
                     </td>
