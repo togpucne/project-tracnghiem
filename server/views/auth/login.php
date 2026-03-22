@@ -55,70 +55,70 @@ if (isset($_POST['btn_login'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-    body {
-        background-color: #f4f7f6;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'Segoe UI', Roboto, sans-serif;
-    }
+        body {
+            background-color: #f4f7f6;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
 
-    .login-card {
-        background: #ffffff;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        width: 100%;
-        max-width: 400px;
-        border: 1px solid #e1e8ed;
-    }
+        .login-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #e1e8ed;
+        }
 
-    .brand-logo {
-        color: #0d6efd;
-        /* Màu xanh biển chuẩn Bootstrap */
-        font-size: 50px;
-        text-align: center;
-        margin-bottom: 10px;
-    }
+        .brand-logo {
+            color: #0d6efd;
+            /* Màu xanh biển chuẩn Bootstrap */
+            font-size: 50px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
 
-    .login-header {
-        text-align: center;
-        margin-bottom: 30px;
-    }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-    .login-header h4 {
-        font-weight: 700;
-        color: #212529;
-        /* Màu đen xám */
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
+        .login-header h4 {
+            font-weight: 700;
+            color: #212529;
+            /* Màu đen xám */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-    .form-label {
-        font-weight: 600;
-        color: #495057;
-        font-size: 13px;
-    }
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 13px;
+        }
 
-    .btn-login {
-        background-color: #0d6efd;
-        border: none;
-        padding: 12px;
-        font-weight: 600;
-        transition: 0.3s;
-    }
+        .btn-login {
+            background-color: #0d6efd;
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
 
-    .btn-login:hover {
-        background-color: #0b5ed7;
-        transform: translateY(-1px);
-    }
+        .btn-login:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-1px);
+        }
 
-    .alert-custom {
-        font-size: 14px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
+        .alert-custom {
+            font-size: 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
@@ -129,14 +129,14 @@ if (isset($_POST['btn_login'])) {
             <i class="fas fa-user-shield"></i>
         </div>
         <div class="login-header">
-            <h4>PT QUIZ Admin</h4>
+            <h4>Hệ thống PT QUIZ</h4>
             <small class="text-muted">Hệ thống quản lý bài thi trực tuyến</small>
         </div>
 
         <?php if (isset($error)): ?>
-        <div class="alert alert-danger alert-custom border-0 shadow-sm">
-            <i class="fas fa-exclamation-circle me-2"></i> <?= $error ?>
-        </div>
+            <div class="alert alert-danger alert-custom border-0 shadow-sm">
+                <i class="fas fa-exclamation-circle me-2"></i> <?= $error ?>
+            </div>
         <?php endif; ?>
 
         <form method="POST" action="">
@@ -157,7 +157,7 @@ if (isset($_POST['btn_login'])) {
         </form>
 
         <div class="text-center mt-4">
-            <p class="mb-0 small text-muted">© 2026 Developed by <span class="fw-bold text-dark">Judoit</span></p>
+            <p class="mb-0 small text-muted">© 2026 Developed by <span class="fw-bold text-dark">PT QUIZ</span></p>
         </div>
     </div>
 

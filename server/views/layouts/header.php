@@ -11,152 +11,192 @@
     <link rel="icon" type="image/jpg" href="public/imgs/ptstore-no-background.png">
 
     <style>
-    :root {
-        --dark-bg: #1a1a1a;
-        --dark-secondary: #2d2d2d;
-        --accent-color: #3498db;
-        --text-color: #e0e0e0;
-        --sidebar-width: 260px;
-    }
+        :root {
+            --primary-blue: #0d6efd;
+            --dark-text: #212529;
+            --light-bg: #f8fafc;
+            --sidebar-bg: #ffffff;
+        }
 
-    body {
-        margin: 0;
-        font-family: 'Inter', 'Segoe UI', sans-serif;
-        background: #f4f7f6;
-        overflow: hidden;
-        /* Để scroll bên trong content-body */
-    }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--light-bg);
+        }
 
-    /* --- Top Nav --- */
-    .top-nav {
-        height: 60px;
-        background: var(--dark-bg);
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 25px;
-        position: fixed;
-        top: 0;
-        width: 100%;
-        z-index: 1050;
-        border-bottom: 1px solid #333;
-    }
+        /* --- Top Nav --- */
+        .top-nav {
+            height: 65px;
+            background: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1001;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid #eef2f7;
+        }
 
-    .nav-logo {
-        font-size: 18px;
-        font-weight: 800;
-        color: var(--accent-color);
-        letter-spacing: 1px;
-    }
+        .nav-logo {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-blue);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    /* --- Sidebar --- */
-    .main-wrapper {
-        display: flex;
-        margin-top: 60px;
-        height: calc(100vh - 60px);
-    }
+        .nav-user-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 5px 15px;
+            border-radius: 50px;
+            transition: 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--dark-text);
+        }
 
-    .sidebar {
-        width: var(--sidebar-width);
-        background: var(--dark-bg);
-        color: var(--text-color);
-        flex-shrink: 0;
-        border-right: 1px solid #333;
-    }
+        .nav-user-area:hover {
+            background: #f1f5f9;
+        }
 
-    .sidebar-menu {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+        .user-info-text {
+            text-align: right;
+            line-height: 1.2;
+        }
 
-    .sidebar-menu li a {
-        padding: 14px 25px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: #a0aec0;
-        text-decoration: none;
-        transition: 0.3s;
-        font-size: 15px;
-    }
+        .user-name {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            color: #1e293b;
+        }
 
-    .sidebar-menu li a:hover,
-    .sidebar-menu li.active a {
-        background: var(--dark-secondary);
-        color: white;
-        border-left: 4px solid var(--accent-color);
-    }
+        .user-role {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
 
-    /* --- Content Area --- */
-    .content-body {
-        flex-grow: 1;
-        padding: 30px;
-        overflow-y: auto;
-        background: #f8fafc;
-    }
+        /* --- Sidebar --- */
+        .main-wrapper {
+            display: flex;
+            margin-top: 65px;
+            height: calc(100vh - 65px);
+        }
 
-    .role-badge {
-        background: rgba(52, 152, 219, 0.2);
-        color: var(--accent-color);
-        border: 1px solid var(--accent-color);
-        font-size: 10px;
-        padding: 2px 10px;
-        border-radius: 20px;
-        font-weight: 700;
-    }
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid #eef2f7;
+            padding-top: 20px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 15px;
+        }
+
+        .sidebar-menu li a {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li.active a {
+            background: #eff6ff;
+            color: var(--primary-blue);
+        }
+
+        .sidebar-menu li.active a i {
+            color: var(--primary-blue);
+        }
+
+        .menu-label {
+            padding: 20px 20px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Content Area --- */
+        .content-body {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 
 <body>
 
     <nav class="top-nav">
-        <div class="nav-logo">
-            <i class="fas fa-bolt me-2"></i> PT QUIZ SERVER
-        </div>
-        <div class="nav-user d-flex align-items-center gap-3">
-            <span class="role-badge"><?php echo strtoupper($_SESSION['user']['vaitro']); ?></span>
-            <div class="d-none d-md-block text-end">
-                <small class="d-block text-muted" style="font-size: 10px;">Xin chào,</small>
-                <span style="font-size: 14px; font-weight: 600;"><?php echo $_SESSION['user']['ten']; ?></span>
+        <a href="index.php" class="nav-logo">
+            <i class="fas fa-graduation-cap"></i> PT QUIZ ADMIN
+        </a>
+
+        <a href="index.php?act=profile" class="nav-user-area">
+            <div class="user-info-text d-none d-md-block">
+                <span class="user-name">Chào, <?php echo $_SESSION['user']['ten']; ?></span>
+                <span
+                    class="user-role"><?php echo ($_SESSION['user']['vaitro'] == 'admin') ? 'Quản trị viên' : 'Giảng viên'; ?></span>
             </div>
-            <i class="fas fa-user-circle fs-4 text-secondary"></i>
-        </div>
+            <div
+                style="width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
+                <i class="fas fa-user-tie" style="color: #475569; font-size: 20px;"></i>
+            </div>
+        </a>
     </nav>
 
     <div class="main-wrapper">
         <aside class="sidebar">
             <ul class="sidebar-menu">
                 <li class="<?php echo ($act == 'dashboard') ? 'active' : ''; ?>">
-                    <a href="index.php?act=dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+                    <a href="index.php?act=dashboard"><i class="fas fa-chart-pie"></i> Tổng quan</a>
                 </li>
 
                 <?php if ($_SESSION['user']['vaitro'] == 'giangvien'): ?>
-                <li class="<?php echo ($act == 'quanly-monhoc') ? 'active' : ''; ?>">
-                    <a href="index.php?act=quanly-monhoc"><i class="fas fa-book"></i> Quản lý Môn học</a>
-                </li>
-                <li class="<?php echo ($act == 'quanly-dethi') ? 'active' : ''; ?>">
-                    <a href="index.php?act=quanly-dethi"><i class="fas fa-file-signature"></i> Quản lý Đề thi</a>
-                </li>
+                    <div class="menu-label">Giảng dạy</div>
+                    <li class="<?php echo ($act == 'quanly-monhoc') ? 'active' : ''; ?>">
+                        <a href="index.php?act=quanly-monhoc"><i class="fas fa-book"></i> Môn học</a>
+                    </li>
+                    <li class="<?php echo ($act == 'quanly-dethi') ? 'active' : ''; ?>">
+                        <a href="index.php?act=quanly-dethi"><i class="fas fa-copy"></i> Đề thi & Bài tập</a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if ($_SESSION['user']['vaitro'] == 'admin'): ?>
-                <div class="px-4 mt-4 mb-2 text-uppercase text-muted" style="font-size: 10px; font-weight: 800;">Hệ
-                    thống</div>
-                <li class="<?php echo ($act == 'quanly-nguoidung') ? 'active' : ''; ?>">
-                    <a href="index.php?act=quanly-nguoidung"><i class="fas fa-users-cog"></i> Người dùng</a>
-                </li>
-                <li class="<?php echo ($act == 'thongke') ? 'active' : ''; ?>">
-                    <a href="#"><i class="fas fa-chart-line"></i> Thống kê</a>
-                </li>
-                <li class="<?php echo ($act == 'hethong-api') ? 'active' : ''; ?>">
-                    <a href="index.php?act=hethong-api"><i class="fas fa-code"></i> Logs API</a>
-                </li>
+                    <div class="menu-label">Hệ thống</div>
+                    <li class="<?php echo ($act == 'quanly-nguoidung') ? 'active' : ''; ?>">
+                        <a href="index.php?act=quanly-nguoidung"><i class="fas fa-user-cog"></i> Người dùng</a>
+                    </li>
+                    <li class="<?php echo ($act == 'hethong-api') ? 'active' : ''; ?>">
+                        <a href="index.php?act=hethong-api"><i class="fas fa-terminal"></i> Nhật ký Logs</a>
+                    </li>
                 <?php endif; ?>
 
-                <li class="mt-5">
-                    <a href="index.php?act=dangxuat" class="text-danger"><i class="fas fa-power-off"></i> Đăng xuất</a>
+                <div class="menu-label">Cá nhân</div>
+                <li>
+                    <a href="index.php?act=dangxuat" style="color: #dc3545;"><i class="fas fa-power-off"></i> Đăng
+                        xuất</a>
                 </li>
             </ul>
         </aside>
