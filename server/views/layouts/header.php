@@ -5,25 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $title ?? 'PT QUIZ Admin'; ?></title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/jpg" href="public/imgs/ptstore-no-background.png">
 
     <style>
     :root {
         --dark-bg: #1a1a1a;
-        /* Màu đen chủ đạo */
         --dark-secondary: #2d2d2d;
         --accent-color: #3498db;
         --text-color: #e0e0e0;
+        --sidebar-width: 260px;
     }
 
     body {
         margin: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
         background: #f4f7f6;
+        overflow: hidden;
+        /* Để scroll bên trong content-body */
     }
 
     /* --- Top Nav --- */
@@ -34,30 +35,19 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0 20px;
+        padding: 0 25px;
         position: fixed;
         top: 0;
         width: 100%;
-        z-index: 1000;
-        box-sizing: border-box;
+        z-index: 1050;
         border-bottom: 1px solid #333;
     }
 
     .nav-logo {
-        font-size: 20px;
-        font-weight: bold;
+        font-size: 18px;
+        font-weight: 800;
         color: var(--accent-color);
-        text-transform: uppercase;
-    }
-
-    .nav-user {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .nav-user i {
-        font-size: 1.2rem;
+        letter-spacing: 1px;
     }
 
     /* --- Sidebar --- */
@@ -68,11 +58,11 @@
     }
 
     .sidebar {
-        width: 260px;
+        width: var(--sidebar-width);
         background: var(--dark-bg);
         color: var(--text-color);
-        padding-top: 20px;
-        transition: all 0.3s;
+        flex-shrink: 0;
+        border-right: 1px solid #333;
     }
 
     .sidebar-menu {
@@ -82,21 +72,17 @@
     }
 
     .sidebar-menu li a {
-        padding: 15px 25px;
+        padding: 14px 25px;
         display: flex;
         align-items: center;
         gap: 12px;
-        color: #bdc3c7;
+        color: #a0aec0;
         text-decoration: none;
-        transition: 0.2s;
+        transition: 0.3s;
+        font-size: 15px;
     }
 
-    .sidebar-menu li a:hover {
-        background: var(--dark-secondary);
-        color: white;
-        border-left: 4px solid var(--accent-color);
-    }
-
+    .sidebar-menu li a:hover,
     .sidebar-menu li.active a {
         background: var(--dark-secondary);
         color: white;
@@ -105,17 +91,20 @@
 
     /* --- Content Area --- */
     .content-body {
-        flex: 1;
-        padding: 25px;
+        flex-grow: 1;
+        padding: 30px;
         overflow-y: auto;
+        background: #f8fafc;
     }
 
     .role-badge {
-        background: var(--accent-color);
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        text-transform: uppercase;
+        background: rgba(52, 152, 219, 0.2);
+        color: var(--accent-color);
+        border: 1px solid var(--accent-color);
+        font-size: 10px;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-weight: 700;
     }
     </style>
 </head>
@@ -124,12 +113,15 @@
 
     <nav class="top-nav">
         <div class="nav-logo">
-            <i class="fas fa-graduation-cap"></i> PT QUIZ SERVER
+            <i class="fas fa-bolt me-2"></i> PT QUIZ SERVER
         </div>
-        <div class="nav-user">
-            <span class="role-badge"><?php echo $_SESSION['user']['vaitro']; ?></span>
-            <i class="fas fa-user-circle"></i>
-            <strong><?php echo $_SESSION['user']['ten']; ?></strong>
+        <div class="nav-user d-flex align-items-center gap-3">
+            <span class="role-badge"><?php echo strtoupper($_SESSION['user']['vaitro']); ?></span>
+            <div class="d-none d-md-block text-end">
+                <small class="d-block text-muted" style="font-size: 10px;">Xin chào,</small>
+                <span style="font-size: 14px; font-weight: 600;"><?php echo $_SESSION['user']['ten']; ?></span>
+            </div>
+            <i class="fas fa-user-circle fs-4 text-secondary"></i>
         </div>
     </nav>
 
@@ -137,7 +129,7 @@
         <aside class="sidebar">
             <ul class="sidebar-menu">
                 <li class="<?php echo ($act == 'dashboard') ? 'active' : ''; ?>">
-                    <a href="index.php?act=dashboard"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="index.php?act=dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
                 </li>
 
                 <?php if ($_SESSION['user']['vaitro'] == 'giangvien'): ?>
@@ -145,27 +137,26 @@
                     <a href="index.php?act=quanly-monhoc"><i class="fas fa-book"></i> Quản lý Môn học</a>
                 </li>
                 <li class="<?php echo ($act == 'quanly-dethi') ? 'active' : ''; ?>">
-                    <a href="index.php?act=quanly-dethi"><i class="fas fa-file-alt"></i> Quản lý Đề thi</a>
+                    <a href="index.php?act=quanly-dethi"><i class="fas fa-file-signature"></i> Quản lý Đề thi</a>
                 </li>
-
                 <?php endif; ?>
 
                 <?php if ($_SESSION['user']['vaitro'] == 'admin'): ?>
+                <div class="px-4 mt-4 mb-2 text-uppercase text-muted" style="font-size: 10px; font-weight: 800;">Hệ
+                    thống</div>
                 <li class="<?php echo ($act == 'quanly-nguoidung') ? 'active' : ''; ?>">
-                    <a href="index.php?act=quanly-nguoidung"><i class="fas fa-users-cog"></i> Quản lý Người dùng</a>
+                    <a href="index.php?act=quanly-nguoidung"><i class="fas fa-users-cog"></i> Người dùng</a>
                 </li>
                 <li class="<?php echo ($act == 'thongke') ? 'active' : ''; ?>">
-                    <a href="#"><i class="fas fa-chart-bar"></i> Thống kê hệ thống</a>
+                    <a href="#"><i class="fas fa-chart-line"></i> Thống kê</a>
                 </li>
                 <li class="<?php echo ($act == 'hethong-api') ? 'active' : ''; ?>">
-                    <a href="index.php?act=hethong-api"><i class="fas fa-server"></i> Logs API</a>
+                    <a href="index.php?act=hethong-api"><i class="fas fa-code"></i> Logs API</a>
                 </li>
                 <?php endif; ?>
 
-                <hr style="border: 0.5px solid #333; margin: 10px 0;">
-                <li>
-                    <a href="index.php?act=dangxuat" style="color: #e74c3c;"><i class="fas fa-sign-out-alt"></i> Đăng
-                        xuất</a>
+                <li class="mt-5">
+                    <a href="index.php?act=dangxuat" class="text-danger"><i class="fas fa-power-off"></i> Đăng xuất</a>
                 </li>
             </ul>
         </aside>
