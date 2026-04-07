@@ -1,5 +1,5 @@
 <?php
-require_once "model/Database.php";
+require_once __DIR__ . "/../Database.php";
 
 /**
  * Lấy danh sách môn học theo người dùng/vai trò

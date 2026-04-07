@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const inputNgaytao = document.getElementById('inputNgaytao');
 
     try {
-        const res = await fetch('api/get_profile.php');
+        const res = await fetch(apiUrl("profile/detail"));
         const json = await res.json();
 
         if (json.success) {
@@ -118,8 +118,8 @@ document.getElementById('profileForm').addEventListener('submit', async function
     const data = Object.fromEntries(formData.entries());
 
     try {
-        const res = await fetch('api/update_profile.php', {
-            method: 'POST',
+        const res = await fetch(apiUrl("profile/update"), {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -154,3 +154,4 @@ document.getElementById('togglePasswordBtn').addEventListener('click', function(
     }
 });
 </script>
+

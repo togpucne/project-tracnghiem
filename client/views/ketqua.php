@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const id_lanthi = <?= $id_lanthi ?>;
 
     try {
-        const res = await fetch(`api/get_result.php?id=${id_lanthi}`);
+        const res = await fetch(apiUrl("result/detail", { id: id_lanthi }));
         const json = await res.json();
 
         if (json.success) {

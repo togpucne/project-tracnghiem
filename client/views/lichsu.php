@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
         historyContainer.innerHTML = `<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>`;
         
         try {
-            const res = await fetch(`api/get_history.php?limit=${limit}&offset=${offset}`);
+            const res = await fetch(apiUrl("history/list", { limit, offset }));
             const json = await res.json();
 
             if (json.success && json.data.length > 0) {

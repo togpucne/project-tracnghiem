@@ -1,0 +1,40 @@
+<?php
+
+require_once __DIR__ . "/../core/Api.php";
+
+$routes = require __DIR__ . "/../routes/api.php";
+$route = Api::detectRoute();
+
+Api::boot();
+
+if ($route === "") {
+    Api::json([
+        "success" => true,
+        "message" => "PT QUIZ Server API router",
+        "usage" => "api/monhoc/list",
+        "routes" => array_keys($routes),
+    ]);
+}
+
+if (!isset($routes[$route])) {
+    Api::json([
+        "error" => "API route not found",
+        "route" => $route,
+    ], 404);
+}
+
+$config = $routes[$route];
+
+if (!empty($config["methods"])) {
+    Api::requireMethods($config["methods"]);
+}
+
+if (!empty($config["auth"])) {
+    Api::requireLogin();
+}
+
+if (!empty($config["roles"])) {
+    Api::requireRole($config["roles"]);
+}
+
+require $config["handler"];

@@ -1,17 +1,16 @@
 <?php
-session_start();
-header("Content-Type: application/json");
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Pragma: no-cache");
+
+require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../core/Database.php";
 require_once __DIR__ . "/../core/Response.php";
 
-$conn = Database::connect();
-$user_id = $_SESSION['user']['id'] ?? 0;
 
-$mon = isset($_GET['mon']) ? (int)$_GET['mon'] : 0;
-$term = isset($_GET['term']) ? $_GET['term'] : '';
-$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 0;
+$conn = Database::connect();
+$user_id = $_SESSION["user"]["id"] ?? 0;
+
+$mon = isset($_GET["mon"]) ? (int) $_GET["mon"] : 0;
+$term = $_GET["term"] ?? "";
+$limit = isset($_GET["limit"]) ? (int) $_GET["limit"] : 0;
 
 $where = "WHERE b.trangthai = 'Đang mở'";
 $params = [$user_id];
@@ -23,25 +22,25 @@ if ($mon > 0) {
     $types .= "i";
 }
 
-if (!empty($term)) {
+if ($term !== "") {
     $where .= " AND b.ten_baithi LIKE ?";
-    $params[] = "%$term%";
+    $params[] = "%" . $term . "%";
     $types .= "s";
 }
 
 $sql = "
-    SELECT 
-        b.id_baithi, 
-        b.ten_baithi, 
-        b.thoigianlam, 
-        b.tongcauhoi, 
+    SELECT
+        b.id_baithi,
+        b.ten_baithi,
+        b.thoigianlam,
+        b.tongcauhoi,
         m.tenmonhoc,
         l.thoigianconlai,
         CASE WHEN l.id_lanthi IS NOT NULL THEN 1 ELSE 0 END as is_ongoing
     FROM baithi b
     LEFT JOIN monhoc m ON b.id_monhoc = m.id_monhoc
-    LEFT JOIN lanthi l ON b.id_baithi = l.id_baithi 
-        AND l.id_nguoidung = ? 
+    LEFT JOIN lanthi l ON b.id_baithi = l.id_baithi
+        AND l.id_nguoidung = ?
         AND l.trangthai = 'ongoing'
     $where
     ORDER BY b.id_baithi DESC
@@ -60,4 +59,4 @@ $res = $stmt->get_result();
 $data = $res->fetch_all(MYSQLI_ASSOC);
 
 Response::json(["success" => true, "data" => $data]);
-?>
+

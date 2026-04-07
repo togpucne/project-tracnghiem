@@ -87,7 +87,7 @@
                     };
 
                     try {
-                        const response = await fetch("api/register.php", {
+                        const response = await fetch(apiUrl("auth/register"), {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json"

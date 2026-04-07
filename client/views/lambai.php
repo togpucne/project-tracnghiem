@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let timerInterval = null;
 
     try {
-        const res = await fetch(`api/get_exam_questions.php?id=${id_baithi}`);
+        const res = await fetch(apiUrl("exam/questions", { id: id_baithi }));
         const data = await res.json();
 
         if (!data.success) {
@@ -319,8 +319,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function syncDraft() {
         try {
-            await fetch("api/sync_draft.php", {
-                method: "POST",
+            await fetch(apiUrl("exam/sync-draft"), {
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id_lanthi: id_lanthi, thoigianconlai: remainingSeconds, answers }),
                 keepalive: true
@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function sendSubmit() {
         if (timerInterval) clearInterval(timerInterval);
         try {
-            const res = await fetch("api/submit.php", {
+            const res = await fetch(apiUrl("exam/submit"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id_lanthi, id_baithi, answers })
@@ -371,3 +371,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 });
 </script>
+
+
+
+

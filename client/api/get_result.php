@@ -1,25 +1,18 @@
 <?php
-session_start();
-header("Content-Type: application/json");
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Pragma: no-cache");
 
+require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../core/Database.php";
 require_once __DIR__ . "/../core/Response.php";
 
-if (!isset($_SESSION['user'])) {
-    Response::json(["error" => "Unauthorized"], 401);
-}
 
 $conn = Database::connect();
-$user_id = $_SESSION['user']['id'];
-$id_lanthi = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$user_id = $_SESSION["user"]["id"];
+$id_lanthi = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
-if ($id_lanthi == 0) {
-    Response::json(["error" => "Thiếu ID lần thi"], 400);
+if ($id_lanthi === 0) {
+    Response::json(["error" => "Thieu ID lan thi"], 400);
 }
 
-/* lấy thông tin lần thi */
 $stmt = $conn->prepare("
     SELECT l.*, b.ten_baithi
     FROM lanthi l
@@ -31,14 +24,13 @@ $stmt->execute();
 $lanthi = $stmt->get_result()->fetch_assoc();
 
 if (!$lanthi) {
-    Response::json(["error" => "Không tìm thấy kết quả"], 404);
+    Response::json(["error" => "Khong tim thay ket qua"], 404);
 }
 
-$id_baithi = (int)$lanthi['id_baithi'];
+$id_baithi = (int) $lanthi["id_baithi"];
 
-/* lấy câu hỏi + đáp án + đáp án đã chọn */
 $sql = "
-    SELECT 
+    SELECT
         c.id_cauhoi,
         c.noidungcauhoi,
         d.id_dapan,
@@ -61,29 +53,29 @@ $res = $stmt->get_result();
 
 $questions = [];
 while ($row = $res->fetch_assoc()) {
-    $qid = (int)$row['id_cauhoi'];
+    $qid = (int) $row["id_cauhoi"];
 
     if (!isset($questions[$qid])) {
         $questions[$qid] = [
-            'id_cauhoi' => $qid,
-            'noidungcauhoi' => htmlspecialchars($row['noidungcauhoi']),
-            'answers' => []
+            "id_cauhoi" => $qid,
+            "noidungcauhoi" => htmlspecialchars($row["noidungcauhoi"]),
+            "answers" => [],
         ];
     }
 
-    $selected = ((string)$row['cautraloichon'] !== '' && (int)$row['cautraloichon'] === (int)$row['id_dapan']);
+    $selected = ((string) $row["cautraloichon"] !== "" && (int) $row["cautraloichon"] === (int) $row["id_dapan"]);
 
-    $questions[$qid]['answers'][] = [
-        'id_dapan' => (int)$row['id_dapan'],
-        'noidungdapan' => htmlspecialchars($row['noidungdapan']),
-        'dapandung' => (int)$row['dapandung'] === 1,
-        'selected' => $selected,
+    $questions[$qid]["answers"][] = [
+        "id_dapan" => (int) $row["id_dapan"],
+        "noidungdapan" => htmlspecialchars($row["noidungdapan"]),
+        "dapandung" => (int) $row["dapandung"] === 1,
+        "selected" => $selected,
     ];
 }
 
 Response::json([
     "success" => true,
     "lanthi" => $lanthi,
-    "questions" => array_values($questions)
+    "questions" => array_values($questions),
 ]);
-?>
+

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../Database.php';
 function getAll_baithi($id_nguoidung) // Thêm tham số nhận ID người dùng
 {
     $conn = Database::connect();

@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function() {
         };
 
         try {
-            const response = await fetch("api/login.php", {
+            const response = await fetch(apiUrl("auth/login"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -100,8 +100,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
 
             // Lưu token
-            localStorage.setItem("token", result.token);
-
             alert(result.message);
 
             // Chuyển về trang chủ

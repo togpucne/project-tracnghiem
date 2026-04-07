@@ -202,3 +202,20 @@
         </aside>
 
         <main class="content-body">
+            <script>
+            function serverApiUrl(route, params = {}) {
+                const cleanRoute = String(route || '').replace(/^\/+|\/+$/g, '');
+                const url = new URL(`api/${cleanRoute}`, window.location.href);
+
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null && value !== "") {
+                        url.searchParams.set(key, value);
+                    }
+                });
+
+                return url.toString();
+            }
+            </script>
+
+
+

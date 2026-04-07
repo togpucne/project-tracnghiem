@@ -1,45 +1,50 @@
 <?php
-session_start();
-header("Content-Type: application/json");
 
+require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../core/Database.php";
 require_once __DIR__ . "/../core/Response.php";
 
-$data = json_decode(file_get_contents("php://input"), true);
+$data = Api::jsonInput();
 
-if (empty($data['email']) || empty($data['password'])) {
-    Response::json(["error" => "Thiếu thông tin"], 400);
+if (empty($data["email"]) || empty($data["password"])) {
+    Response::json(["error" => "Thieu thong tin"], 400);
 }
 
 $conn = Database::connect();
 
 $stmt = $conn->prepare("
-    SELECT id_nguoidung, ten, matkhau, ngaytao
+    SELECT id_nguoidung, ten, matkhau, ngaytao, vaitro, trangthai
     FROM nguoidung
     WHERE email = ?
 ");
 
-$stmt->bind_param("s", $data['email']);
+$stmt->bind_param("s", $data["email"]);
 $stmt->execute();
-$stmt->bind_result($id, $ten, $hashedPassword, $ngaytao);
+$stmt->bind_result($id, $ten, $hashedPassword, $ngaytao, $vaitro, $trangthai);
 
 if (!$stmt->fetch()) {
-    Response::json(["error" => "Sai tài khoản hoặc mật khẩu"], 401);
+    Response::json(["error" => "Sai tai khoan hoac mat khau"], 401);
 }
 
-if (!password_verify($data['password'], $hashedPassword)) {
-    Response::json(["error" => "Sai tài khoản hoặc mật khẩu"], 401);
+if (!password_verify($data["password"], $hashedPassword)) {
+    Response::json(["error" => "Sai tai khoan hoac mat khau"], 401);
 }
 
-/* LƯU SESSION */
-$_SESSION['user'] = [
+if ($trangthai !== "active") {
+    Response::json(["error" => "Tai khoan da bi khoa"], 403);
+}
+
+$_SESSION["user"] = [
     "id" => $id,
-    "name" => $ten
+    "name" => $ten,
+    "role" => $vaitro,
 ];
 
 Response::json([
-    "message" => "Đăng nhập thành công",
+    "success" => true,
+    "message" => "Dang nhap thanh cong",
     "ten" => $ten,
-    "email" => $data['email'],
-    "ngaytao" => $ngaytao
+    "email" => $data["email"],
+    "ngaytao" => $ngaytao,
+    "role" => $vaitro,
 ]);

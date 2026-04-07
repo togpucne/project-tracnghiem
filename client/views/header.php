@@ -145,6 +145,19 @@
         <script>
         const isLoggedIn = <?= isset($_SESSION['user']) ? 'true' : 'false' ?>;
 
+        function apiUrl(route, params = {}) {
+            const cleanRoute = String(route || '').replace(/^\/+|\/+$/g, '');
+            const url = new URL(`api/${cleanRoute}`, window.location.href);
+
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== "") {
+                    url.searchParams.set(key, value);
+                }
+            });
+
+            return url.toString();
+        }
+
         function logoutConfirm() {
             return confirm("Bạn chắc chắn muốn đăng xuất? Bài thi đang làm (nếu có) sẽ được bảo lưu.");
         }
@@ -172,3 +185,6 @@
         }
         </script>
         <div class="main">
+
+
+

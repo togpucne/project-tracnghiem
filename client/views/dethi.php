@@ -93,7 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const loadExams = async () => {
         examsContainer.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>';
         try {
-            const res = await fetch(`api/get_exams.php?mon=${currentMon}&term=${encodeURIComponent(currentTerm)}`);
+            const res = await fetch(apiUrl("exam/list", {
+                mon: currentMon,
+                term: currentTerm
+            }));
             const json = await res.json();
 
             if (json.success && json.data && json.data.length > 0) {
@@ -148,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const loadSubjects = async () => {
         try {
-            const res = await fetch('api/get_subjects.php');
+            const res = await fetch(apiUrl("exam/subjects"));
             const json = await res.json();
             if (json.success) {
                 const subjectsHtml = json.data.map(m => `

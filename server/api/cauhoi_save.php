@@ -1,0 +1,70 @@
+<?php
+
+require_once __DIR__ . "/../core/Api.php";
+require_once __DIR__ . "/../model/Database.php";
+require_once __DIR__ . "/../model/giangvien/cauhoi.model.php";
+
+$user = Api::requireLogin();
+$data = Api::jsonInput();
+
+$id_baithi = (int) ($data["id_baithi"] ?? 0);
+$id_cauhoi = (int) ($data["id_cauhoi"] ?? 0);
+$noidungcauhoi = trim($data["noidungcauhoi"] ?? "");
+$dokho = $data["dokho"] ?? "D?";
+$options = $data["options"] ?? [];
+$correctIndex = isset($data["correct_index"]) ? (int) $data["correct_index"] : -1;
+
+if ($id_baithi <= 0 || $noidungcauhoi === "" || count($options) < 2 || $correctIndex < 0) {
+    Api::json(["error" => "D? li?u câu h?i không h?p l?"], 400);
+}
+
+$conn = Database::connect();
+$role = $user["vaitro"] ?? "";
+$ownerId = (int) ($user["id_nguoidung"] ?? 0);
+$sql = "SELECT bt.id_baithi
+    FROM baithi bt
+    JOIN monhoc mh ON bt.id_monhoc = mh.id_monhoc
+    WHERE bt.id_baithi = ? AND (mh.id_nguoidung = ? OR ? = 'admin')";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("iis", $id_baithi, $ownerId, $role);
+$stmt->execute();
+if ($stmt->get_result()->num_rows === 0) {
+    $conn->close();
+    Api::json(["error" => "B?n không có quy?n s?a bài thi này"], 403);
+}
+$conn->close();
+
+$dapan_list = [];
+$temp_check = [];
+foreach ($options as $index => $noidung) {
+    $noidung = trim((string) $noidung);
+    if ($noidung === "") {
+        Api::json(["error" => "Ðáp án không du?c d? tr?ng"], 400);
+    }
+
+    $normalized = mb_strtolower($noidung, "UTF-8");
+    if (in_array($normalized, $temp_check, true)) {
+        Api::json(["error" => "Các dáp án không du?c trùng nhau"], 400);
+    }
+    $temp_check[] = $normalized;
+
+    $dapan_list[] = [
+        "noidung" => $noidung,
+        "dapandung" => $index === $correctIndex ? 1 : 0,
+    ];
+}
+
+$model = new CauHoiModel();
+$result = $id_cauhoi > 0
+    ? $model->update($id_cauhoi, $noidungcauhoi, $dokho, $dapan_list)
+    : $model->create($id_baithi, $noidungcauhoi, $dokho, $dapan_list);
+
+if (!($result["success"] ?? false)) {
+    Api::json(["error" => $result["message"] ?? "Không th? luu câu h?i"], 400);
+}
+
+Api::json([
+    "success" => true,
+    "message" => $id_cauhoi > 0 ? "C?p nh?t câu h?i thành công" : "Thêm câu h?i thành công",
+]);
+

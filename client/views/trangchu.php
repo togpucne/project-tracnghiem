@@ -47,7 +47,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById("latest-exams-container");
     try {
-        const res = await fetch("api/get_exams.php?limit=8");
+        const res = await fetch(apiUrl("exam/list", { limit: 8 }));
         const json = await res.json();
         
         if (json.success && json.data && json.data.length > 0) {
