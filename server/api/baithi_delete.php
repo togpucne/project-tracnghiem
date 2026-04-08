@@ -1,4 +1,4 @@
-<?php
+Ôªø<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/Database.php";
@@ -11,7 +11,7 @@ $id_baithi = (int) ($data["id_baithi"] ?? 0);
 $id_nguoidung = (int) ($user["id_nguoidung"] ?? 0);
 
 if ($id_baithi <= 0) {
-    Api::json(["error" => "Thi?u ID b‡i thi"], 400);
+    Api::json(["error" => "Thi·∫øu ID b√†i thi"], 400);
 }
 
 $conn = Database::connect();
@@ -25,18 +25,17 @@ $stmt->execute();
 
 if ($stmt->get_result()->num_rows === 0) {
     $conn->close();
-    Api::json(["error" => "B?n khÙng cÛ quy?n xÛa b‡i thi n‡y"], 403);
+    Api::json(["error" => "B·∫°n kh√¥ng c√≥ quy·ªÅn x√≥a b√†i thi n√†y"], 403);
 }
 
 $conn->close();
 $ok = delete_baithi($id_baithi);
 
 if (!$ok) {
-    Api::json(["error" => "KhÙng th? xÛa b‡i thi"], 500);
+    Api::json(["error" => "Kh√¥ng th·ªÉ x√≥a b√†i thi"], 500);
 }
 
 Api::json([
     "success" => true,
-    "message" => "XÛa b‡i thi th‡nh cÙng",
+    "message" => "X√≥a b√†i thi th√†nh c√¥ng",
 ]);
-

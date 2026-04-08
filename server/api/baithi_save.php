@@ -1,4 +1,4 @@
-<?php
+Ôªø<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/Database.php";
@@ -12,7 +12,7 @@ $id_baithi = (int) ($data["id_baithi"] ?? 0);
 $id_monhoc = (int) ($data["id_monhoc"] ?? 0);
 
 if ($id_monhoc <= 0 || trim($data["ten_baithi"] ?? "") === "") {
-    Api::json(["error" => "Thi?u thÙng tin b‡i thi"], 400);
+    Api::json(["error" => "Thi·∫øu th√¥ng tin b√†i thi"], 400);
 }
 
 $conn = Database::connect();
@@ -24,7 +24,7 @@ $stmtMon->execute();
 
 if ($stmtMon->get_result()->num_rows === 0) {
     $conn->close();
-    Api::json(["error" => "MÙn h?c khÙng h?p l? ho?c khÙng thu?c quy?n c?a b?n"], 403);
+    Api::json(["error" => "M√¥n h·ªçc kh√¥ng h·ª£p l·ªá ho·∫∑c kh√¥ng thu·ªôc quy·ªÅn c·ªßa b·∫°n"], 403);
 }
 
 if ($id_baithi > 0) {
@@ -38,7 +38,7 @@ if ($id_baithi > 0) {
 
     if ($stmtExam->get_result()->num_rows === 0) {
         $conn->close();
-        Api::json(["error" => "B?n khÙng cÛ quy?n s?a b‡i thi n‡y"], 403);
+        Api::json(["error" => "B·∫°n kh√¥ng c√≥ quy·ªÅn s·ª≠a b√†i thi n√†y"], 403);
     }
 }
 
@@ -50,7 +50,7 @@ $payload = [
     "thoigianlam" => (int) ($data["thoigianlam"] ?? 0),
     "thoigianbatdau" => $data["thoigianbatdau"] ?? "",
     "thoigianketthuc" => $data["thoigianketthuc"] ?? null,
-    "trangthai" => $data["trangthai"] ?? "–ang m?",
+    "trangthai" => $data["trangthai"] ?? "ƒêang m·ªü",
     "mieuta" => $data["mieuta"] ?? null,
 ];
 
@@ -58,13 +58,12 @@ $ok = save_baithi($payload);
 $conn->close();
 
 if (!$ok) {
-    $message = $_SESSION["error"] ?? "KhÙng th? luu b‡i thi";
+    $message = $_SESSION["error"] ?? "Kh√¥ng th·ªÉ l∆∞u b√†i thi";
     unset($_SESSION["error"]);
     Api::json(["error" => $message], 400);
 }
 
 Api::json([
     "success" => true,
-    "message" => $id_baithi > 0 ? "C?p nh?t b‡i thi th‡nh cÙng" : "ThÍm b‡i thi th‡nh cÙng",
+    "message" => $id_baithi > 0 ? "C·∫≠p nh·∫≠t b√†i thi th√†nh c√¥ng" : "Th√™m b√†i thi th√†nh c√¥ng",
 ]);
-

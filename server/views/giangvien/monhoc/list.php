@@ -1,9 +1,9 @@
-<div class="card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 2px solid #dee2e6;">
+﻿<div class="card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 2px solid #dee2e6;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-        <h2 style="margin: 0; color: #1a1a1a; font-weight: 700;">Qu?n l� M�n h?c</h2>
+        <h2 style="margin: 0; color: #1a1a1a; font-weight: 700;">Quản lý Môn học</h2>
         <button onclick="openFormModal()"
             style="background: #3498db; color: white; padding: 12px 25px; border-radius: 8px; font-weight: 600; border: 1px solid #2980b9; cursor: pointer;">
-            <i class="fas fa-plus"></i> Th�m m�n h?c m?i
+            <i class="fas fa-plus"></i> Thêm môn học mới
         </button>
     </div>
 
@@ -13,15 +13,15 @@
         <thead>
             <tr style="background: #f8f9fa; border-bottom: 2px solid #adb5bd; text-align: left;">
                 <th style="padding: 15px; width: 60px; text-align: center; border-right: 1px solid #ced4da;">STT</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da; width: 200px;">T�n m�n h?c</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da;">Mi�u t?</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da; text-align: center; width: 120px;">S? b�i thi</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da; width: 130px;">Ng�y th�m</th>
-                <th style="padding: 15px; width: 180px; text-align: center;">Thao t�c</th>
+                <th style="padding: 15px; border-right: 1px solid #ced4da; width: 200px;">Tên môn học</th>
+                <th style="padding: 15px; border-right: 1px solid #ced4da;">Miêu tả</th>
+                <th style="padding: 15px; border-right: 1px solid #ced4da; text-align: center; width: 120px;">Số bài thi</th>
+                <th style="padding: 15px; border-right: 1px solid #ced4da; width: 130px;">Ngày thêm</th>
+                <th style="padding: 15px; width: 180px; text-align: center;">Thao tác</th>
             </tr>
         </thead>
         <tbody id="monhocTableBody">
-            <tr><td colspan="6" style="padding: 40px; text-align: center; color: #999;">�ang t?i d? li?u...</td></tr>
+            <tr><td colspan="6" style="padding: 40px; text-align: center; color: #999;">Đang tải dữ liệu...</td></tr>
         </tbody>
     </table>
 </div>
@@ -29,28 +29,28 @@
 <div id="formModal"
     style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
     <div style="background: white; padding: 35px; border-radius: 15px; width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <h2 id="formTitle" style="margin-top: 0; color: #333; font-weight: 700; border-bottom: 2px solid #eee; padding-bottom: 15px;">Th�m m�n h?c m?i</h2>
+        <h2 id="formTitle" style="margin-top: 0; color: #333; font-weight: 700; border-bottom: 2px solid #eee; padding-bottom: 15px;">Thêm môn học mới</h2>
 
         <form id="monhocForm">
             <input type="hidden" name="id_monhoc" id="form_id_monhoc">
 
             <div style="margin: 25px 0;">
-                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #555;">T�n m�n h?c</label>
+                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #555;">Tên môn học</label>
                 <input type="text" name="tenmonhoc" id="form_tenmonhoc" required
-                    placeholder="VD: L?p tr�nh Web, Co s? d? li?u..."
+                    placeholder="VD: Lập trình Web, Cơ sở dữ liệu..."
                     style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
             </div>
             <div style="margin: 25px 0;">
-                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #555;">Mi�u t? m�n h?c (kh�ng b?t bu?c)</label>
-                <textarea name="mieuta" id="form_mieuta" placeholder="Nh?p ghi ch� ho?c mi�u t? m�n h?c..."
+                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #555;">Miêu tả môn học (không bắt buộc)</label>
+                <textarea name="mieuta" id="form_mieuta" placeholder="Nhập ghi chú hoặc miêu tả môn học..."
                     style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; min-height: 100px; font-family: inherit;"></textarea>
             </div>
 
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px;">
                 <button type="button" onclick="closeFormModal()"
-                    style="background: #f1f1f1; color: #333; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">H?y</button>
+                    style="background: #f1f1f1; color: #333; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">Hủy</button>
                 <button type="submit" id="formSubmitBtn"
-                    style="background: #3498db; color: white; padding: 10px 25px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">Luu l?i</button>
+                    style="background: #3498db; color: white; padding: 10px 25px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">Lưu lại</button>
             </div>
         </form>
     </div>
@@ -79,16 +79,16 @@ function showAlert(message, type = 'success') {
 
 async function loadMonHoc() {
     const tbody = document.getElementById('monhocTableBody');
-    tbody.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#999;">�ang t?i d? li?u...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#999;">Đang tải dữ liệu...</td></tr>';
 
     try {
         const res = await fetch(serverApiUrl('monhoc/list'));
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || 'Kh�ng th? t?i m�n h?c');
+        if (!res.ok || !json.success) throw new Error(json.error || 'Không thể tải môn học');
 
         monhocItems = json.data || [];
         if (!monhocItems.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#999;">Chua c� m�n h?c n�o.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#999;">Chưa có môn học nào.</td></tr>';
             return;
         }
 
@@ -96,13 +96,13 @@ async function loadMonHoc() {
             <tr style="border-bottom: 1px solid #ced4da;" onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
                 <td style="padding: 15px; text-align: center; border-right: 1px solid #ced4da; font-weight: 600;">${index + 1}</td>
                 <td style="padding: 15px; border-right: 1px solid #ced4da; font-weight: 500;">${escapeHtml(mon.tenmonhoc)}</td>
-                <td style="padding: 15px; border-right: 1px solid #ced4da; font-size: 0.9rem; color: #666;">${mon.mieuta ? `<div style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(mon.mieuta)}">${escapeHtml(mon.mieuta)}</div>` : '<span style="color:#ccc;font-style:italic;font-size:0.85rem;">(Chua c� mi�u t?)</span>'}</td>
-                <td style="padding: 15px; border-right: 1px solid #ced4da; text-align: center;"><span style="background: #e1f5fe; color: #0288d1; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #b3e5fc;">${mon.so_bai_thi} b�i thi</span></td>
+                <td style="padding: 15px; border-right: 1px solid #ced4da; font-size: 0.9rem; color: #666;">${mon.mieuta ? `<div style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(mon.mieuta)}">${escapeHtml(mon.mieuta)}</div>` : '<span style="color:#ccc;font-style:italic;font-size:0.85rem;">(Chưa có miêu tả)</span>'}</td>
+                <td style="padding: 15px; border-right: 1px solid #ced4da; text-align: center;"><span style="background: #e1f5fe; color: #0288d1; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #b3e5fc;">${mon.so_bai_thi} bài thi</span></td>
                 <td style="padding: 15px; border-right: 1px solid #ced4da; color: #555; font-size: 0.9rem;">${formatDate(mon.ngaythem)}</td>
                 <td style="padding: 15px; text-align: center;">
                     <div style="display:flex;justify-content:center;gap:8px;">
-                        <button onclick="openFormModal(${Number(mon.id_monhoc)}, ${JSON.stringify(mon.tenmonhoc)}, ${JSON.stringify(mon.mieuta || '')})" style="color:#856404;background:#fff3cd;border:1px solid #ffeeba;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">S?a</button>
-                        <button onclick="deleteMonHoc(${Number(mon.id_monhoc)}, ${JSON.stringify(mon.tenmonhoc)}, ${Number(mon.so_bai_thi)})" style="color:#721c24;background:#f8d7da;border:1px solid #f5c6cb;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">X�a</button>
+                        <button onclick="openFormModal(${Number(mon.id_monhoc)}, ${JSON.stringify(mon.tenmonhoc)}, ${JSON.stringify(mon.mieuta || '')})" style="color:#856404;background:#fff3cd;border:1px solid #ffeeba;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">Sửa</button>
+                        <button onclick="deleteMonHoc(${Number(mon.id_monhoc)}, ${JSON.stringify(mon.tenmonhoc)}, ${Number(mon.so_bai_thi)})" style="color:#721c24;background:#f8d7da;border:1px solid #f5c6cb;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">Xóa</button>
                     </div>
                 </td>
             </tr>
@@ -121,18 +121,18 @@ function openFormModal(id = null, name = '', description = '') {
     const submitBtn = document.getElementById('formSubmitBtn');
 
     if (id) {
-        title.innerText = 'Ch?nh s?a m�n h?c';
+        title.innerText = 'Chỉnh sửa môn học';
         inputId.value = id;
         inputName.value = name;
         inputDesc.value = description;
-        submitBtn.innerText = 'C?p nh?t ngay';
+        submitBtn.innerText = 'Cập nhật ngay';
         submitBtn.style.background = '#f39c12';
     } else {
-        title.innerText = 'Th�m m�n h?c m?i';
+        title.innerText = 'Thêm môn học mới';
         inputId.value = '';
         inputName.value = '';
         inputDesc.value = '';
-        submitBtn.innerText = 'Luu m�n h?c';
+        submitBtn.innerText = 'Lưu môn học';
         submitBtn.style.background = '#3498db';
     }
 
@@ -146,11 +146,11 @@ function closeFormModal() {
 
 async function deleteMonHoc(id, name, count) {
     if (count > 0) {
-        showAlert(`M�n ${name} dang c� ${count} b�i thi. H�y x�a b�i thi tru?c.`, 'error');
+        showAlert(`Môn ${name} đang có ${count} bài thi. Hãy xóa bài thi trước.`, 'error');
         return;
     }
 
-    if (!confirm(`X�a m�n ${name}? Thao t�c n�y kh�ng th? ho�n t�c.`)) return;
+    if (!confirm(`Xóa môn ${name}? Thao tác này không thể hoàn tác.`)) return;
 
     try {
         const res = await fetch(serverApiUrl('monhoc/delete'), {
@@ -159,7 +159,7 @@ async function deleteMonHoc(id, name, count) {
             body: JSON.stringify({ id_monhoc: id })
         });
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || 'X�a th?t b?i');
+        if (!res.ok || !json.success) throw new Error(json.error || 'Xóa thất bại');
         showAlert(json.message, 'success');
         loadMonHoc();
     } catch (error) {
@@ -183,7 +183,7 @@ document.getElementById('monhocForm').addEventListener('submit', async function(
             body: JSON.stringify(payload)
         });
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || 'Luu th?t b?i');
+        if (!res.ok || !json.success) throw new Error(json.error || 'Lưu thất bại');
         closeFormModal();
         showAlert(json.message, 'success');
         loadMonHoc();
@@ -200,7 +200,3 @@ window.addEventListener('click', (event) => {
 
 loadMonHoc();
 </script>
-
-
-
-

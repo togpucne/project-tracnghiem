@@ -1,4 +1,4 @@
-<?php
+Ôªø<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/giangvien/monhoc.model.php";
@@ -9,17 +9,16 @@ $data = Api::jsonInput();
 $id_monhoc = (int) ($data["id_monhoc"] ?? 0);
 
 if ($id_monhoc <= 0) {
-    Api::json(["error" => "Thi?u ID mÙn h?c"], 400);
+    Api::json(["error" => "Thi·∫øu ID m√¥n h·ªçc"], 400);
 }
 
 $ok = delete_monhoc($id_monhoc, (int) ($user["id_nguoidung"] ?? 0), $user["vaitro"] ?? "");
 
 if (!$ok) {
-    Api::json(["error" => "KhÙng th? xÛa mÙn h?c ho?c b?n khÙng cÛ quy?n"], 403);
+    Api::json(["error" => "Kh√¥ng th·ªÉ x√≥a m√¥n h·ªçc ho·∫∑c b·∫°n kh√¥ng c√≥ quy·ªÅn"], 403);
 }
 
 Api::json([
     "success" => true,
-    "message" => "XÛa mÙn h?c th‡nh cÙng",
+    "message" => "X√≥a m√¥n h·ªçc th√†nh c√¥ng",
 ]);
-

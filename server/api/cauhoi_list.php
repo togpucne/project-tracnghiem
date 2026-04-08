@@ -1,4 +1,4 @@
-<?php
+ï»¿<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/Database.php";
@@ -9,7 +9,7 @@ $user = Api::requireLogin();
 $id_baithi = isset($_GET["id_baithi"]) ? (int) $_GET["id_baithi"] : 0;
 
 if ($id_baithi <= 0) {
-    Api::json(["error" => "Thi?u ID bài thi"], 400);
+    Api::json(["error" => "Thiáº¿u ID bÃ i thi"], 400);
 }
 
 $conn = Database::connect();
@@ -25,7 +25,7 @@ $stmt->execute();
 
 if ($stmt->get_result()->num_rows === 0) {
     $conn->close();
-    Api::json(["error" => "B?n không có quy?n truy c?p bài thi này"], 403);
+    Api::json(["error" => "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p bÃ i thi nÃ y"], 403);
 }
 $conn->close();
 
@@ -33,7 +33,7 @@ $model = new CauHoiModel();
 $baithi = $model->getBaiThiInfo($id_baithi);
 
 if (!$baithi) {
-    Api::json(["error" => "Không tìm th?y bài thi"], 404);
+    Api::json(["error" => "KhÃ´ng tÃ¬m tháº¥y bÃ i thi"], 404);
 }
 
 Api::json([
@@ -41,4 +41,3 @@ Api::json([
     "baithi" => $baithi,
     "questions" => $model->getByBaiThi($id_baithi),
 ]);
-

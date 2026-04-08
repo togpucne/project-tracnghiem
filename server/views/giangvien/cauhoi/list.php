@@ -1,16 +1,16 @@
-<?php $id_baithi = (int) ($_GET['id_baithi'] ?? 0); ?>
+﻿<?php $id_baithi = (int) ($_GET['id_baithi'] ?? 0); ?>
 
 <div id="questionAlert"></div>
 
 <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <div>
-            <h2 style="margin: 0;" id="questionExamTitle">�ang t?i...</h2>
-            <p style="color: #666; margin-top: 5px;" id="questionMeta">�ang t?i th�ng tin b�i thi...</p>
+            <h2 style="margin: 0;" id="questionExamTitle">Đang tải...</h2>
+            <p style="color: #666; margin-top: 5px;" id="questionMeta">Đang tải thông tin bài thi...</p>
         </div>
         <div>
-            <a href="index.php?act=quanly-dethi" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; margin-right: 10px;">Quay l?i</a>
-            <button onclick="openAddModal()" style="background: #27ae60; color: white; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer;">Th�m c�u h?i</button>
+            <a href="index.php?act=quanly-dethi" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; margin-right: 10px;">Quay lại</a>
+            <button onclick="openAddModal()" style="background: #27ae60; color: white; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer;">Thêm câu hỏi</button>
         </div>
     </div>
 
@@ -19,14 +19,14 @@
             <thead style="background: #f8f9fa;">
                 <tr>
                     <th style="padding: 12px; text-align: center;">STT</th>
-                    <th style="padding: 12px; text-align: left;">N?i dung c�u h?i</th>
-                    <th style="padding: 12px; text-align: left;">��p �n</th>
-                    <th style="padding: 12px; text-align: center;">�? kh�</th>
-                    <th style="padding: 12px; text-align: center;">Thao t�c</th>
+                    <th style="padding: 12px; text-align: left;">Nội dung câu hỏi</th>
+                    <th style="padding: 12px; text-align: left;">Đáp án</th>
+                    <th style="padding: 12px; text-align: center;">Độ khó</th>
+                    <th style="padding: 12px; text-align: center;">Thao tác</th>
                 </tr>
             </thead>
             <tbody id="questionTableBody">
-                <tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">�ang t?i d? li?u...</td></tr>
+                <tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Đang tải dữ liệu...</td></tr>
             </tbody>
         </table>
     </div>
@@ -34,34 +34,34 @@
 
 <div id="questionModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
     <div style="background: white; padding: 30px; border-radius: 10px; width: 700px; max-height: 90%; overflow-y: auto;">
-        <h3 id="modalTitle" style="margin-top: 0;">Th�m C�u H?i M?i</h3>
+        <h3 id="modalTitle" style="margin-top: 0;">Thêm Câu Hỏi Mới</h3>
         <form id="questionForm">
             <input type="hidden" name="id_baithi" value="<?= $id_baithi ?>">
             <input type="hidden" name="id_cauhoi" id="edit_id_cauhoi">
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">N?i dung c�u h?i:</label>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nội dung câu hỏi:</label>
                 <textarea name="noidungcauhoi" id="noidungcauhoi" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;"></textarea>
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">�? kh�:</label>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Độ khó:</label>
                 <select name="dokho" id="dokho" style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-                    <option value="D?">D?</option>
-                    <option value="Trung b�nh">Trung b�nh</option>
-                    <option value="Kh�">Kh�</option>
+                    <option value="Dễ">Dễ</option>
+                    <option value="Trung bình">Trung bình</option>
+                    <option value="Khó">Khó</option>
                 </select>
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="font-weight: bold;">��p �n:</label>
+                <label style="font-weight: bold;">Đáp án:</label>
                 <div id="optionsContainer" style="margin-top: 10px;"></div>
-                <button type="button" onclick="addOption()" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 4px; margin-top: 10px; cursor: pointer;">+ Th�m d�p �n</button>
+                <button type="button" onclick="addOption()" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 4px; margin-top: 10px; cursor: pointer;">+ Thêm đáp án</button>
             </div>
 
             <div style="margin-top: 20px; text-align: right; border-top: 1px solid #eee; padding-top: 15px;">
-                <button type="button" onclick="closeModal()" style="padding: 8px 20px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: white;">H?y</button>
-                <button type="submit" style="background: #27ae60; color: white; border: none; padding: 8px 25px; border-radius: 4px; margin-left: 10px; cursor: pointer;">Luu c�u h?i</button>
+                <button type="button" onclick="closeModal()" style="padding: 8px 20px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: white;">Hủy</button>
+                <button type="submit" style="background: #27ae60; color: white; border: none; padding: 8px 25px; border-radius: 4px; margin-left: 10px; cursor: pointer;">Lưu câu hỏi</button>
             </div>
         </form>
     </div>
@@ -90,32 +90,32 @@ function addOption(content = '', isCorrect = false) {
     div.className = 'option-item';
     div.style.cssText = 'margin-bottom:10px;display:flex;gap:10px;align-items:center;';
     div.innerHTML = `
-        <input type="text" name="option[]" value="${escapeHtml(content)}" placeholder="Nh?p n?i dung d�p �n..." required style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;">
+        <input type="text" name="option[]" value="${escapeHtml(content)}" placeholder="Nhập nội dung đáp án..." required style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;">
         <label style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;">
-            <input type="radio" name="is_correct_radio" ${isCorrect ? 'checked' : ''}> ��ng
+            <input type="radio" name="is_correct_radio" ${isCorrect ? 'checked' : ''}> Đúng
         </label>
-        <button type="button" onclick="this.parentElement.remove()" style="background:#e74c3c;color:white;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">X�a</button>
+        <button type="button" onclick="this.parentElement.remove()" style="background:#e74c3c;color:white;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">Xóa</button>
     `;
     container.appendChild(div);
 }
 
 async function loadQuestions() {
     const tbody = document.getElementById('questionTableBody');
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">�ang t?i d? li?u...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Đang tải dữ liệu...</td></tr>';
 
     try {
         const res = await fetch(serverApiUrl('cauhoi/list', { id_baithi: examId }));
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || 'Kh�ng th? t?i c�u h?i');
+        if (!res.ok || !json.success) throw new Error(json.error || 'Không thể tải câu hỏi');
 
         examInfo = json.baithi;
         questionItems = json.questions || [];
         maxQuestions = Number(examInfo.tongcauhoi || 0);
-        document.getElementById('questionExamTitle').innerText = examInfo.ten_baithi || 'Qu?n l� c�u h?i';
-        document.getElementById('questionMeta').innerHTML = `M�n: ${escapeHtml(examInfo.tenmonhoc || '')} | S? c�u hi?n c�: <strong id="displayCount">${questionItems.length}</strong>/${maxQuestions}`;
+        document.getElementById('questionExamTitle').innerText = examInfo.ten_baithi || 'Quản lý câu hỏi';
+        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong id="displayCount">${questionItems.length}</strong>/${maxQuestions}`;
 
         if (!questionItems.length) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Chua c� c�u h?i n�o.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Chưa có câu hỏi nào.</td></tr>';
             return;
         }
 
@@ -126,8 +126,8 @@ async function loadQuestions() {
                 <td style="padding:12px;">${(ch.dapan || []).map(d => `<div style="margin:5px 0;display:flex;align-items:center;"><input type="checkbox" ${Number(d.dapandung) === 1 ? 'checked' : ''} disabled style="margin-right:8px;"><span style="${Number(d.dapandung) === 1 ? 'color:#27ae60;font-weight:bold;' : 'color:#666;'}">${escapeHtml(d.noidungdapan)}</span></div>`).join('')}</td>
                 <td style="padding:12px;text-align:center;">${escapeHtml(ch.dokho)}</td>
                 <td style="padding:12px;text-align:center;">
-                    <button onclick='openEditModal(${JSON.stringify(ch)})' style="background:#f39c12;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">S?a</button>
-                    <button onclick="deleteQuestion(${Number(ch.id_cauhoi)})" style="background:#e74c3c;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;margin-left:5px;">X�a</button>
+                    <button onclick='openEditModal(${JSON.stringify(ch)})' style="background:#f39c12;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">Sửa</button>
+                    <button onclick="deleteQuestion(${Number(ch.id_cauhoi)})" style="background:#e74c3c;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;margin-left:5px;">Xóa</button>
                 </td>
             </tr>
         `).join('');
@@ -138,10 +138,10 @@ async function loadQuestions() {
 
 function openAddModal() {
     if (questionItems.length >= maxQuestions) {
-        showQuestionAlert(`B�i thi d� d? ${questionItems.length}/${maxQuestions} c�u.`, 'error');
+        showQuestionAlert(`Bài thi đã đủ ${questionItems.length}/${maxQuestions} câu.`, 'error');
         return;
     }
-    document.getElementById('modalTitle').innerText = 'Th�m C�u H?i M?i';
+    document.getElementById('modalTitle').innerText = 'Thêm Câu Hỏi Mới';
     document.getElementById('questionForm').reset();
     document.getElementById('edit_id_cauhoi').value = '';
     document.getElementById('optionsContainer').innerHTML = '';
@@ -151,7 +151,7 @@ function openAddModal() {
 }
 
 function openEditModal(data) {
-    document.getElementById('modalTitle').innerText = 'S?a C�u H?i';
+    document.getElementById('modalTitle').innerText = 'Sửa Câu Hỏi';
     document.getElementById('noidungcauhoi').value = data.noidungcauhoi;
     document.getElementById('dokho').value = data.dokho;
     document.getElementById('edit_id_cauhoi').value = data.id_cauhoi;
@@ -165,7 +165,7 @@ function closeModal() {
 }
 
 async function deleteQuestion(id) {
-    if (!confirm('X�a c�u h?i n�y?')) return;
+    if (!confirm('Xóa câu hỏi này?')) return;
 
     try {
         const res = await fetch(serverApiUrl('cauhoi/delete'), {
@@ -174,7 +174,7 @@ async function deleteQuestion(id) {
             body: JSON.stringify({ id_cauhoi: id })
         });
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || 'X�a th?t b?i');
+        if (!res.ok || !json.success) throw new Error(json.error || 'Xóa thất bại');
         showQuestionAlert(json.message, 'success');
         loadQuestions();
     } catch (error) {
@@ -194,23 +194,23 @@ document.getElementById('questionForm').addEventListener('submit', async functio
     radios.forEach((radio, index) => { if (radio.checked) selectedIndex = index; });
 
     if (!id_cauhoi && questionItems.length >= maxQuestions) {
-        showQuestionAlert(`B�i thi d� d?t gi?i h?n t?i da ${maxQuestions} c�u.`, 'error');
+        showQuestionAlert(`Bài thi đã đạt giới hạn tối đa ${maxQuestions} câu.`, 'error');
         return;
     }
     if (noidung === '') {
-        showQuestionAlert('N?i dung c�u h?i kh�ng du?c d? tr?ng', 'error');
+        showQuestionAlert('Nội dung câu hỏi không được để trống', 'error');
         return;
     }
     if (optionsValues.length < 2 || optionsValues.some(opt => opt === '')) {
-        showQuestionAlert('C?n �t nh?t 2 d�p �n h?p l?', 'error');
+        showQuestionAlert('Cần ít nhất 2 đáp án hợp lệ', 'error');
         return;
     }
     if (new Set(optionsValues.map(v => v.toLowerCase())).size !== optionsValues.length) {
-        showQuestionAlert('C�c d�p �n c?a m?t c�u h?i kh�ng du?c tr�ng nhau', 'error');
+        showQuestionAlert('Các đáp án của một câu hỏi không được trùng nhau', 'error');
         return;
     }
     if (selectedIndex < 0) {
-        showQuestionAlert('Vui l�ng ch?n m?t d�p �n d�ng', 'error');
+        showQuestionAlert('Vui lòng chọn một đáp án đúng', 'error');
         return;
     }
 
@@ -230,7 +230,7 @@ document.getElementById('questionForm').addEventListener('submit', async functio
             body: JSON.stringify(payload)
         });
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || 'Luu th?t b?i');
+        if (!res.ok || !json.success) throw new Error(json.error || 'Lưu thất bại');
         closeModal();
         showQuestionAlert(json.message, 'success');
         loadQuestions();
@@ -247,7 +247,3 @@ window.addEventListener('click', (event) => {
 
 loadQuestions();
 </script>
-
-
-
-

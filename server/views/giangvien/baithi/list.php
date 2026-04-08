@@ -1,11 +1,11 @@
-<div id="baithiAlert"></div>
+Ôªø<div id="baithiAlert"></div>
 
 <div class="card" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
     <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-        <h2 style="margin: 0; color: #333;">Qu?n l˝ B‡i thi</h2>
+        <h2 style="margin: 0; color: #333;">Qu·∫£n l√Ω B√†i thi</h2>
         <button onclick="openExamModal()"
             style="background: #27ae60; color: white; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
-            <i class="fas fa-plus"></i> ThÍm b‡i thi
+            <i class="fas fa-plus"></i> Th√™m b√†i thi
         </button>
     </div>
 
@@ -13,65 +13,65 @@
         <thead>
             <tr style="background: #f4f4f4; border-bottom: 2px solid #ddd;">
                 <th style="padding: 12px; text-align: center; width: 50px;">STT</th>
-                <th style="padding: 12px; text-align: left;">TÍn b‡i thi</th>
-                <th style="padding: 12px; text-align: left;">MÙn h?c</th>
-                <th style="padding: 12px; text-align: center;">S? c‚u</th>
-                <th style="padding: 12px; text-align: center;">Th?i gian l‡m</th>
-                <th style="padding: 12px; text-align: center;">C‚u h?i</th>
-                <th style="padding: 12px; text-align: center;">Thao t·c</th>
+                <th style="padding: 12px; text-align: left;">T√™n b√†i thi</th>
+                <th style="padding: 12px; text-align: left;">M√¥n h·ªçc</th>
+                <th style="padding: 12px; text-align: center;">S·ªë c√¢u</th>
+                <th style="padding: 12px; text-align: center;">Th·ªùi gian l√†m</th>
+                <th style="padding: 12px; text-align: center;">C√¢u h·ªèi</th>
+                <th style="padding: 12px; text-align: center;">Thao t√°c</th>
             </tr>
         </thead>
         <tbody id="baithiTableBody">
-            <tr><td colspan="7" style="text-align:center;padding:20px;">–ang t?i d? li?u...</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:20px;">ƒêang t·∫£i d·ªØ li·ªáu...</td></tr>
         </tbody>
     </table>
 </div>
 
 <div id="examModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
     <div style="background: white; padding: 30px; border-radius: 10px; width: 650px;">
-        <h3 id="modalTitle" style="margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px;">ThÍm B‡i Thi</h3>
+        <h3 id="modalTitle" style="margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px;">Th√™m B√†i Thi</h3>
         <form id="examForm">
             <input type="hidden" name="id_baithi" id="m_id">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
                 <div style="grid-column: span 2;">
-                    <label style="font-weight: 600;">TÍn b‡i thi</label>
-                    <input type="text" name="ten_baithi" id="m_ten" required placeholder="Nh?p tÍn b‡i thi..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    <label style="font-weight: 600;">T√™n b√†i thi</label>
+                    <input type="text" name="ten_baithi" id="m_ten" required placeholder="Nh·∫≠p t√™n b√†i thi..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                 </div>
                 <div>
-                    <label style="font-weight: 600;">MÙn h?c</label>
+                    <label style="font-weight: 600;">M√¥n h·ªçc</label>
                     <select name="id_monhoc" id="m_mon" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"></select>
                 </div>
                 <div>
-                    <label style="font-weight: 600;">Tr?ng th·i</label>
+                    <label style="font-weight: 600;">Tr·∫°ng th√°i</label>
                     <select name="trangthai" id="m_status" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
-                        <option value="–ang m?">–ang m?</option>
-                        <option value="–Ûng">–Ûng</option>
+                        <option value="ƒêang m·ªü">ƒêang m·ªü</option>
+                        <option value="ƒê√≥ng">ƒê√≥ng</option>
                     </select>
                 </div>
                 <div>
-                    <label style="font-weight: 600;">S? c‚u (= 5)</label>
+                    <label style="font-weight: 600;">S·ªë c√¢u (‚â• 5)</label>
                     <input type="number" name="tongcauhoi" id="m_cau" required min="5" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                 </div>
                 <div>
-                    <label style="font-weight: 600;">Th?i gian (ph˙t)</label>
+                    <label style="font-weight: 600;">Th·ªùi gian (ph√∫t)</label>
                     <input type="number" name="thoigianlam" id="m_time" required min="2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                 </div>
                 <div>
-                    <label style="font-weight: 600;">B?t d?u</label>
+                    <label style="font-weight: 600;">B·∫Øt ƒë·∫ßu</label>
                     <input type="datetime-local" name="thoigianbatdau" id="m_start" required onchange="updateEndMin()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                 </div>
                 <div>
-                    <label style="font-weight: 600;">K?t th˙c</label>
+                    <label style="font-weight: 600;">K·∫øt th√∫c</label>
                     <input type="datetime-local" name="thoigianketthuc" id="m_end" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                 </div>
                 <div style="grid-column: span 2;">
-                    <label style="font-weight: 600;">MiÍu t?</label>
+                    <label style="font-weight: 600;">Mi√™u t·∫£</label>
                     <textarea name="mieuta" id="m_mieuta" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"></textarea>
                 </div>
             </div>
             <div style="margin-top: 30px; text-align: right;">
-                <button type="button" onclick="closeExamModal()" style="padding: 10px 25px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer;">H?y</button>
-                <button type="submit" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; margin-left: 10px;">Luu</button>
+                <button type="button" onclick="closeExamModal()" style="padding: 10px 25px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer;">H·ªßy</button>
+                <button type="submit" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; margin-left: 10px;">L∆∞u</button>
             </div>
         </form>
     </div>
@@ -110,19 +110,19 @@ function renderSubjectOptions(selectedId = '') {
 
 async function loadExamData() {
     const tbody = document.getElementById('baithiTableBody');
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">–ang t?i d? li?u...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">ƒêang t·∫£i d·ªØ li·ªáu...</td></tr>';
 
     try {
         const res = await fetch(serverApiUrl('baithi/list'));
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || 'KhÙng th? t?i b‡i thi');
+        if (!res.ok || !json.success) throw new Error(json.error || 'Kh√¥ng th·ªÉ t·∫£i b√†i thi');
 
         examItems = json.data || [];
         subjectItems = json.subjects || [];
         renderSubjectOptions();
 
         if (!examItems.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Chua cÛ d? li?u.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Ch∆∞a c√≥ d·ªØ li·ªáu.</td></tr>';
             return;
         }
 
@@ -131,12 +131,12 @@ async function loadExamData() {
                 <td style="padding:12px;text-align:center;color:#666;">${index + 1}</td>
                 <td style="padding:12px;"><strong>${escapeHtml(bt.ten_baithi)}</strong></td>
                 <td style="padding:12px;">${escapeHtml(bt.tenmonhoc)}</td>
-                <td style="padding:12px;text-align:center;"><span style="background:#e1f5fe;color:#0288d1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">${bt.tongcauhoi} c‚u</span></td>
-                <td style="padding:12px;text-align:center;"><i class="far fa-clock"></i> ${bt.thoigianlam} ph˙t</td>
-                <td style="padding:12px;text-align:center;"><a href="index.php?act=cauhoi-list&id_baithi=${bt.id_baithi}" style="background:#3498db;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;display:inline-block;"> <i class="fas fa-list"></i> Qu?n l˝ c‚u h?i</a></td>
+                <td style="padding:12px;text-align:center;"><span style="background:#e1f5fe;color:#0288d1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">${bt.tongcauhoi} c√¢u</span></td>
+                <td style="padding:12px;text-align:center;"><i class="far fa-clock"></i> ${bt.thoigianlam} ph√∫t</td>
+                <td style="padding:12px;text-align:center;"><a href="index.php?act=cauhoi-list&id_baithi=${bt.id_baithi}" style="background:#3498db;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;display:inline-block;"> <i class="fas fa-list"></i> Qu·∫£n l√Ω c√¢u h·ªèi</a></td>
                 <td style="padding:12px;text-align:center;">
-                    <button onclick='openExamModal(${JSON.stringify(bt)})' style="background:#f39c12;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-edit"></i> S?a</button>
-                    <button onclick="deleteExam(${Number(bt.id_baithi)})" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-trash"></i> XÛa</button>
+                    <button onclick='openExamModal(${JSON.stringify(bt)})' style="background:#f39c12;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-edit"></i> S·ª≠a</button>
+                    <button onclick="deleteExam(${Number(bt.id_baithi)})" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-trash"></i> X√≥a</button>
                 </td>
             </tr>
         `).join('');
@@ -148,14 +148,14 @@ async function loadExamData() {
 function validateExamForm() {
     const tenVal = document.getElementById('m_ten').value.trim();
     if (tenVal.length < 5) {
-        showExamAlert('TÍn b‡i thi ph?i Ìt nh?t 5 k˝ t?', 'error');
+        showExamAlert('T√™n b√†i thi ph·∫£i √≠t nh·∫•t 5 k√Ω t·ª±', 'error');
         return false;
     }
 
     const startStr = document.getElementById('m_start').value;
     const endStr = document.getElementById('m_end').value;
     if (endStr && new Date(endStr) <= new Date(startStr)) {
-        showExamAlert('Ng‡y k?t th˙c ph?i sau ng‡y b?t d?u', 'error');
+        showExamAlert('Ng√†y k·∫øt th√∫c ph·∫£i sau ng√†y b·∫Øt ƒë·∫ßu', 'error');
         return false;
     }
 
@@ -170,25 +170,25 @@ function openExamModal(data = null) {
     const currentStr = getLocalDateTimeString(now);
 
     if (data) {
-        document.getElementById('modalTitle').innerText = 'C?p nh?t B‡i Thi';
+        document.getElementById('modalTitle').innerText = 'C·∫≠p nh·∫≠t B√†i Thi';
         document.getElementById('m_id').value = data.id_baithi;
         document.getElementById('m_ten').value = data.ten_baithi;
         renderSubjectOptions(data.id_monhoc);
         document.getElementById('m_cau').value = data.tongcauhoi;
         document.getElementById('m_time').value = data.thoigianlam;
-        document.getElementById('m_status').value = data.trangthai || '–ang m?';
+        document.getElementById('m_status').value = data.trangthai || 'ƒêang m·ªü';
         document.getElementById('m_mieuta').value = data.mieuta || '';
         startInput.value = (data.thoigianbatdau || '').replace(' ', 'T').substring(0, 16);
         endInput.value = data.thoigianketthuc ? data.thoigianketthuc.replace(' ', 'T').substring(0, 16) : '';
         startInput.removeAttribute('min');
         endInput.min = startInput.value;
     } else {
-        document.getElementById('modalTitle').innerText = 'ThÍm B‡i Thi M?i';
+        document.getElementById('modalTitle').innerText = 'Th√™m B√†i Thi M·ªõi';
         document.getElementById('examForm').reset();
         document.getElementById('m_id').value = '';
         document.getElementById('m_cau').value = '10';
         document.getElementById('m_time').value = '15';
-        document.getElementById('m_status').value = '–ang m?';
+        document.getElementById('m_status').value = 'ƒêang m·ªü';
         renderSubjectOptions();
         startInput.value = currentStr;
         startInput.min = currentStr;
@@ -204,7 +204,7 @@ function closeExamModal() {
 }
 
 async function deleteExam(id) {
-    if (!confirm('XÛa b‡i thi n‡y?')) return;
+    if (!confirm('X√≥a b√†i thi n√†y?')) return;
 
     try {
         const res = await fetch(serverApiUrl('baithi/delete'), {
@@ -213,7 +213,7 @@ async function deleteExam(id) {
             body: JSON.stringify({ id_baithi: id })
         });
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || 'XÛa th?t b?i');
+        if (!res.ok || !json.success) throw new Error(json.error || 'X√≥a th·∫•t b·∫°i');
         showExamAlert(json.message, 'success');
         loadExamData();
     } catch (error) {
@@ -234,7 +234,7 @@ document.getElementById('examForm').addEventListener('submit', async function(e)
             body: JSON.stringify(payload)
         });
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || 'Luu th?t b?i');
+        if (!res.ok || !json.success) throw new Error(json.error || 'L∆∞u th·∫•t b·∫°i');
         closeExamModal();
         showExamAlert(json.message, 'success');
         loadExamData();
@@ -251,7 +251,3 @@ window.addEventListener('click', (event) => {
 
 loadExamData();
 </script>
-
-
-
-

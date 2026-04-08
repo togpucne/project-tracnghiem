@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/Database.php";
@@ -10,12 +10,12 @@ $data = Api::jsonInput();
 $id_baithi = (int) ($data["id_baithi"] ?? 0);
 $id_cauhoi = (int) ($data["id_cauhoi"] ?? 0);
 $noidungcauhoi = trim($data["noidungcauhoi"] ?? "");
-$dokho = $data["dokho"] ?? "D?";
+$dokho = $data["dokho"] ?? "Dễ";
 $options = $data["options"] ?? [];
 $correctIndex = isset($data["correct_index"]) ? (int) $data["correct_index"] : -1;
 
 if ($id_baithi <= 0 || $noidungcauhoi === "" || count($options) < 2 || $correctIndex < 0) {
-    Api::json(["error" => "D? li?u c�u h?i kh�ng h?p l?"], 400);
+    Api::json(["error" => "Dữ liệu câu hỏi không hợp lệ"], 400);
 }
 
 $conn = Database::connect();
@@ -30,7 +30,7 @@ $stmt->bind_param("iis", $id_baithi, $ownerId, $role);
 $stmt->execute();
 if ($stmt->get_result()->num_rows === 0) {
     $conn->close();
-    Api::json(["error" => "B?n kh�ng c� quy?n s?a b�i thi n�y"], 403);
+    Api::json(["error" => "Bạn không có quyền sửa bài thi này"], 403);
 }
 $conn->close();
 
@@ -39,12 +39,12 @@ $temp_check = [];
 foreach ($options as $index => $noidung) {
     $noidung = trim((string) $noidung);
     if ($noidung === "") {
-        Api::json(["error" => "��p �n kh�ng du?c d? tr?ng"], 400);
+        Api::json(["error" => "Đáp án không được để trống"], 400);
     }
 
     $normalized = mb_strtolower($noidung, "UTF-8");
     if (in_array($normalized, $temp_check, true)) {
-        Api::json(["error" => "C�c d�p �n kh�ng du?c tr�ng nhau"], 400);
+        Api::json(["error" => "Các đáp án không được trùng nhau"], 400);
     }
     $temp_check[] = $normalized;
 
@@ -60,11 +60,10 @@ $result = $id_cauhoi > 0
     : $model->create($id_baithi, $noidungcauhoi, $dokho, $dapan_list);
 
 if (!($result["success"] ?? false)) {
-    Api::json(["error" => $result["message"] ?? "Kh�ng th? luu c�u h?i"], 400);
+    Api::json(["error" => $result["message"] ?? "Không thể lưu câu hỏi"], 400);
 }
 
 Api::json([
     "success" => true,
-    "message" => $id_cauhoi > 0 ? "C?p nh?t c�u h?i th�nh c�ng" : "Th�m c�u h?i th�nh c�ng",
+    "message" => $id_cauhoi > 0 ? "Cập nhật câu hỏi thành công" : "Thêm câu hỏi thành công",
 ]);
-
