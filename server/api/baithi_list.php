@@ -7,9 +7,16 @@ $user = Api::requireLogin();
 
 $id_nguoidung = (int) ($user["id_nguoidung"] ?? 0);
 
+$data = getAll_baithi($id_nguoidung);
+
+foreach ($data as &$item) {
+    $item['is_locked'] = isBaiThiLocked($item['id_baithi']) ? 1 : 0;
+}
+unset($item);
+
 Api::json([
     "success" => true,
-    "data" => getAll_baithi($id_nguoidung),
+    "data" => $data,
     "subjects" => getAll_monhoc($id_nguoidung),
 ]);
 

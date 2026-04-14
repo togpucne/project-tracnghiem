@@ -107,6 +107,30 @@ function update_monhoc($id, $tenmonhoc, $mieuta = null)
     $conn->close();
     return $result;
 }
+
+function update_monhoc_by_owner($id_monhoc, $tenmonhoc, $mieuta, $id_nguoidung, $vaitro)
+{
+    $conn = Database::connect();
+    $tenmonhoc = trim($tenmonhoc);
+    $mieuta = !empty($mieuta) ? trim($mieuta) : null;
+
+    $sql = "UPDATE monhoc SET tenmonhoc = ?, mieuta = ? WHERE id_monhoc = ?";
+    if ($vaitro !== 'admin') {
+        $sql .= " AND id_nguoidung = ?";
+    }
+
+    $stmt = $conn->prepare($sql);
+    if ($vaitro !== 'admin') {
+        $stmt->bind_param("ssii", $tenmonhoc, $mieuta, $id_monhoc, $id_nguoidung);
+    } else {
+        $stmt->bind_param("ssi", $tenmonhoc, $mieuta, $id_monhoc);
+    }
+
+    $result = $stmt->execute();
+    $stmt->close();
+    $conn->close();
+    return $result;
+}
 /**
  * Xóa môn học theo ID
  */
@@ -128,9 +152,30 @@ function delete_monhoc($id_monhoc, $id_nguoidung, $vaitro)
     }
 
     $result = $stmt->execute();
+    if (!$result) {
+        $stmt->close();
+        $conn->close();
+        return false;
+    }
+
+    $deleted = $stmt->affected_rows > 0;
     $stmt->close();
     $conn->close();
-    return $result;
+    return $deleted;
+}
+
+function count_baithi_by_monhoc($id_monhoc)
+{
+    $conn = Database::connect();
+    $sql = "SELECT COUNT(*) AS total FROM baithi WHERE id_monhoc = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_monhoc);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    $conn->close();
+
+    return (int) ($result['total'] ?? 0);
 }
 
 /**

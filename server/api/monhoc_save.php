@@ -29,7 +29,13 @@ if ($id_monhoc > 0) {
         Api::json(["error" => "Bạn không có quyền sửa môn học này"], 403);
     }
 
-    $ok = update_monhoc($id_monhoc, $tenmonhoc, $mieuta);
+    $ok = update_monhoc_by_owner(
+        $id_monhoc,
+        $tenmonhoc,
+        $mieuta,
+        (int) ($user["id_nguoidung"] ?? 0),
+        $user["vaitro"] ?? ""
+    );
 } else {
     $ok = insert_monhoc($tenmonhoc, (int) ($user["id_nguoidung"] ?? 0), $mieuta);
 }

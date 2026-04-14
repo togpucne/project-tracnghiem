@@ -35,8 +35,11 @@ function baithi_delete()
 {
     $id = $_GET['id'] ?? 0;
     if ($id > 0) {
-        delete_baithi($id);
-        $_SESSION['success'] = "Xóa bài thi thành công!";
+        if (delete_baithi($id)) {
+            $_SESSION['success'] = "Xóa bài thi thành công!";
+        } else {
+            $_SESSION['error'] = $_SESSION['error'] ?? "Không thể xóa bài thi.";
+        }
     }
     header("Location: index.php?act=quanly-baithi");
     exit;

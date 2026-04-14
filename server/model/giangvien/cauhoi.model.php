@@ -1,5 +1,4 @@
 <?php
-// model/giangvien/cauhoi.model.php
 require_once __DIR__ . '/../Database.php';
 
 class CauHoiModel
@@ -11,34 +10,20 @@ class CauHoiModel
         $this->conn = Database::connect();
     }
 
-    /**
-     * KIỂM TRA BÀI THI ĐÃ CÓ THÍ SINH LÀM CHƯA
-     * Logic: Nếu bảng baithisinh có dữ liệu, bài thi bị "Khóa"
-     */
     public function isBaiThiLocked($id_baithi)
     {
-        // Chúng ta tìm xem có câu trả lời nào (traloithisinh) 
-        // mà câu hỏi đó (cauhoi) thuộc về bài thi này không
-        $sql = "SELECT COUNT(*) as total 
-                FROM traloithisinh tl 
-                JOIN cauhoi ch ON tl.id_cauhoi = ch.id_cauhoi 
-                WHERE ch.id_baithi = ?";
-
+        $sql = "SELECT COUNT(*) as total FROM lanthi WHERE id_baithi = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id_baithi);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
 
-        return $result['total'] > 0;
+        return (int) ($result['total'] ?? 0) > 0;
     }
 
-    /**
-     * Kiểm tra nội dung câu hỏi có bị trùng trong cùng một bài thi không
-     */
     public function checkDuplicate($id_baithi, $noidungcauhoi, $exclude_id = null)
     {
-        $sql = "SELECT COUNT(*) as count FROM cauhoi 
-                WHERE id_baithi = ? AND noidungcauhoi = ?";
+        $sql = "SELECT COUNT(*) as count FROM cauhoi WHERE id_baithi = ? AND noidungcauhoi = ?";
         $params = [$id_baithi, $noidungcauhoi];
         $types = "is";
 
@@ -52,20 +37,15 @@ class CauHoiModel
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
-        return $row['count'] > 0;
+        return (int) ($row['count'] ?? 0) > 0;
     }
 
-    /**
-     * THÊM CÂU HỎI MỚI - CHẶN NẾU ĐÃ CÓ THÍ SINH LÀM BÀI
-     */
     public function create($id_baithi, $noidungcauhoi, $dokho, $dapan_list)
     {
-        // 1. Chặn nếu bài thi đã bị khóa
         if ($this->isBaiThiLocked($id_baithi)) {
-            return ['success' => false, 'message' => '⚠️ Bài thi này đã có thí sinh làm, không được phép thêm câu hỏi mới!'];
+            return ['success' => false, 'message' => 'Bài thi này đã có thí sinh làm, không được phép thêm câu hỏi mới.'];
         }
 
-        // 2. Chặn nếu trùng nội dung
         if ($this->checkDuplicate($id_baithi, $noidungcauhoi)) {
             return ['success' => false, 'message' => 'Câu hỏi này đã tồn tại trong bài thi!'];
         }
@@ -94,20 +74,17 @@ class CauHoiModel
         }
     }
 
-    /**
-     * CẬP NHẬT CÂU HỎI - CHẶN NẾU ĐÃ CÓ THÍ SINH LÀM BÀI
-     */
     public function update($id_cauhoi, $noidungcauhoi, $dokho, $dapan_list)
     {
         $cauhoi = $this->getById($id_cauhoi);
-        if (!$cauhoi) return ['success' => false, 'message' => 'Không tìm thấy câu hỏi'];
-
-        // 1. Chặn nếu bài thi đã bị khóa
-        if ($this->isBaiThiLocked($cauhoi['id_baithi'])) {
-            return ['success' => false, 'message' => '⚠️ Không thể sửa! Đã có thí sinh làm bài, việc thay đổi sẽ làm sai lệch kết quả thi.'];
+        if (!$cauhoi) {
+            return ['success' => false, 'message' => 'Không tìm thấy câu hỏi'];
         }
 
-        // 2. Kiểm tra trùng (trừ chính nó)
+        if ($this->isBaiThiLocked($cauhoi['id_baithi'])) {
+            return ['success' => false, 'message' => 'Không thể sửa vì bài thi này đã có thí sinh làm.'];
+        }
+
         if ($this->checkDuplicate($cauhoi['id_baithi'], $noidungcauhoi, $id_cauhoi)) {
             return ['success' => false, 'message' => 'Câu hỏi này đã tồn tại trong bài thi!'];
         }
@@ -119,7 +96,6 @@ class CauHoiModel
             $stmt->bind_param("ssi", $noidungcauhoi, $dokho, $id_cauhoi);
             $stmt->execute();
 
-            // Làm mới đáp án
             $stmt_del = $this->conn->prepare("DELETE FROM dapan WHERE id_cauhoi = ?");
             $stmt_del->bind_param("i", $id_cauhoi);
             $stmt_del->execute();
@@ -138,17 +114,15 @@ class CauHoiModel
         }
     }
 
-    /**
-     * XÓA CÂU HỎI - CHẶN NẾU ĐÃ CÓ THÍ SINH LÀM BÀI
-     */
     public function delete($id_cauhoi)
     {
         $cauhoi = $this->getById($id_cauhoi);
-        if (!$cauhoi) return ['success' => false, 'message' => 'Không tìm thấy câu hỏi'];
+        if (!$cauhoi) {
+            return ['success' => false, 'message' => 'Không tìm thấy câu hỏi'];
+        }
 
-        // 1. Chặn nếu bài thi đã bị khóa
         if ($this->isBaiThiLocked($cauhoi['id_baithi'])) {
-            return ['success' => false, 'message' => '⚠️ Không thể xóa! Bài thi này đã có dữ liệu làm bài của thí sinh.'];
+            return ['success' => false, 'message' => 'Không thể xóa vì bài thi này đã có dữ liệu làm bài của thí sinh.'];
         }
 
         $this->conn->begin_transaction();
@@ -213,8 +187,9 @@ class CauHoiModel
 
     public function getBaiThiInfo($id_baithi)
     {
-        $sql = "SELECT bt.*, mh.tenmonhoc FROM baithi bt 
-                LEFT JOIN monhoc mh ON bt.id_monhoc = mh.id_monhoc 
+        $sql = "SELECT bt.*, mh.tenmonhoc
+                FROM baithi bt
+                LEFT JOIN monhoc mh ON bt.id_monhoc = mh.id_monhoc
                 WHERE bt.id_baithi = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id_baithi);

@@ -39,5 +39,6 @@ if (!$baithi) {
 Api::json([
     "success" => true,
     "baithi" => $baithi,
+    "is_locked" => $model->isBaiThiLocked($id_baithi) ? 1 : 0,
     "questions" => $model->getByBaiThi($id_baithi),
 ]);

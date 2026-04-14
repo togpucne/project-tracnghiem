@@ -72,6 +72,7 @@ const examId = <?= $id_baithi ?>;
 let questionItems = [];
 let examInfo = null;
 let maxQuestions = 0;
+let examLocked = false;
 
 function escapeHtml(str) {
     return String(str ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
@@ -109,10 +110,14 @@ async function loadQuestions() {
         if (!res.ok || !json.success) throw new Error(json.error || 'Không thể tải câu hỏi');
 
         examInfo = json.baithi;
+        examLocked = !!json.is_locked;
         questionItems = json.questions || [];
         maxQuestions = Number(examInfo.tongcauhoi || 0);
         document.getElementById('questionExamTitle').innerText = examInfo.ten_baithi || 'Quản lý câu hỏi';
-        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong id="displayCount">${questionItems.length}</strong>/${maxQuestions}`;
+        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong id="displayCount">${questionItems.length}</strong>/${maxQuestions}${examLocked ? ' | <span style="color:#c0392b;font-weight:700;">Đã có thí sinh làm bài</span>' : ''}`;
+        document.querySelector('button[onclick="openAddModal()"]').disabled = examLocked;
+        document.querySelector('button[onclick="openAddModal()"]').style.opacity = examLocked ? '0.6' : '1';
+        document.querySelector('button[onclick="openAddModal()"]').style.cursor = examLocked ? 'not-allowed' : 'pointer';
 
         if (!questionItems.length) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Chưa có câu hỏi nào.</td></tr>';
@@ -137,6 +142,10 @@ async function loadQuestions() {
 }
 
 function openAddModal() {
+    if (examLocked) {
+        showQuestionAlert('Bài thi đã có thí sinh làm, không được phép thêm câu hỏi.', 'error');
+        return;
+    }
     if (questionItems.length >= maxQuestions) {
         showQuestionAlert(`Bài thi đã đủ ${questionItems.length}/${maxQuestions} câu.`, 'error');
         return;
@@ -151,6 +160,10 @@ function openAddModal() {
 }
 
 function openEditModal(data) {
+    if (examLocked) {
+        showQuestionAlert('Bài thi đã có thí sinh làm, không được phép sửa câu hỏi.', 'error');
+        return;
+    }
     document.getElementById('modalTitle').innerText = 'Sửa Câu Hỏi';
     document.getElementById('noidungcauhoi').value = data.noidungcauhoi;
     document.getElementById('dokho').value = data.dokho;
@@ -165,6 +178,10 @@ function closeModal() {
 }
 
 async function deleteQuestion(id) {
+    if (examLocked) {
+        showQuestionAlert('Bài thi đã có thí sinh làm, không được phép xóa câu hỏi.', 'error');
+        return;
+    }
     if (!confirm('Xóa câu hỏi này?')) return;
 
     try {

@@ -1,70 +1,96 @@
 <?php
 require_once __DIR__ . '/../Database.php';
-function getAll_baithi($id_nguoidung) // Thêm tham số nhận ID người dùng
+
+function getAll_baithi($id_nguoidung)
 {
     $conn = Database::connect();
-    // Thêm JOIN với bảng monhoc và điều kiện WHERE để lọc theo id_nguoidung
-    $sql = "SELECT bt.*, mh.tenmonhoc 
-            FROM baithi bt 
-            JOIN monhoc mh ON bt.id_monhoc = mh.id_monhoc 
-            WHERE mh.id_nguoidung = ? 
+    $sql = "SELECT bt.*, mh.tenmonhoc
+            FROM baithi bt
+            JOIN monhoc mh ON bt.id_monhoc = mh.id_monhoc
+            WHERE mh.id_nguoidung = ?
             ORDER BY bt.id_baithi DESC";
-            
+
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id_nguoidung);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     $data = [];
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $data[] = $row;
-        }
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
     }
+
     $conn->close();
     return $data;
 }
 
-function getAll_monhoc($id_nguoidung) // Thêm tham số nhận ID người dùng
+function getAll_monhoc($id_nguoidung)
 {
     $conn = Database::connect();
-    // Chỉ lấy những môn do chính người này tạo
     $sql = "SELECT id_monhoc, tenmonhoc FROM monhoc WHERE id_nguoidung = ? ORDER BY tenmonhoc ASC";
-    
+
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id_nguoidung);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     $data = [];
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $data[] = $row;
-        }
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
     }
+
     $conn->close();
     return $data;
 }
+
+function isBaiThiLocked($id_baithi)
+{
+    $conn = Database::connect();
+    $sql = "SELECT COUNT(*) AS total FROM lanthi WHERE id_baithi = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_baithi);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    $conn->close();
+
+    return isset($result['total']) && (int) $result['total'] > 0;
+}
+
 function save_baithi($data)
 {
     $conn = Database::connect();
 
-    // 1. Chuẩn hóa tên: "  DEEP lea rning  " -> "Deep lea rning"
+    $id_baithi = !empty($data['id_baithi']) ? (int) $data['id_baithi'] : 0;
+    $id_monhoc = isset($data['id_monhoc']) ? (int) $data['id_monhoc'] : 0;
+    $xao_tron = !empty($data['xao_tron']) ? 1 : 0;
+    $only_xao_tron = !empty($data['only_xao_tron']);
+
+    if ($only_xao_tron && $id_baithi > 0) {
+        $sql = "UPDATE baithi SET xao_tron = ? WHERE id_baithi = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $xao_tron, $id_baithi);
+        $res = $stmt->execute();
+        $conn->close();
+        return $res;
+    }
+
     $ten = trim($data['ten_baithi']);
     $ten = mb_strtolower($ten, 'UTF-8');
     $ten = mb_ucfirst($ten);
 
-    $id_baithi = !empty($data['id_baithi']) ? (int)$data['id_baithi'] : 0;
-    $id_monhoc = (int)$data['id_monhoc'];
-    $tongcauhoi = abs((int)$data['tongcauhoi']);
-    $thoigianlam = abs((int)$data['thoigianlam']);
+    $tongcauhoi = abs((int) $data['tongcauhoi']);
+    $thoigianlam = abs((int) $data['thoigianlam']);
     $trangthai = !empty($data['trangthai']) ? $data['trangthai'] : "Đang mở";
     $mieuta = !empty($data['mieuta']) ? $data['mieuta'] : null;
 
-    // Xử lý ngày kết thúc: Nếu trống thì gán NULL cho Database
+    if ($id_baithi > 0 && isBaiThiLocked($id_baithi)) {
+        $_SESSION['error'] = "Bài thi này đã có thí sinh làm, chỉ có thể chỉnh xáo trộn.";
+        $conn->close();
+        return false;
+    }
+
     $tg_ketthuc = !empty($data['thoigianketthuc']) ? $data['thoigianketthuc'] : null;
 
-    // 2. Kiểm tra trùng tên (Xóa khoảng trắng khi so sánh)
     $sql_check = "SELECT id_baithi FROM baithi WHERE REPLACE(ten_baithi, ' ', '') = REPLACE(?, ' ', '') AND id_baithi != ?";
     $stmt_check = $conn->prepare($sql_check);
     $stmt_check->bind_param("si", $ten, $id_baithi);
@@ -75,46 +101,89 @@ function save_baithi($data)
         return false;
     }
 
-    // 3. Thực hiện lưu (Đã fix đủ cột mieuta)
-    if ($id_baithi == 0) {
-        $sql = "INSERT INTO baithi (id_monhoc, ten_baithi, mieuta, tongcauhoi, thoigianlam, thoigianbatdau, thoigianketthuc, trangthai, ngaytao) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+    if ($id_baithi === 0) {
+        $sql = "INSERT INTO baithi (id_monhoc, ten_baithi, mieuta, tongcauhoi, thoigianlam, thoigianbatdau, thoigianketthuc, trangthai, xao_tron, ngaytao)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("issiisss", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai);
+        $stmt->bind_param("issiisssi", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron);
     } else {
-        $sql = "UPDATE baithi SET id_monhoc=?, ten_baithi=?, mieuta=?, tongcauhoi=?, thoigianlam=?, thoigianbatdau=?, thoigianketthuc=?, trangthai=? 
-                WHERE id_baithi=?";
+        $sql = "UPDATE baithi
+                SET id_monhoc = ?, ten_baithi = ?, mieuta = ?, tongcauhoi = ?, thoigianlam = ?, thoigianbatdau = ?, thoigianketthuc = ?, trangthai = ?, xao_tron = ?
+                WHERE id_baithi = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("issiisssi", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $id_baithi);
+        $stmt->bind_param("issiisssii", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron, $id_baithi);
     }
 
     $res = $stmt->execute();
     if (!$res) {
         $_SESSION['error'] = "Lỗi Database: " . $conn->error;
     }
+
     $conn->close();
     return $res;
 }
 
-
-
 function delete_baithi($id)
 {
     $conn = Database::connect();
+    $conn->begin_transaction();
 
-    // 1. Tắt kiểm tra khóa ngoại để tránh lỗi Constraint
-    $conn->query("SET FOREIGN_KEY_CHECKS=0");
+    try {
+        $questionIds = [];
+        $stmtQuestions = $conn->prepare("SELECT id_cauhoi FROM cauhoi WHERE id_baithi = ?");
+        $stmtQuestions->bind_param("i", $id);
+        $stmtQuestions->execute();
+        $resultQuestions = $stmtQuestions->get_result();
+        while ($row = $resultQuestions->fetch_assoc()) {
+            $questionIds[] = (int) $row['id_cauhoi'];
+        }
 
-    // 2. Thực hiện xóa bài thi
-    $stmt = $conn->prepare("DELETE FROM baithi WHERE id_baithi = ?");
-    $stmt->bind_param("i", $id);
-    $res = $stmt->execute();
+        $lanthiIds = [];
+        $stmtLanthi = $conn->prepare("SELECT id_lanthi FROM lanthi WHERE id_baithi = ?");
+        $stmtLanthi->bind_param("i", $id);
+        $stmtLanthi->execute();
+        $resultLanthi = $stmtLanthi->get_result();
+        while ($row = $resultLanthi->fetch_assoc()) {
+            $lanthiIds[] = (int) $row['id_lanthi'];
+        }
 
-    // 3. Bật lại kiểm tra khóa ngoại để bảo vệ cấu trúc DB
-    $conn->query("SET FOREIGN_KEY_CHECKS=1");
+        foreach ($lanthiIds as $id_lanthi) {
+            $stmt = $conn->prepare("DELETE FROM traloithisinh WHERE id_lanthi = ?");
+            $stmt->bind_param("i", $id_lanthi);
+            $stmt->execute();
+        }
 
-    $conn->close();
-    return $res;
+        foreach ($questionIds as $id_cauhoi) {
+            $stmt = $conn->prepare("DELETE FROM traloithisinh WHERE id_cauhoi = ?");
+            $stmt->bind_param("i", $id_cauhoi);
+            $stmt->execute();
+
+            $stmt = $conn->prepare("DELETE FROM dapan WHERE id_cauhoi = ?");
+            $stmt->bind_param("i", $id_cauhoi);
+            $stmt->execute();
+        }
+
+        $stmtDeleteQuestions = $conn->prepare("DELETE FROM cauhoi WHERE id_baithi = ?");
+        $stmtDeleteQuestions->bind_param("i", $id);
+        $stmtDeleteQuestions->execute();
+
+        $stmtDeleteLanthi = $conn->prepare("DELETE FROM lanthi WHERE id_baithi = ?");
+        $stmtDeleteLanthi->bind_param("i", $id);
+        $stmtDeleteLanthi->execute();
+
+        $stmtDeleteExam = $conn->prepare("DELETE FROM baithi WHERE id_baithi = ?");
+        $stmtDeleteExam->bind_param("i", $id);
+        $res = $stmtDeleteExam->execute();
+
+        $conn->commit();
+        $conn->close();
+        return $res;
+    } catch (Throwable $e) {
+        $conn->rollback();
+        $_SESSION['error'] = "Lỗi Database: " . $e->getMessage();
+        $conn->close();
+        return false;
+    }
 }
 
 if (!function_exists('mb_ucfirst')) {

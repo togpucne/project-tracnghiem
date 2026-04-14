@@ -101,8 +101,18 @@ async function loadMonHoc() {
                 <td style="padding: 15px; border-right: 1px solid #ced4da; color: #555; font-size: 0.9rem;">${formatDate(mon.ngaythem)}</td>
                 <td style="padding: 15px; text-align: center;">
                     <div style="display:flex;justify-content:center;gap:8px;">
-                        <button onclick="openFormModal(${Number(mon.id_monhoc)}, ${JSON.stringify(mon.tenmonhoc)}, ${JSON.stringify(mon.mieuta || '')})" style="color:#856404;background:#fff3cd;border:1px solid #ffeeba;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">Sửa</button>
-                        <button onclick="deleteMonHoc(${Number(mon.id_monhoc)}, ${JSON.stringify(mon.tenmonhoc)}, ${Number(mon.so_bai_thi)})" style="color:#721c24;background:#f8d7da;border:1px solid #f5c6cb;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">Xóa</button>
+                        <button
+                            class="btn-edit-monhoc"
+                            data-id="${Number(mon.id_monhoc)}"
+                            data-name="${escapeHtml(mon.tenmonhoc)}"
+                            data-description="${escapeHtml(mon.mieuta || '')}"
+                            style="color:#856404;background:#fff3cd;border:1px solid #ffeeba;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">Sửa</button>
+                        <button
+                            class="btn-delete-monhoc"
+                            data-id="${Number(mon.id_monhoc)}"
+                            data-name="${escapeHtml(mon.tenmonhoc)}"
+                            data-count="${Number(mon.so_bai_thi)}"
+                            style="color:#721c24;background:#f8d7da;border:1px solid #f5c6cb;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">Xóa</button>
                     </div>
                 </td>
             </tr>
@@ -189,6 +199,27 @@ document.getElementById('monhocForm').addEventListener('submit', async function(
         loadMonHoc();
     } catch (error) {
         showAlert(error.message, 'error');
+    }
+});
+
+document.getElementById('monhocTableBody').addEventListener('click', function(event) {
+    const editButton = event.target.closest('.btn-edit-monhoc');
+    if (editButton) {
+        openFormModal(
+            Number(editButton.dataset.id || 0),
+            editButton.dataset.name || '',
+            editButton.dataset.description || ''
+        );
+        return;
+    }
+
+    const deleteButton = event.target.closest('.btn-delete-monhoc');
+    if (deleteButton) {
+        deleteMonHoc(
+            Number(deleteButton.dataset.id || 0),
+            deleteButton.dataset.name || '',
+            Number(deleteButton.dataset.count || 0)
+        );
     }
 });
 

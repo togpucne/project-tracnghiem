@@ -17,12 +17,13 @@
                 <th style="padding: 12px; text-align: left;">Môn học</th>
                 <th style="padding: 12px; text-align: center;">Số câu</th>
                 <th style="padding: 12px; text-align: center;">Thời gian làm</th>
+                <th style="padding: 12px; text-align: center;">Xáo trộn</th>
                 <th style="padding: 12px; text-align: center;">Câu hỏi</th>
                 <th style="padding: 12px; text-align: center;">Thao tác</th>
             </tr>
         </thead>
         <tbody id="baithiTableBody">
-            <tr><td colspan="7" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>
+            <tr><td colspan="8" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>
         </tbody>
     </table>
 </div>
@@ -48,6 +49,10 @@
                         <option value="Đóng">Đóng</option>
                     </select>
                 </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <input type="checkbox" name="xao_tron" id="m_shuffle" value="1">
+                    <label for="m_shuffle" style="font-weight:600; margin:0;">Xáo trộn câu hỏi và đáp án</label>
+                </div>
                 <div>
                     <label style="font-weight: 600;">Số câu (≥ 5)</label>
                     <input type="number" name="tongcauhoi" id="m_cau" required min="5" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
@@ -72,6 +77,25 @@
             <div style="margin-top: 30px; text-align: right;">
                 <button type="button" onclick="closeExamModal()" style="padding: 10px 25px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer;">Hủy</button>
                 <button type="submit" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; margin-left: 10px;">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="shuffleModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 10px; width: 400px;">
+        <h3 style="margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px;">Chỉnh Xáo Trộn Câu Hỏi</h3>
+        <form id="shuffleForm">
+            <input type="hidden" id="s_id" value="">
+            <div style="margin: 20px 0;">
+                <label style="font-weight: 600; display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="s_shuffle" style="width:20px;height:20px;cursor:pointer;">
+                    <span>Xáo trộn câu hỏi và đáp án</span>
+                </label>
+            </div>
+            <div style="margin-top: 30px; text-align: right;">
+                <button type="button" onclick="closeShuffleModal()" style="padding: 10px 25px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer;">Hủy</button>
+                <button type="submit" style="background: #3498db; color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; margin-left: 10px;">Lưu</button>
             </div>
         </form>
     </div>
@@ -108,9 +132,13 @@ function renderSubjectOptions(selectedId = '') {
     select.innerHTML = subjectItems.map(mh => `<option value="${mh.id_monhoc}" ${String(mh.id_monhoc) === String(selectedId) ? 'selected' : ''}>${escapeHtml(mh.tenmonhoc)}</option>`).join('');
 }
 
+function getExamById(id) {
+    return examItems.find(item => Number(item.id_baithi) === Number(id)) || null;
+}
+
 async function loadExamData() {
     const tbody = document.getElementById('baithiTableBody');
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
 
     try {
         const res = await fetch(serverApiUrl('baithi/list'));
@@ -122,26 +150,39 @@ async function loadExamData() {
         renderSubjectOptions();
 
         if (!examItems.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Chưa có dữ liệu.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;">Chưa có dữ liệu.</td></tr>';
             return;
         }
 
-        tbody.innerHTML = examItems.map((bt, index) => `
+        tbody.innerHTML = examItems.map((bt, index) => {
+            const isLocked = bt.is_locked ? true : false;
+            const questionHtml = isLocked
+                ? `<span style="background:#f8d7da;color:#721c24;padding:6px 12px;border-radius:4px;display:inline-block;font-size:12px;">Đã có người làm bài</span>`
+                : `<a href="index.php?act=cauhoi-list&id_baithi=${bt.id_baithi}" style="background:#3498db;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;display:inline-block;"> <i class="fas fa-list"></i> Quản lý câu hỏi</a>`;
+
+            const actionHtml = isLocked
+                ? `<span style="color:#7f8c8d;font-size:12px;display:block;margin-bottom:6px;">Đã có thí sinh làm bài</span>
+                   <button class="btn-shuffle-exam" data-id="${Number(bt.id_baithi)}" style="background:#3498db;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-shuffle"></i> Xáo trộn</button>
+                   <button class="btn-delete-exam" data-id="${Number(bt.id_baithi)}" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-left:5px;"> <i class="fas fa-trash"></i> Xóa</button>`
+                : `<button class="btn-edit-exam" data-id="${Number(bt.id_baithi)}" style="background:#f39c12;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-edit"></i> Sửa</button>
+                   <button class="btn-delete-exam" data-id="${Number(bt.id_baithi)}" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-left:5px;"> <i class="fas fa-trash"></i> Xóa</button>`;
+
+            return `
             <tr style="border-bottom:1px solid #eee;">
                 <td style="padding:12px;text-align:center;color:#666;">${index + 1}</td>
                 <td style="padding:12px;"><strong>${escapeHtml(bt.ten_baithi)}</strong></td>
                 <td style="padding:12px;">${escapeHtml(bt.tenmonhoc)}</td>
                 <td style="padding:12px;text-align:center;"><span style="background:#e1f5fe;color:#0288d1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">${bt.tongcauhoi} câu</span></td>
                 <td style="padding:12px;text-align:center;"><i class="far fa-clock"></i> ${bt.thoigianlam} phút</td>
-                <td style="padding:12px;text-align:center;"><a href="index.php?act=cauhoi-list&id_baithi=${bt.id_baithi}" style="background:#3498db;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;display:inline-block;"> <i class="fas fa-list"></i> Quản lý câu hỏi</a></td>
+                <td style="padding:12px;text-align:center;">${bt.xao_tron ? '<span style="color:#16a085;font-weight:700;">Có</span>' : '<span style="color:#7f8c8d;">Không</span>'}</td>
+                <td style="padding:12px;text-align:center;">${questionHtml}</td>
                 <td style="padding:12px;text-align:center;">
-                    <button onclick='openExamModal(${JSON.stringify(bt)})' style="background:#f39c12;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-edit"></i> Sửa</button>
-                    <button onclick="deleteExam(${Number(bt.id_baithi)})" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-trash"></i> Xóa</button>
+                    ${actionHtml}
                 </td>
             </tr>
-        `).join('');
+        `}).join('');
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#c0392b;">${escapeHtml(error.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:#c0392b;">${escapeHtml(error.message)}</td></tr>`;
     }
 }
 
@@ -177,6 +218,7 @@ function openExamModal(data = null) {
         document.getElementById('m_cau').value = data.tongcauhoi;
         document.getElementById('m_time').value = data.thoigianlam;
         document.getElementById('m_status').value = data.trangthai || 'Đang mở';
+        document.getElementById('m_shuffle').checked = !!data.xao_tron;
         document.getElementById('m_mieuta').value = data.mieuta || '';
         startInput.value = (data.thoigianbatdau || '').replace(' ', 'T').substring(0, 16);
         endInput.value = data.thoigianketthuc ? data.thoigianketthuc.replace(' ', 'T').substring(0, 16) : '';
@@ -189,6 +231,7 @@ function openExamModal(data = null) {
         document.getElementById('m_cau').value = '10';
         document.getElementById('m_time').value = '15';
         document.getElementById('m_status').value = 'Đang mở';
+        document.getElementById('m_shuffle').checked = false;
         renderSubjectOptions();
         startInput.value = currentStr;
         startInput.min = currentStr;
@@ -201,6 +244,42 @@ function openExamModal(data = null) {
 
 function closeExamModal() {
     document.getElementById('examModal').style.display = 'none';
+}
+
+function openShuffleModal(data) {
+    const modal = document.getElementById('shuffleModal');
+    document.getElementById('s_id').value = data.id_baithi;
+    document.getElementById('s_shuffle').checked = !!data.xao_tron;
+    modal.style.display = 'flex';
+}
+
+document.getElementById('baithiTableBody').addEventListener('click', function(event) {
+    const editButton = event.target.closest('.btn-edit-exam');
+    if (editButton) {
+        const exam = getExamById(editButton.dataset.id);
+        if (exam) {
+            openExamModal(exam);
+        }
+        return;
+    }
+
+    const shuffleButton = event.target.closest('.btn-shuffle-exam');
+    if (shuffleButton) {
+        const exam = getExamById(shuffleButton.dataset.id);
+        if (exam) {
+            openShuffleModal(exam);
+        }
+        return;
+    }
+
+    const deleteButton = event.target.closest('.btn-delete-exam');
+    if (deleteButton) {
+        deleteExam(Number(deleteButton.dataset.id || 0));
+    }
+});
+
+function closeShuffleModal() {
+    document.getElementById('shuffleModal').style.display = 'none';
 }
 
 async function deleteExam(id) {
@@ -246,6 +325,34 @@ document.getElementById('examForm').addEventListener('submit', async function(e)
 window.addEventListener('click', (event) => {
     if (event.target === document.getElementById('examModal')) {
         closeExamModal();
+    }
+    if (event.target === document.getElementById('shuffleModal')) {
+        closeShuffleModal();
+    }
+});
+
+document.getElementById('shuffleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('s_id').value;
+    const xao_tron = document.getElementById('s_shuffle').checked ? 1 : 0;
+
+    try {
+        const res = await fetch(serverApiUrl('baithi/save'), {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                id_baithi: id, 
+                xao_tron: xao_tron,
+                only_xao_tron: true
+            })
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'Lưu thất bại');
+        closeShuffleModal();
+        showExamAlert(json.message, 'success');
+        loadExamData();
+    } catch (error) {
+        showExamAlert(error.message, 'error');
     }
 });
 
