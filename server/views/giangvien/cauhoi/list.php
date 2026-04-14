@@ -1,16 +1,35 @@
-﻿<?php $id_baithi = (int) ($_GET['id_baithi'] ?? 0); ?>
+<?php $id_baithi = (int) ($_GET['id_baithi'] ?? 0); ?>
 
 <div id="questionAlert"></div>
 
-<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+<div class="container" style="max-width: 1240px; margin: 0 auto; padding: 20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <div>
-            <h2 style="margin: 0;" id="questionExamTitle">Đang tải...</h2>
-            <p style="color: #666; margin-top: 5px;" id="questionMeta">Đang tải thông tin bài thi...</p>
+            <h2 style="margin:0;" id="questionExamTitle">Đang tải...</h2>
+            <p style="color:#666; margin-top:6px;" id="questionMeta">Đang tải thông tin bài thi...</p>
         </div>
-        <div>
-            <a href="index.php?act=quanly-dethi" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; margin-right: 10px;">Quay lại</a>
-            <button id="addQuestionBtn" onclick="openAddModal()" style="background: #27ae60; color: white; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer;">Thêm câu hỏi</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+            <a href="index.php?act=quanly-dethi" style="background:#6c757d; color:white; padding:8px 15px; border-radius:6px; text-decoration:none;">Quay lại</a>
+            <button id="importWordBtn" onclick="openImportModal()" style="background:#0d6efd; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer;">Import Word</button>
+            <button id="addQuestionBtn" onclick="openAddModal()" style="background:#27ae60; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer;">Thêm tay</button>
+        </div>
+    </div>
+
+    <div id="examInfoCard" style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); margin-bottom:20px;">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;" id="examInfoGrid"></div>
+        <div style="margin-top:16px;">
+            <div style="font-weight:700; color:#333; margin-bottom:8px;">Miêu tả bài thi</div>
+            <div id="examDescription" style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:10px; padding:14px; color:#495057; min-height:52px;"></div>
+        </div>
+        <div style="margin-top:16px; background:#f8f9fa; border:1px dashed #ced4da; border-radius:10px; padding:14px;">
+            <div style="font-weight:700; color:#333; margin-bottom:8px;">Mẫu Word hỗ trợ import</div>
+            <pre style="margin:0; white-space:pre-wrap; font-family:Consolas, monospace; font-size:13px; color:#495057;">Câu 1: PHP là viết tắt của cụm từ nào?
+A. Personal Home Page
+B. Private Home Page
+C. Preprocessor Hypertext
+D. Programming HTML Page
+Đáp án: A
+Độ khó: Dễ</pre>
         </div>
     </div>
 
@@ -32,36 +51,63 @@
     </div>
 </div>
 
-<div id="questionModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
-    <div style="background: white; padding: 30px; border-radius: 10px; width: 700px; max-height: 90%; overflow-y: auto;">
-        <h3 id="modalTitle" style="margin-top: 0;">Thêm Câu Hỏi Mới</h3>
+<div id="questionModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px; border-radius:10px; width:700px; max-height:90%; overflow-y:auto;">
+        <h3 id="modalTitle" style="margin-top:0;">Thêm câu hỏi mới</h3>
         <form id="questionForm">
             <input type="hidden" name="id_baithi" value="<?= $id_baithi ?>">
             <input type="hidden" name="id_cauhoi" id="edit_id_cauhoi">
 
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nội dung câu hỏi:</label>
-                <textarea name="noidungcauhoi" id="noidungcauhoi" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;"></textarea>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-weight:bold;">Nội dung câu hỏi:</label>
+                <textarea name="noidungcauhoi" id="noidungcauhoi" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></textarea>
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Độ khó:</label>
-                <select name="dokho" id="dokho" style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-weight:bold;">Độ khó:</label>
+                <select name="dokho" id="dokho" style="width:200px; padding:8px; border:1px solid #ddd; border-radius:6px;">
                     <option value="Dễ">Dễ</option>
                     <option value="Trung bình">Trung bình</option>
                     <option value="Khó">Khó</option>
                 </select>
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label style="font-weight: bold;">Đáp án:</label>
-                <div id="optionsContainer" style="margin-top: 10px;"></div>
-                <button type="button" onclick="addOption()" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 4px; margin-top: 10px; cursor: pointer;">+ Thêm đáp án</button>
+            <div style="margin-bottom:15px;">
+                <label style="font-weight:bold;">Đáp án:</label>
+                <div id="optionsContainer" style="margin-top:10px;"></div>
+                <button type="button" onclick="addOption()" style="background:#3498db; color:white; border:none; padding:8px 15px; border-radius:4px; margin-top:10px; cursor:pointer;">+ Thêm đáp án</button>
             </div>
 
-            <div style="margin-top: 20px; text-align: right; border-top: 1px solid #eee; padding-top: 15px;">
-                <button type="button" onclick="closeModal()" style="padding: 8px 20px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: white;">Hủy</button>
-                <button type="submit" style="background: #27ae60; color: white; border: none; padding: 8px 25px; border-radius: 4px; margin-left: 10px; cursor: pointer;">Lưu câu hỏi</button>
+            <div style="margin-top:20px; text-align:right; border-top:1px solid #eee; padding-top:15px;">
+                <button type="button" onclick="closeModal()" style="padding:8px 20px; border:1px solid #ccc; border-radius:4px; cursor:pointer; background:white;">Hủy</button>
+                <button type="submit" style="background:#27ae60; color:white; border:none; padding:8px 25px; border-radius:4px; margin-left:10px; cursor:pointer;">Lưu câu hỏi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="importModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px; border-radius:10px; width:620px; max-width:92vw;">
+        <h3 style="margin-top:0;">Import Câu Hỏi Từ File Word</h3>
+        <form id="importWordForm">
+            <input type="hidden" name="id_baithi" value="<?= $id_baithi ?>">
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:8px; font-weight:700;">File Word `.docx`</label>
+                <input type="file" name="word_file" id="wordFileInput" accept=".docx" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; background:white;">
+            </div>
+            <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:10px; padding:14px; color:#495057; font-size:14px; margin-bottom:18px;">
+                Import hỗ trợ định dạng:
+                <br>`Câu 1: ...`
+                <br>`A. ...`
+                <br>`B. ...`
+                <br>`C. ...`
+                <br>`D. ...`
+                <br>`Đáp án: A`
+                <br>`Độ khó: Dễ`
+            </div>
+            <div style="text-align:right;">
+                <button type="button" onclick="closeImportModal()" style="padding:8px 20px; border:1px solid #ccc; border-radius:4px; cursor:pointer; background:white;">Hủy</button>
+                <button type="submit" style="background:#0d6efd; color:white; border:none; padding:8px 25px; border-radius:4px; margin-left:10px; cursor:pointer;">Import</button>
             </div>
         </form>
     </div>
@@ -73,6 +119,7 @@ let questionItems = [];
 let examInfo = null;
 let maxQuestions = 0;
 let examLocked = false;
+let importInFlight = false;
 
 function escapeHtml(str) {
     return String(str ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
@@ -83,6 +130,30 @@ function showQuestionAlert(message, type = 'success') {
     const bg = type === 'success' ? '#d4edda' : '#f8d7da';
     const color = type === 'success' ? '#155724' : '#721c24';
     box.innerHTML = `<div style="background:${bg};color:${color};padding:15px;border-radius:8px;margin-bottom:20px;">${escapeHtml(message)}</div>`;
+}
+
+function renderExamInfoCard() {
+    const items = [
+        ['id_baithi', examInfo.id_baithi],
+        ['id_monhoc', examInfo.id_monhoc],
+        ['ten_baithi', examInfo.ten_baithi || ''],
+        ['tongcauhoi', examInfo.tongcauhoi || 0],
+        ['thoigianlam', `${examInfo.thoigianlam || 0} phút`],
+        ['thoigianbatdau', examInfo.thoigianbatdau || '---'],
+        ['thoigianketthuc', examInfo.thoigianketthuc || '---'],
+        ['trangthai', examInfo.trangthai || '---'],
+        ['xao_tron', Number(examInfo.xao_tron) === 1 ? 'Câu hỏi và đáp án' : 'Không'],
+        ['ngaytao', examInfo.ngaytao || '---'],
+    ];
+
+    document.getElementById('examInfoGrid').innerHTML = items.map(([label, value]) => `
+        <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:10px; padding:14px;">
+            <div style="color:#6c757d; font-size:13px; margin-bottom:6px;">${escapeHtml(label)}</div>
+            <div style="font-weight:700; color:#333; word-break:break-word;">${escapeHtml(value)}</div>
+        </div>
+    `).join('');
+
+    document.getElementById('examDescription').innerHTML = examInfo.mieuta ? escapeHtml(examInfo.mieuta) : '<span style="color:#6c757d;">Chưa có miêu tả.</span>';
 }
 
 function addOption(content = '', isCorrect = false) {
@@ -124,11 +195,17 @@ async function loadQuestions() {
         examLocked = !!json.is_locked;
         questionItems = json.questions || [];
         maxQuestions = Number(examInfo.tongcauhoi || 0);
+
         document.getElementById('questionExamTitle').innerText = examInfo.ten_baithi || 'Quản lý câu hỏi';
-        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong id="displayCount">${questionItems.length}</strong>/${maxQuestions} | Xáo trộn: <strong>${Number(examInfo.xao_tron) === 1 ? 'Câu hỏi và đáp án' : 'Không'}</strong>${examLocked ? ' | <span style="color:#c0392b;font-weight:700;">Chế độ chỉ xem vì đã có thí sinh làm bài</span>' : ''}`;
+        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong>${questionItems.length}</strong>/${maxQuestions}${examLocked ? ' | <span style="color:#c0392b;font-weight:700;">Chế độ chỉ xem vì đã có thí sinh làm bài</span>' : ''}`;
         document.getElementById('addQuestionBtn').disabled = examLocked;
         document.getElementById('addQuestionBtn').style.opacity = examLocked ? '0.6' : '1';
         document.getElementById('addQuestionBtn').style.cursor = examLocked ? 'not-allowed' : 'pointer';
+        document.getElementById('importWordBtn').disabled = examLocked;
+        document.getElementById('importWordBtn').style.opacity = examLocked ? '0.6' : '1';
+        document.getElementById('importWordBtn').style.cursor = examLocked ? 'not-allowed' : 'pointer';
+
+        renderExamInfoCard();
 
         if (!questionItems.length) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Chưa có câu hỏi nào.</td></tr>';
@@ -138,12 +215,10 @@ async function loadQuestions() {
         tbody.innerHTML = questionItems.map((ch, index) => `
             <tr style="border-bottom:1px solid #eee;" class="question-row">
                 <td style="padding:12px;text-align:center;">${index + 1}</td>
-                <td style="padding:12px;"><strong class="q-content">${escapeHtml(ch.noidungcauhoi)}</strong></td>
+                <td style="padding:12px;"><strong>${escapeHtml(ch.noidungcauhoi)}</strong></td>
                 <td style="padding:12px;">${(ch.dapan || []).map(d => `<div style="margin:5px 0;display:flex;align-items:center;"><input type="checkbox" ${Number(d.dapandung) === 1 ? 'checked' : ''} disabled style="margin-right:8px;"><span style="${Number(d.dapandung) === 1 ? 'color:#27ae60;font-weight:bold;' : 'color:#666;'}">${escapeHtml(d.noidungdapan)}</span></div>`).join('')}</td>
                 <td style="padding:12px;text-align:center;">${escapeHtml(ch.dokho)}</td>
-                <td style="padding:12px;text-align:center;">
-                    ${renderQuestionActions(ch)}
-                </td>
+                <td style="padding:12px;text-align:center;">${renderQuestionActions(ch)}</td>
             </tr>
         `).join('');
     } catch (error) {
@@ -160,7 +235,8 @@ function openAddModal() {
         showQuestionAlert(`Bài thi đã đủ ${questionItems.length}/${maxQuestions} câu.`, 'error');
         return;
     }
-    document.getElementById('modalTitle').innerText = 'Thêm Câu Hỏi Mới';
+
+    document.getElementById('modalTitle').innerText = 'Thêm câu hỏi mới';
     document.getElementById('questionForm').reset();
     document.getElementById('edit_id_cauhoi').value = '';
     document.getElementById('optionsContainer').innerHTML = '';
@@ -174,7 +250,8 @@ function openEditModal(data) {
         showQuestionAlert('Bài thi đã có thí sinh làm, không được phép sửa câu hỏi.', 'error');
         return;
     }
-    document.getElementById('modalTitle').innerText = 'Sửa Câu Hỏi';
+
+    document.getElementById('modalTitle').innerText = 'Sửa câu hỏi';
     document.getElementById('noidungcauhoi').value = data.noidungcauhoi;
     document.getElementById('dokho').value = data.dokho;
     document.getElementById('edit_id_cauhoi').value = data.id_cauhoi;
@@ -185,6 +262,19 @@ function openEditModal(data) {
 
 function closeModal() {
     document.getElementById('questionModal').style.display = 'none';
+}
+
+function openImportModal() {
+    if (examLocked) {
+        showQuestionAlert('Bài thi đã có thí sinh làm, không được phép import câu hỏi.', 'error');
+        return;
+    }
+    document.getElementById('importWordForm').reset();
+    document.getElementById('importModal').style.display = 'flex';
+}
+
+function closeImportModal() {
+    document.getElementById('importModal').style.display = 'none';
 }
 
 async function deleteQuestion(id) {
@@ -282,9 +372,49 @@ document.getElementById('questionForm').addEventListener('submit', async functio
     }
 });
 
+document.getElementById('importWordForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (importInFlight) return;
+
+    const formData = new FormData(this);
+    const file = document.getElementById('wordFileInput').files[0];
+    if (!file) {
+        showQuestionAlert('Vui lòng chọn file Word .docx', 'error');
+        return;
+    }
+
+    const submitButton = this.querySelector('button[type="submit"]');
+    importInFlight = true;
+    submitButton.disabled = true;
+    submitButton.style.opacity = '0.7';
+    submitButton.textContent = 'Đang import...';
+
+    try {
+        const res = await fetch(serverApiUrl('cauhoi/import-word'), {
+            method: 'POST',
+            body: formData
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'Import thất bại');
+        closeImportModal();
+        showQuestionAlert(json.message, 'success');
+        loadQuestions();
+    } catch (error) {
+        showQuestionAlert(error.message, 'error');
+    } finally {
+        importInFlight = false;
+        submitButton.disabled = false;
+        submitButton.style.opacity = '1';
+        submitButton.textContent = 'Import';
+    }
+});
+
 window.addEventListener('click', (event) => {
     if (event.target === document.getElementById('questionModal')) {
         closeModal();
+    }
+    if (event.target === document.getElementById('importModal')) {
+        closeImportModal();
     }
 });
 

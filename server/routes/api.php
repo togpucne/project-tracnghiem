@@ -49,6 +49,12 @@ return [
         "auth" => true,
         "roles" => ["admin", "giangvien"],
     ],
+    "cauhoi/import-word" => [
+        "handler" => __DIR__ . "/../api/cauhoi_import_word.php",
+        "methods" => ["POST"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
     "cauhoi/delete" => [
         "handler" => __DIR__ . "/../api/cauhoi_delete.php",
         "methods" => ["DELETE"],

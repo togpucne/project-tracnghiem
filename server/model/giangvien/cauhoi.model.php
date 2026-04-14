@@ -143,6 +143,70 @@ class CauHoiModel
         }
     }
 
+    public function createMany($id_baithi, $questions)
+    {
+        if ($this->isBaiThiLocked($id_baithi)) {
+            return ['success' => false, 'message' => 'Bài thi này đã có thí sinh làm, không được phép import câu hỏi mới.'];
+        }
+
+        $existingQuestions = $this->getByBaiThi($id_baithi);
+        $existingCount = count($existingQuestions);
+        $examInfo = $this->getBaiThiInfo($id_baithi);
+        $maxQuestions = (int) ($examInfo['tongcauhoi'] ?? 0);
+        $incomingCount = count($questions);
+
+        if ($incomingCount === 0) {
+            return ['success' => false, 'message' => 'Không có câu hỏi hợp lệ để import.'];
+        }
+
+        if ($existingCount >= $maxQuestions) {
+            return ['success' => false, 'message' => "Bài thi đã đủ {$existingCount}/{$maxQuestions} câu. Không import thêm nữa."];
+        }
+
+        if ($existingCount + $incomingCount > $maxQuestions) {
+            return ['success' => false, 'message' => "Không thể import {$incomingCount} câu vì bài thi hiện có {$existingCount}/{$maxQuestions} câu. Hệ thống chưa thêm câu nào từ file này."];
+        }
+
+        $normalizedExisting = [];
+        foreach ($existingQuestions as $item) {
+            $normalizedExisting[] = mb_strtolower(trim((string) $item['noidungcauhoi']), 'UTF-8');
+        }
+
+        $normalizedIncoming = [];
+        foreach ($questions as $item) {
+            $normalized = mb_strtolower(trim((string) ($item['noidungcauhoi'] ?? '')), 'UTF-8');
+            if ($normalized === '') {
+                return ['success' => false, 'message' => 'Có câu hỏi rỗng trong file Word.'];
+            }
+            if (in_array($normalized, $normalizedExisting, true) || in_array($normalized, $normalizedIncoming, true)) {
+                return ['success' => false, 'message' => "Câu hỏi bị trùng: " . ($item['noidungcauhoi'] ?? '')];
+            }
+            $normalizedIncoming[] = $normalized;
+        }
+
+        $this->conn->begin_transaction();
+        try {
+            foreach ($questions as $question) {
+                $stmt = $this->conn->prepare("INSERT INTO cauhoi (id_baithi, noidungcauhoi, dokho, ngaytao) VALUES (?, ?, ?, NOW())");
+                $stmt->bind_param("iss", $id_baithi, $question['noidungcauhoi'], $question['dokho']);
+                $stmt->execute();
+                $id_cauhoi = $this->conn->insert_id;
+
+                foreach ($question['dapan_list'] as $dapan) {
+                    $stmtAnswer = $this->conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung) VALUES (?, ?, ?)");
+                    $stmtAnswer->bind_param("isi", $id_cauhoi, $dapan['noidung'], $dapan['dapandung']);
+                    $stmtAnswer->execute();
+                }
+            }
+
+            $this->conn->commit();
+            return ['success' => true, 'count' => count($questions)];
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            return ['success' => false, 'message' => 'Lỗi import: ' . $e->getMessage()];
+        }
+    }
+
     public function getByBaiThi($id_baithi)
     {
         $sql = "SELECT * FROM cauhoi WHERE id_baithi = ? ORDER BY id_cauhoi ASC";
