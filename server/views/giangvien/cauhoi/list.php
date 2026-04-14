@@ -10,7 +10,7 @@
         </div>
         <div>
             <a href="index.php?act=quanly-dethi" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; margin-right: 10px;">Quay lại</a>
-            <button onclick="openAddModal()" style="background: #27ae60; color: white; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer;">Thêm câu hỏi</button>
+            <button id="addQuestionBtn" onclick="openAddModal()" style="background: #27ae60; color: white; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer;">Thêm câu hỏi</button>
         </div>
     </div>
 
@@ -100,6 +100,17 @@ function addOption(content = '', isCorrect = false) {
     container.appendChild(div);
 }
 
+function renderQuestionActions(question) {
+    if (examLocked) {
+        return '<span style="color:#6c757d;font-size:13px;font-weight:600;">Chỉ xem</span>';
+    }
+
+    return `
+        <button class="btn-edit-question" data-id="${Number(question.id_cauhoi)}" style="background:#f39c12;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">Sửa</button>
+        <button class="btn-delete-question" data-id="${Number(question.id_cauhoi)}" style="background:#e74c3c;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;margin-left:5px;">Xóa</button>
+    `;
+}
+
 async function loadQuestions() {
     const tbody = document.getElementById('questionTableBody');
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Đang tải dữ liệu...</td></tr>';
@@ -114,10 +125,10 @@ async function loadQuestions() {
         questionItems = json.questions || [];
         maxQuestions = Number(examInfo.tongcauhoi || 0);
         document.getElementById('questionExamTitle').innerText = examInfo.ten_baithi || 'Quản lý câu hỏi';
-        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong id="displayCount">${questionItems.length}</strong>/${maxQuestions}${examLocked ? ' | <span style="color:#c0392b;font-weight:700;">Đã có thí sinh làm bài</span>' : ''}`;
-        document.querySelector('button[onclick="openAddModal()"]').disabled = examLocked;
-        document.querySelector('button[onclick="openAddModal()"]').style.opacity = examLocked ? '0.6' : '1';
-        document.querySelector('button[onclick="openAddModal()"]').style.cursor = examLocked ? 'not-allowed' : 'pointer';
+        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong id="displayCount">${questionItems.length}</strong>/${maxQuestions} | Xáo trộn: <strong>${Number(examInfo.xao_tron) === 1 ? 'Câu hỏi và đáp án' : 'Không'}</strong>${examLocked ? ' | <span style="color:#c0392b;font-weight:700;">Chế độ chỉ xem vì đã có thí sinh làm bài</span>' : ''}`;
+        document.getElementById('addQuestionBtn').disabled = examLocked;
+        document.getElementById('addQuestionBtn').style.opacity = examLocked ? '0.6' : '1';
+        document.getElementById('addQuestionBtn').style.cursor = examLocked ? 'not-allowed' : 'pointer';
 
         if (!questionItems.length) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Chưa có câu hỏi nào.</td></tr>';
@@ -131,8 +142,7 @@ async function loadQuestions() {
                 <td style="padding:12px;">${(ch.dapan || []).map(d => `<div style="margin:5px 0;display:flex;align-items:center;"><input type="checkbox" ${Number(d.dapandung) === 1 ? 'checked' : ''} disabled style="margin-right:8px;"><span style="${Number(d.dapandung) === 1 ? 'color:#27ae60;font-weight:bold;' : 'color:#666;'}">${escapeHtml(d.noidungdapan)}</span></div>`).join('')}</td>
                 <td style="padding:12px;text-align:center;">${escapeHtml(ch.dokho)}</td>
                 <td style="padding:12px;text-align:center;">
-                    <button onclick='openEditModal(${JSON.stringify(ch)})' style="background:#f39c12;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">Sửa</button>
-                    <button onclick="deleteQuestion(${Number(ch.id_cauhoi)})" style="background:#e74c3c;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;margin-left:5px;">Xóa</button>
+                    ${renderQuestionActions(ch)}
                 </td>
             </tr>
         `).join('');
@@ -198,6 +208,22 @@ async function deleteQuestion(id) {
         showQuestionAlert(error.message, 'error');
     }
 }
+
+document.getElementById('questionTableBody').addEventListener('click', function(event) {
+    const editButton = event.target.closest('.btn-edit-question');
+    if (editButton) {
+        const question = questionItems.find(item => Number(item.id_cauhoi) === Number(editButton.dataset.id));
+        if (question) {
+            openEditModal(question);
+        }
+        return;
+    }
+
+    const deleteButton = event.target.closest('.btn-delete-question');
+    if (deleteButton) {
+        deleteQuestion(Number(deleteButton.dataset.id || 0));
+    }
+});
 
 document.getElementById('questionForm').addEventListener('submit', async function(e) {
     e.preventDefault();

@@ -1,56 +1,97 @@
-﻿<div class="card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 2px solid #dee2e6;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-        <h2 style="margin: 0; color: #1a1a1a; font-weight: 700;">Quản lý Môn học</h2>
+<div id="monhocAlert"></div>
+
+<div class="card" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #333;">Quản lý Môn học</h2>
         <button onclick="openFormModal()"
-            style="background: #3498db; color: white; padding: 12px 25px; border-radius: 8px; font-weight: 600; border: 1px solid #2980b9; cursor: pointer;">
-            <i class="fas fa-plus"></i> Thêm môn học mới
+            style="background: #27ae60; color: white; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
+            <i class="fas fa-plus"></i> Thêm môn học
         </button>
     </div>
 
-    <div id="monhocAlert"></div>
+    <div style="margin-bottom: 16px; color: #6c757d; font-size: 14px;">
+        Bấm vào một dòng môn học để xem chi tiết số bài thi, số câu hỏi và số đáp án thuộc môn đó.
+    </div>
 
-    <table style="width: 100%; border-collapse: collapse; border: 1px solid #ced4da;">
+    <table style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="background: #f8f9fa; border-bottom: 2px solid #adb5bd; text-align: left;">
-                <th style="padding: 15px; width: 60px; text-align: center; border-right: 1px solid #ced4da;">STT</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da; width: 200px;">Tên môn học</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da;">Miêu tả</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da; text-align: center; width: 120px;">Số bài thi</th>
-                <th style="padding: 15px; border-right: 1px solid #ced4da; width: 130px;">Ngày thêm</th>
-                <th style="padding: 15px; width: 180px; text-align: center;">Thao tác</th>
+            <tr style="background: #f4f4f4; border-bottom: 2px solid #ddd;">
+                <th style="padding: 12px; text-align: center; width: 50px;">STT</th>
+                <th style="padding: 12px; text-align: left;">Tên môn học</th>
+                <th style="padding: 12px; text-align: center;">Số bài thi</th>
+                <th style="padding: 12px; text-align: center;">Số câu hỏi</th>
+                <th style="padding: 12px; text-align: center;">Thao tác</th>
             </tr>
         </thead>
         <tbody id="monhocTableBody">
-            <tr><td colspan="6" style="padding: 40px; text-align: center; color: #999;">Đang tải dữ liệu...</td></tr>
+            <tr><td colspan="5" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>
         </tbody>
     </table>
 </div>
 
+<div id="detailModal"
+    style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+    <div style="background:white; width:680px; max-width:92vw; border-radius:12px; padding:28px; box-shadow:0 10px 30px rgba(0,0,0,0.25);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:18px;">
+            <div>
+                <h3 id="detailTitle" style="margin:0 0 8px; color:#333;">Chi tiết môn học</h3>
+                <div id="detailDate" style="color:#6c757d; font-size:14px;"></div>
+            </div>
+            <button type="button" onclick="closeDetailModal()" style="background:#f1f3f5; border:none; padding:8px 12px; border-radius:6px; cursor:pointer;">Đóng</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:18px;">
+            <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:10px; padding:16px;">
+                <div style="color:#6c757d; font-size:13px; margin-bottom:6px;">Bài thi</div>
+                <div id="detailExamCount" style="font-size:24px; font-weight:700; color:#333;">0</div>
+            </div>
+            <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:10px; padding:16px;">
+                <div style="color:#6c757d; font-size:13px; margin-bottom:6px;">Câu hỏi</div>
+                <div id="detailQuestionCount" style="font-size:24px; font-weight:700; color:#333;">0</div>
+            </div>
+            <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:10px; padding:16px;">
+                <div style="color:#6c757d; font-size:13px; margin-bottom:6px;">Đáp án</div>
+                <div id="detailAnswerCount" style="font-size:24px; font-weight:700; color:#333;">0</div>
+            </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+            <div style="font-weight:700; color:#333; margin-bottom:8px;">Miêu tả</div>
+            <div id="detailDescription" style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:10px; padding:14px; color:#495057; min-height:52px;"></div>
+        </div>
+
+        <div>
+            <div style="font-weight:700; color:#333; margin-bottom:8px;">Danh sách bài thi thuộc môn</div>
+            <div id="detailExamList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+    </div>
+</div>
+
 <div id="formModal"
-    style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="background: white; padding: 35px; border-radius: 15px; width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <h2 id="formTitle" style="margin-top: 0; color: #333; font-weight: 700; border-bottom: 2px solid #eee; padding-bottom: 15px;">Thêm môn học mới</h2>
+    style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 10px; width: 520px; max-width:92vw;">
+        <h3 id="formTitle" style="margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px;">Thêm môn học</h3>
 
         <form id="monhocForm">
             <input type="hidden" name="id_monhoc" id="form_id_monhoc">
 
-            <div style="margin: 25px 0;">
-                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #555;">Tên môn học</label>
+            <div style="margin: 18px 0;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Tên môn học</label>
                 <input type="text" name="tenmonhoc" id="form_tenmonhoc" required
                     placeholder="VD: Lập trình Web, Cơ sở dữ liệu..."
-                    style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
+                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
             </div>
-            <div style="margin: 25px 0;">
-                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #555;">Miêu tả môn học (không bắt buộc)</label>
+            <div style="margin: 18px 0;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Miêu tả môn học</label>
                 <textarea name="mieuta" id="form_mieuta" placeholder="Nhập ghi chú hoặc miêu tả môn học..."
-                    style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; min-height: 100px; font-family: inherit;"></textarea>
+                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; box-sizing: border-box; min-height: 100px; font-family: inherit;"></textarea>
             </div>
 
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px;">
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px;">
                 <button type="button" onclick="closeFormModal()"
-                    style="background: #f1f1f1; color: #333; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">Hủy</button>
+                    style="background: #f1f3f5; color: #333; padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;">Hủy</button>
                 <button type="submit" id="formSubmitBtn"
-                    style="background: #3498db; color: white; padding: 10px 25px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">Lưu lại</button>
+                    style="background: #27ae60; color: white; padding: 10px 24px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;">Lưu</button>
             </div>
         </form>
     </div>
@@ -77,9 +118,39 @@ function showAlert(message, type = 'success') {
     box.innerHTML = `<div style="background:${bg};color:${color};padding:15px;border-radius:8px;margin-bottom:20px;border:1px solid ${border};">${escapeHtml(message)}</div>`;
 }
 
+function getSubjectById(id) {
+    return monhocItems.find(item => Number(item.id_monhoc) === Number(id)) || null;
+}
+
+function renderExamList(raw) {
+    if (!raw) {
+        return '<span style="color:#6c757d;">Chưa có bài thi nào.</span>';
+    }
+
+    return raw.split('||')
+        .filter(Boolean)
+        .map(name => `<span style="background:#eef2ff; color:#334155; padding:6px 10px; border-radius:999px; font-size:13px; border:1px solid #dbe4ff;">${escapeHtml(name)}</span>`)
+        .join('');
+}
+
+function openDetailModal(subject) {
+    document.getElementById('detailTitle').innerText = subject.tenmonhoc || 'Chi tiết môn học';
+    document.getElementById('detailDate').innerText = `Ngày tạo: ${formatDate(subject.ngaythem)}`;
+    document.getElementById('detailExamCount').innerText = Number(subject.so_bai_thi || 0);
+    document.getElementById('detailQuestionCount').innerText = Number(subject.so_cau_hoi || 0);
+    document.getElementById('detailAnswerCount').innerText = Number(subject.so_dap_an || 0);
+    document.getElementById('detailDescription').innerHTML = subject.mieuta ? escapeHtml(subject.mieuta) : '<span style="color:#6c757d;">Chưa có miêu tả.</span>';
+    document.getElementById('detailExamList').innerHTML = renderExamList(subject.ds_baithi || '');
+    document.getElementById('detailModal').style.display = 'flex';
+}
+
+function closeDetailModal() {
+    document.getElementById('detailModal').style.display = 'none';
+}
+
 async function loadMonHoc() {
     const tbody = document.getElementById('monhocTableBody');
-    tbody.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#999;">Đang tải dữ liệu...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
 
     try {
         const res = await fetch(serverApiUrl('monhoc/list'));
@@ -88,37 +159,24 @@ async function loadMonHoc() {
 
         monhocItems = json.data || [];
         if (!monhocItems.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#999;">Chưa có môn học nào.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#999;">Chưa có môn học nào.</td></tr>';
             return;
         }
 
         tbody.innerHTML = monhocItems.map((mon, index) => `
-            <tr style="border-bottom: 1px solid #ced4da;" onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
-                <td style="padding: 15px; text-align: center; border-right: 1px solid #ced4da; font-weight: 600;">${index + 1}</td>
-                <td style="padding: 15px; border-right: 1px solid #ced4da; font-weight: 500;">${escapeHtml(mon.tenmonhoc)}</td>
-                <td style="padding: 15px; border-right: 1px solid #ced4da; font-size: 0.9rem; color: #666;">${mon.mieuta ? `<div style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(mon.mieuta)}">${escapeHtml(mon.mieuta)}</div>` : '<span style="color:#ccc;font-style:italic;font-size:0.85rem;">(Chưa có miêu tả)</span>'}</td>
-                <td style="padding: 15px; border-right: 1px solid #ced4da; text-align: center;"><span style="background: #e1f5fe; color: #0288d1; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #b3e5fc;">${mon.so_bai_thi} bài thi</span></td>
-                <td style="padding: 15px; border-right: 1px solid #ced4da; color: #555; font-size: 0.9rem;">${formatDate(mon.ngaythem)}</td>
-                <td style="padding: 15px; text-align: center;">
-                    <div style="display:flex;justify-content:center;gap:8px;">
-                        <button
-                            class="btn-edit-monhoc"
-                            data-id="${Number(mon.id_monhoc)}"
-                            data-name="${escapeHtml(mon.tenmonhoc)}"
-                            data-description="${escapeHtml(mon.mieuta || '')}"
-                            style="color:#856404;background:#fff3cd;border:1px solid #ffeeba;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">Sửa</button>
-                        <button
-                            class="btn-delete-monhoc"
-                            data-id="${Number(mon.id_monhoc)}"
-                            data-name="${escapeHtml(mon.tenmonhoc)}"
-                            data-count="${Number(mon.so_bai_thi)}"
-                            style="color:#721c24;background:#f8d7da;border:1px solid #f5c6cb;padding:6px 14px;border-radius:4px;font-size:0.85rem;font-weight:600;cursor:pointer;">Xóa</button>
-                    </div>
+            <tr class="subject-row" data-id="${Number(mon.id_monhoc)}" style="border-bottom:1px solid #eee;cursor:pointer;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
+                <td style="padding:12px;text-align:center;color:#666;">${index + 1}</td>
+                <td style="padding:12px;"><strong>${escapeHtml(mon.tenmonhoc)}</strong></td>
+                <td style="padding:12px;text-align:center;"><span style="background:#e1f5fe;color:#0288d1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">${Number(mon.so_bai_thi || 0)} bài thi</span></td>
+                <td style="padding:12px;text-align:center;"><span style="background:#f1f3f5;color:#495057;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">${Number(mon.so_cau_hoi || 0)} câu hỏi</span></td>
+                <td style="padding:12px;text-align:center;">
+                    <button class="btn-edit-monhoc" data-id="${Number(mon.id_monhoc)}" style="background:#f39c12;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">Sửa</button>
+                    <button class="btn-delete-monhoc" data-id="${Number(mon.id_monhoc)}" data-name="${escapeHtml(mon.tenmonhoc)}" data-count="${Number(mon.so_bai_thi || 0)}" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-left:5px;">Xóa</button>
                 </td>
             </tr>
         `).join('');
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="6" style="padding:40px;text-align:center;color:#c0392b;">${escapeHtml(error.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:#c0392b;">${escapeHtml(error.message)}</td></tr>`;
     }
 }
 
@@ -131,19 +189,19 @@ function openFormModal(id = null, name = '', description = '') {
     const submitBtn = document.getElementById('formSubmitBtn');
 
     if (id) {
-        title.innerText = 'Chỉnh sửa môn học';
+        title.innerText = 'Cập nhật môn học';
         inputId.value = id;
         inputName.value = name;
         inputDesc.value = description;
-        submitBtn.innerText = 'Cập nhật ngay';
+        submitBtn.innerText = 'Cập nhật';
         submitBtn.style.background = '#f39c12';
     } else {
-        title.innerText = 'Thêm môn học mới';
+        title.innerText = 'Thêm môn học';
         inputId.value = '';
         inputName.value = '';
         inputDesc.value = '';
-        submitBtn.innerText = 'Lưu môn học';
-        submitBtn.style.background = '#3498db';
+        submitBtn.innerText = 'Lưu';
+        submitBtn.style.background = '#27ae60';
     }
 
     modal.style.display = 'flex';
@@ -203,13 +261,22 @@ document.getElementById('monhocForm').addEventListener('submit', async function(
 });
 
 document.getElementById('monhocTableBody').addEventListener('click', function(event) {
+    const actionButton = event.target.closest('button');
+    if (!actionButton) {
+        const row = event.target.closest('.subject-row');
+        if (row) {
+            const subject = getSubjectById(row.dataset.id);
+            if (subject) openDetailModal(subject);
+        }
+        return;
+    }
+
     const editButton = event.target.closest('.btn-edit-monhoc');
     if (editButton) {
-        openFormModal(
-            Number(editButton.dataset.id || 0),
-            editButton.dataset.name || '',
-            editButton.dataset.description || ''
-        );
+        const subject = getSubjectById(editButton.dataset.id);
+        if (subject) {
+            openFormModal(Number(subject.id_monhoc), subject.tenmonhoc || '', subject.mieuta || '');
+        }
         return;
     }
 
@@ -226,6 +293,9 @@ document.getElementById('monhocTableBody').addEventListener('click', function(ev
 window.addEventListener('click', (event) => {
     if (event.target === document.getElementById('formModal')) {
         closeFormModal();
+    }
+    if (event.target === document.getElementById('detailModal')) {
+        closeDetailModal();
     }
 });
 

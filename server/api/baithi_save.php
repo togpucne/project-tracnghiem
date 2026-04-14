@@ -40,6 +40,7 @@ try {
 }
 
 $conn = Database::connect();
+$shouldCloseConnection = true;
 
 if (!$only_xao_tron) {
     $sqlMon = "SELECT id_monhoc FROM monhoc WHERE id_monhoc = ? AND id_nguoidung = ?";
@@ -68,9 +69,8 @@ if ($id_baithi > 0) {
     }
 
     if (isBaiThiLocked($id_baithi)) {
-        $conn->close();
-
         if (!$only_xao_tron) {
+            $conn->close();
             Api::json(["error" => "Bài thi này đã có thí sinh làm, chỉ có thể chỉnh xáo trộn."], 400);
         }
 
@@ -98,7 +98,9 @@ if (!isset($payload)) {
 }
 
 $ok = save_baithi($payload);
-$conn->close();
+if ($shouldCloseConnection) {
+    $conn->close();
+}
 
 if (!$ok) {
     $message = $_SESSION["error"] ?? "Không thể lưu bài thi";

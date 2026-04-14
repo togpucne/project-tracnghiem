@@ -9,6 +9,10 @@
         </button>
     </div>
 
+    <div style="margin-bottom: 16px; color: #6c757d; font-size: 14px;">
+        Bấm vào một dòng bài thi để xem chi tiết câu hỏi, đáp án và đáp án đúng.
+    </div>
+
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="background: #f4f4f4; border-bottom: 2px solid #ddd;">
@@ -17,13 +21,12 @@
                 <th style="padding: 12px; text-align: left;">Môn học</th>
                 <th style="padding: 12px; text-align: center;">Số câu</th>
                 <th style="padding: 12px; text-align: center;">Thời gian làm</th>
-                <th style="padding: 12px; text-align: center;">Xáo trộn</th>
-                <th style="padding: 12px; text-align: center;">Câu hỏi</th>
+                <th style="padding: 12px; text-align: center;">Trạng thái</th>
                 <th style="padding: 12px; text-align: center;">Thao tác</th>
             </tr>
         </thead>
         <tbody id="baithiTableBody">
-            <tr><td colspan="8" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>
         </tbody>
     </table>
 </div>
@@ -138,7 +141,7 @@ function getExamById(id) {
 
 async function loadExamData() {
     const tbody = document.getElementById('baithiTableBody');
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
 
     try {
         const res = await fetch(serverApiUrl('baithi/list'));
@@ -150,39 +153,37 @@ async function loadExamData() {
         renderSubjectOptions();
 
         if (!examItems.length) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;">Chưa có dữ liệu.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Chưa có dữ liệu.</td></tr>';
             return;
         }
 
         tbody.innerHTML = examItems.map((bt, index) => {
             const isLocked = bt.is_locked ? true : false;
-            const questionHtml = isLocked
-                ? `<span style="background:#f8d7da;color:#721c24;padding:6px 12px;border-radius:4px;display:inline-block;font-size:12px;">Đã có người làm bài</span>`
-                : `<a href="index.php?act=cauhoi-list&id_baithi=${bt.id_baithi}" style="background:#3498db;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;display:inline-block;"> <i class="fas fa-list"></i> Quản lý câu hỏi</a>`;
+            const statusHtml = isLocked
+                ? `<span style="background:#f8d7da;color:#721c24;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;">Đã có người làm</span>`
+                : `<span style="background:#d4edda;color:#155724;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;">Chưa có người làm</span>`;
 
             const actionHtml = isLocked
-                ? `<span style="color:#7f8c8d;font-size:12px;display:block;margin-bottom:6px;">Đã có thí sinh làm bài</span>
-                   <button class="btn-shuffle-exam" data-id="${Number(bt.id_baithi)}" style="background:#3498db;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-shuffle"></i> Xáo trộn</button>
-                   <button class="btn-delete-exam" data-id="${Number(bt.id_baithi)}" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-left:5px;"> <i class="fas fa-trash"></i> Xóa</button>`
+                ? `<button class="btn-shuffle-exam" data-id="${Number(bt.id_baithi)}" style="background:#3498db;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">Xáo trộn</button>
+                   <button class="btn-delete-exam" data-id="${Number(bt.id_baithi)}" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-left:5px;">Xóa</button>`
                 : `<button class="btn-edit-exam" data-id="${Number(bt.id_baithi)}" style="background:#f39c12;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-edit"></i> Sửa</button>
                    <button class="btn-delete-exam" data-id="${Number(bt.id_baithi)}" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-left:5px;"> <i class="fas fa-trash"></i> Xóa</button>`;
 
             return `
-            <tr style="border-bottom:1px solid #eee;">
+            <tr class="exam-row" data-id="${Number(bt.id_baithi)}" style="border-bottom:1px solid #eee;cursor:pointer;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
                 <td style="padding:12px;text-align:center;color:#666;">${index + 1}</td>
                 <td style="padding:12px;"><strong>${escapeHtml(bt.ten_baithi)}</strong></td>
                 <td style="padding:12px;">${escapeHtml(bt.tenmonhoc)}</td>
                 <td style="padding:12px;text-align:center;"><span style="background:#e1f5fe;color:#0288d1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">${bt.tongcauhoi} câu</span></td>
                 <td style="padding:12px;text-align:center;"><i class="far fa-clock"></i> ${bt.thoigianlam} phút</td>
-                <td style="padding:12px;text-align:center;">${bt.xao_tron ? '<span style="color:#16a085;font-weight:700;">Có</span>' : '<span style="color:#7f8c8d;">Không</span>'}</td>
-                <td style="padding:12px;text-align:center;">${questionHtml}</td>
+                <td style="padding:12px;text-align:center;">${statusHtml}</td>
                 <td style="padding:12px;text-align:center;">
                     ${actionHtml}
                 </td>
             </tr>
         `}).join('');
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:#c0392b;">${escapeHtml(error.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#c0392b;">${escapeHtml(error.message)}</td></tr>`;
     }
 }
 
@@ -254,6 +255,15 @@ function openShuffleModal(data) {
 }
 
 document.getElementById('baithiTableBody').addEventListener('click', function(event) {
+    const actionButton = event.target.closest('button');
+    if (!actionButton) {
+        const row = event.target.closest('.exam-row');
+        if (row) {
+            window.location.href = `index.php?act=cauhoi-list&id_baithi=${Number(row.dataset.id || 0)}`;
+        }
+        return;
+    }
+
     const editButton = event.target.closest('.btn-edit-exam');
     if (editButton) {
         const exam = getExamById(editButton.dataset.id);
@@ -265,6 +275,7 @@ document.getElementById('baithiTableBody').addEventListener('click', function(ev
 
     const shuffleButton = event.target.closest('.btn-shuffle-exam');
     if (shuffleButton) {
+        event.stopPropagation();
         const exam = getExamById(shuffleButton.dataset.id);
         if (exam) {
             openShuffleModal(exam);
@@ -274,6 +285,7 @@ document.getElementById('baithiTableBody').addEventListener('click', function(ev
 
     const deleteButton = event.target.closest('.btn-delete-exam');
     if (deleteButton) {
+        event.stopPropagation();
         deleteExam(Number(deleteButton.dataset.id || 0));
     }
 });
