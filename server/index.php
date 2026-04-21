@@ -37,6 +37,17 @@ switch ($act) {
         $view = "views/admin/nguoidung/list.php";
         break;
 
+    case 'quanly-nganhang-cauhoi':
+        if (!in_array($user_role, ['admin', 'giangvien'], true)) {
+            $title = "404 - Không tìm thấy";
+            $view = "views/404.php";
+            break;
+        }
+
+        $title = "Ngân hàng câu hỏi";
+        $view = "views/giangvien/nganhang/list.php";
+        break;
+
     case 'profile':
         if (!in_array($user_role, ['admin', 'giangvien'], true)) {
             $title = "404 - Không tìm thấy";

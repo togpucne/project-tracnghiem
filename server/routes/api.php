@@ -1,6 +1,42 @@
 <?php
 
 return [
+    "nganhang/list" => [
+        "handler" => __DIR__ . "/../api/nganhang_list.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
+    "nganhang/save" => [
+        "handler" => __DIR__ . "/../api/nganhang_save.php",
+        "methods" => ["POST", "PATCH"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
+    "nganhang/delete" => [
+        "handler" => __DIR__ . "/../api/nganhang_delete.php",
+        "methods" => ["DELETE"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
+    "nganhang/cauhoi/list" => [
+        "handler" => __DIR__ . "/../api/nganhang_cauhoi_list.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
+    "nganhang/cauhoi/save" => [
+        "handler" => __DIR__ . "/../api/nganhang_cauhoi_save.php",
+        "methods" => ["POST", "PATCH"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
+    "nganhang/cauhoi/delete" => [
+        "handler" => __DIR__ . "/../api/nganhang_cauhoi_delete.php",
+        "methods" => ["DELETE"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
     "profile/detail" => [
         "handler" => __DIR__ . "/../api/profile_detail.php",
         "methods" => ["GET"],
