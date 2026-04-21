@@ -13,7 +13,6 @@
         box-sizing: border-box;
     }
 
-    /* Ép body chiếm toàn bộ không gian màn hình, nền đen sâu */
     body {
         font-family: 'Segoe UI', sans-serif;
         background-color: #000;
@@ -24,7 +23,6 @@
         justify-content: center;
         color: white;
         overflow: hidden;
-        /* Chống cuộn */
     }
 
     .error-wrapper {
@@ -32,24 +30,17 @@
         padding: 40px;
         width: 100%;
         max-width: 1000px;
-        /* Tăng giới hạn chiều rộng */
     }
 
-    /* Hiệu ứng số 404 siêu to, có bóng mờ màu xanh accent */
     .big-text {
         font-size: 15rem;
-        /* Số cực kỳ khổng lồ */
         font-weight: 900;
         color: #3498db;
-        /* Màu xanh accent đồng bộ với theme */
         text-shadow: 0 0 50px rgba(52, 152, 219, 0.4);
-        /* Đổ bóng màu xanh */
         margin-bottom: 20px;
         animation: pulse 3s ease-in-out infinite;
-        /* Thêm hiệu ứng nhịp tim nhẹ */
     }
 
-    /* Hiệu ứng số 404 nhấp nháy nhẹ */
     @keyframes pulse {
         0% {
             transform: scale(1);
@@ -69,7 +60,6 @@
 
     h1 {
         font-size: 4rem;
-        /* Tiêu đề to */
         margin-bottom: 20px;
         color: #fff;
         text-transform: uppercase;
@@ -78,10 +68,8 @@
 
     p {
         color: #bdc3c7;
-        /* Màu xám nhạt cho mô tả */
         margin-bottom: 50px;
         font-size: 1.6rem;
-        /* Chữ mô tả cũng to lên */
         font-weight: 300;
     }
 
@@ -106,7 +94,6 @@
         box-shadow: 0 15px 30px rgba(52, 152, 219, 0.4);
     }
 
-    /* Mobile tối ưu */
     @media (max-width: 768px) {
         .big-text {
             font-size: 8rem;
@@ -126,12 +113,10 @@
 <body>
     <div class="error-wrapper">
         <div class="big-text">404</div>
-
-        <h1>ÚI! TRANG KHÔNG TỒN TẠI</h1>
-        <p>Có vẻ như bạn đã đi lạc vào vùng không gian không xác định của PT QUIZ.</p>
-
+        <h1>Úi! Trang không tồn tại</h1>
+        <p>Có vẻ như bạn đã đi lạc vào vùng không gian chưa xác định của PT QUIZ.</p>
         <a href="index.php?act=dashboard" class="btn-home">
-            <i class="fas fa-home"></i> QUAY VỀ TRANG CHỦ NGAY
+            <i class="fas fa-home"></i> Quay về trang chủ ngay
         </a>
     </div>
 </body>

@@ -1,0 +1,61 @@
+<?php
+
+require_once __DIR__ . "/../core/Api.php";
+require_once __DIR__ . "/../model/Database.php";
+
+$user = Api::requireRole(["admin", "giangvien"]);
+$data = Api::jsonInput();
+
+$id_nguoidung = (int) ($user["id_nguoidung"] ?? 0);
+$ten = trim((string) ($data["ten"] ?? ""));
+$email = trim((string) ($data["email"] ?? ""));
+$matkhau = (string) ($data["matkhau"] ?? "");
+
+if ($ten === "") {
+    Api::json(["error" => "Họ tên không được để trống"], 400);
+}
+
+if ($email === "" || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    Api::json(["error" => "Email không hợp lệ"], 400);
+}
+
+if ($matkhau !== "" && strlen($matkhau) < 6) {
+    Api::json(["error" => "Mật khẩu mới phải có ít nhất 6 ký tự"], 400);
+}
+
+$conn = Database::connect();
+
+$stmtCheck = $conn->prepare("SELECT id_nguoidung FROM nguoidung WHERE email = ? AND id_nguoidung != ? LIMIT 1");
+$stmtCheck->bind_param("si", $email, $id_nguoidung);
+$stmtCheck->execute();
+$exists = $stmtCheck->get_result()->fetch_assoc();
+$stmtCheck->close();
+
+if ($exists) {
+    $conn->close();
+    Api::json(["error" => "Email này đã được sử dụng bởi tài khoản khác"], 409);
+}
+
+if ($matkhau !== "") {
+    $hashedPassword = password_hash($matkhau, PASSWORD_DEFAULT);
+    $stmt = $conn->prepare("UPDATE nguoidung SET ten = ?, email = ?, matkhau = ? WHERE id_nguoidung = ?");
+    $stmt->bind_param("sssi", $ten, $email, $hashedPassword, $id_nguoidung);
+} else {
+    $stmt = $conn->prepare("UPDATE nguoidung SET ten = ?, email = ? WHERE id_nguoidung = ?");
+    $stmt->bind_param("ssi", $ten, $email, $id_nguoidung);
+}
+
+$ok = $stmt->execute();
+$stmt->close();
+$conn->close();
+
+if (!$ok) {
+    Api::json(["error" => "Không thể cập nhật thông tin cá nhân"], 500);
+}
+
+$_SESSION["user"]["ten"] = $ten;
+
+Api::json([
+    "success" => true,
+    "message" => "Cập nhật thông tin thành công",
+]);

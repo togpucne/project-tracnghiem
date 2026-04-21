@@ -1,6 +1,18 @@
 <?php
 
 return [
+    "profile/detail" => [
+        "handler" => __DIR__ . "/../api/profile_detail.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
+    "profile/update" => [
+        "handler" => __DIR__ . "/../api/profile_update.php",
+        "methods" => ["PATCH"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
     "nguoidung/list" => [
         "handler" => __DIR__ . "/../api/nguoidung_list.php",
         "methods" => ["GET"],

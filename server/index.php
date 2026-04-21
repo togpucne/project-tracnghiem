@@ -28,13 +28,24 @@ switch ($act) {
 
     case 'quanly-nguoidung':
         if ($user_role !== 'admin') {
-            $title = "404 - KhÃ´ng tÃ¬m tháº¥y";
+            $title = "404 - Không tìm thấy";
             $view = "views/404.php";
             break;
         }
 
-        $title = "Quáº£n lÃ½ ngÆ°á»i dÃ¹ng";
+        $title = "Quản lý người dùng";
         $view = "views/admin/nguoidung/list.php";
+        break;
+
+    case 'profile':
+        if (!in_array($user_role, ['admin', 'giangvien'], true)) {
+            $title = "404 - Không tìm thấy";
+            $view = "views/404.php";
+            break;
+        }
+
+        $title = "Thông tin cá nhân";
+        $view = "views/profile.php";
         break;
 
     case 'dangxuat':
@@ -42,7 +53,7 @@ switch ($act) {
         header("Location: index.php?act=login");
         exit;
 
-        // --- QUẢN LÝ MÔN HỌC ---
+    // --- QUẢN LÝ MÔN HỌC ---
     case 'quanly-monhoc':
         require_once "controller/giangvien/monhoc.controller.php";
         $result = monhoc_index();
@@ -61,7 +72,7 @@ switch ($act) {
         monhoc_delete();
         exit;
 
-        // --- QUẢN LÝ BÀI THI ---
+    // --- QUẢN LÝ BÀI THI ---
     case 'quanly-baithi':
     case 'quanly-dethi':
         require_once "controller/giangvien/baithi.controller.php";
@@ -85,32 +96,23 @@ switch ($act) {
         baithi_delete();
         exit;
 
-        // ========== QUẢN LÝ CÂU HỎI (THÊM MỚI) ==========
-
-        // Danh sách câu hỏi của bài thi
+    // ========== QUẢN LÝ CÂU HỎI ==========
     case 'cauhoi-list':
         require_once "controller/giangvien/cauhoi.controller.php";
-        // Controller sẽ tự xử lý và gán $view, $title, $list_cauhoi, $baithi
         break;
 
-    // Thêm câu hỏi
     case 'cauhoi-add':
         require_once "controller/giangvien/cauhoi.controller.php";
-        // Controller xử lý thêm và redirect
         break;
 
-    // Sửa câu hỏi
     case 'cauhoi-edit':
         require_once "controller/giangvien/cauhoi.controller.php";
         break;
 
-    // Xóa câu hỏi
     case 'cauhoi-delete':
         $_GET['act'] = 'cauhoi-delete';
         require_once "controller/giangvien/cauhoi.controller.php";
         break;
-
-    // ========== KẾT THÚC QUẢN LÝ CÂU HỎI ==========
 
     default:
         $title = "404 - Không tìm thấy";

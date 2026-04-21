@@ -24,7 +24,6 @@
             background: var(--light-bg);
         }
 
-        /* --- Top Nav --- */
         .top-nav {
             height: 65px;
             background: #ffffff;
@@ -66,6 +65,35 @@
             background: #f1f5f9;
         }
 
+        .nav-user-trigger {
+            border: none;
+            background: transparent;
+        }
+
+        .nav-user-trigger::after {
+            display: none;
+        }
+
+        .admin-dropdown {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 8px;
+            min-width: 250px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+        }
+
+        .admin-dropdown .dropdown-item {
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .admin-dropdown .dropdown-item:hover {
+            background: #eff6ff;
+            color: var(--primary-blue);
+        }
+
         .user-info-text {
             text-align: right;
             line-height: 1.2;
@@ -85,7 +113,6 @@
             font-weight: 600;
         }
 
-        /* --- Sidebar --- */
         .main-wrapper {
             display: flex;
             margin-top: 65px;
@@ -137,7 +164,6 @@
             letter-spacing: 1px;
         }
 
-        /* --- Content Area --- */
         .content-body {
             flex: 1;
             padding: 30px;
@@ -153,17 +179,33 @@
             <i class="fas fa-graduation-cap"></i> PT QUIZ ADMIN
         </a>
 
-        <a href="index.php?act=profile" class="nav-user-area">
-            <div class="user-info-text d-none d-md-block">
-                <span class="user-name">Chào, <?php echo $_SESSION['user']['ten']; ?></span>
-                <span
-                    class="user-role"><?php echo ($_SESSION['user']['vaitro'] == 'admin') ? 'Quản trị viên' : 'Giảng viên'; ?></span>
-            </div>
-            <div
-                style="width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
-                <i class="fas fa-user-tie" style="color: #475569; font-size: 20px;"></i>
-            </div>
-        </a>
+        <div class="dropdown">
+            <button class="nav-user-area nav-user-trigger dropdown-toggle" type="button" id="serverUserDropdown"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="user-info-text d-none d-md-block">
+                    <span class="user-name">Chào, <?php echo $_SESSION['user']['ten']; ?></span>
+                    <span class="user-role"><?php echo ($_SESSION['user']['vaitro'] == 'admin') ? 'Quản trị viên' : 'Giảng viên'; ?></span>
+                </div>
+                <div style="width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
+                    <i class="fas fa-user-tie" style="color: #475569; font-size: 20px;"></i>
+                </div>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end admin-dropdown" aria-labelledby="serverUserDropdown">
+                <li>
+                    <a class="dropdown-item" href="index.php?act=profile">
+                        <i class="fas fa-id-card me-2"></i>Thông tin cá nhân
+                    </a>
+                </li>
+
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item text-danger" href="index.php?act=dangxuat">
+                        <i class="fas fa-right-from-bracket me-2"></i>Đăng xuất
+                    </a>
+                </li>
+            </ul>
+        </div>
     </nav>
 
     <div class="main-wrapper">
@@ -193,11 +235,6 @@
                     </li>
                 <?php endif; ?>
 
-                <div class="menu-label">Cá nhân</div>
-                <li>
-                    <a href="index.php?act=dangxuat" style="color: #dc3545;"><i class="fas fa-power-off"></i> Đăng
-                        xuất</a>
-                </li>
             </ul>
         </aside>
 
@@ -216,6 +253,3 @@
                 return url.toString();
             }
             </script>
-
-
-
