@@ -1,6 +1,24 @@
 <?php
 
 return [
+    "nguoidung/list" => [
+        "handler" => __DIR__ . "/../api/nguoidung_list.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
+    "nguoidung/save" => [
+        "handler" => __DIR__ . "/../api/nguoidung_save.php",
+        "methods" => ["POST", "PATCH"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
+    "nguoidung/delete" => [
+        "handler" => __DIR__ . "/../api/nguoidung_delete.php",
+        "methods" => ["DELETE"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
     "monhoc/list" => [
         "handler" => __DIR__ . "/../api/monhoc_list.php",
         "methods" => ["GET"],

@@ -26,6 +26,17 @@ switch ($act) {
         $view = ($user_role == 'admin') ? "views/admin/dashboard.php" : "views/giangvien/dashboard.php";
         break;
 
+    case 'quanly-nguoidung':
+        if ($user_role !== 'admin') {
+            $title = "404 - KhÃ´ng tÃ¬m tháº¥y";
+            $view = "views/404.php";
+            break;
+        }
+
+        $title = "Quáº£n lÃ½ ngÆ°á»i dÃ¹ng";
+        $view = "views/admin/nguoidung/list.php";
+        break;
+
     case 'dangxuat':
         session_destroy();
         header("Location: index.php?act=login");
