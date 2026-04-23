@@ -131,3 +131,85 @@ function get_submission_detail($id_lanthi) {
         'questions' => array_values($questions)
     ];
 }
+
+/**
+ * Láy thống kê tổng quan cho Dashboard giảng viên
+ */
+function get_lecturer_dashboard_stats($id_giangvien) {
+    $conn = Database::connect();
+    
+    // 1. Số môn học
+    $sql_subjects = "SELECT COUNT(*) as total FROM monhoc WHERE id_nguoidung = ?";
+    $stmt = $conn->prepare($sql_subjects);
+    $stmt->bind_param("i", $id_giangvien);
+    $stmt->execute();
+    $total_subjects = $stmt->get_result()->fetch_assoc()['total'];
+    
+    // 2. Số bài thi
+    $sql_exams = "SELECT COUNT(b.id_baithi) as total 
+                  FROM baithi b 
+                  JOIN monhoc m ON b.id_monhoc = m.id_monhoc 
+                  WHERE m.id_nguoidung = ?";
+    $stmt = $conn->prepare($sql_exams);
+    $stmt->bind_param("i", $id_giangvien);
+    $stmt->execute();
+    $total_exams = $stmt->get_result()->fetch_assoc()['total'];
+
+    // 3. Số câu hỏi (tổng cộng trong các bài thi)
+    $sql_questions = "SELECT SUM(b.tongcauhoi) as total 
+                      FROM baithi b 
+                      JOIN monhoc m ON b.id_monhoc = m.id_monhoc 
+                      WHERE m.id_nguoidung = ?";
+    $stmt = $conn->prepare($sql_questions);
+    $stmt->bind_param("i", $id_giangvien);
+    $stmt->execute();
+    $total_questions = $stmt->get_result()->fetch_assoc()['total'] ?: 0;
+
+    // 4. Số lượt làm bài
+    $sql_attempts = "SELECT COUNT(l.id_lanthi) as total 
+                     FROM lanthi l
+                     JOIN baithi b ON l.id_baithi = b.id_baithi
+                     JOIN monhoc m ON b.id_monhoc = m.id_monhoc
+                     WHERE m.id_nguoidung = ? AND l.trangthai = 'done'";
+    $stmt = $conn->prepare($sql_attempts);
+    $stmt->bind_param("i", $id_giangvien);
+    $stmt->execute();
+    $total_attempts = $stmt->get_result()->fetch_assoc()['total'];
+
+    $stmt->close();
+    $conn->close();
+
+    return [
+        'subjects' => $total_subjects,
+        'exams' => $total_exams,
+        'questions' => $total_questions,
+        'attempts' => $total_attempts
+    ];
+}
+
+/**
+ * Lấy dữ liệu biểu đồ cho Dashboard (Số lượt làm bài theo môn học)
+ */
+function get_lecturer_chart_data($id_giangvien) {
+    $conn = Database::connect();
+    $sql = "SELECT 
+                m.tenmonhoc, 
+                COUNT(l.id_lanthi) as so_luot_lam
+            FROM monhoc m
+            LEFT JOIN baithi b ON m.id_monhoc = b.id_monhoc
+            LEFT JOIN lanthi l ON b.id_baithi = l.id_baithi AND l.trangthai = 'done'
+            WHERE m.id_nguoidung = ?
+            GROUP BY m.id_monhoc";
+            
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_giangvien);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $data = $result->fetch_all(MYSQLI_ASSOC);
+    
+    $stmt->close();
+    $conn->close();
+    return $data;
+}
+
+

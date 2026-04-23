@@ -25,7 +25,18 @@ switch ($act) {
 
     case 'dashboard':
         $title = "Bảng điều khiển";
-        $view = ($user_role == 'admin') ? "views/admin/dashboard.php" : "views/giangvien/dashboard.php";
+        if ($user_role === 'giangvien') {
+            $view = "views/giangvien/dashboard.php";
+            $stats = get_lecturer_dashboard_stats($_SESSION['user']['id_nguoidung']);
+            $chartData = get_lecturer_chart_data($_SESSION['user']['id_nguoidung']);
+            $data = [
+                'stats' => $stats,
+                'chartData' => $chartData
+            ];
+        }
+        if ($user_role === 'admin') {
+            $view = "views/admin/dashboard.php";
+        }
         break;
 
     case 'quanly-nguoidung':
