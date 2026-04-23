@@ -234,9 +234,6 @@
 
                 <?php if ($_SESSION['user']['vaitro'] == 'admin'): ?>
                     <div class="menu-label">Hệ thống</div>
-                    <li class="<?php echo ($act == 'quanly-nganhang-cauhoi') ? 'active' : ''; ?>">
-                        <a href="index.php?act=quanly-nganhang-cauhoi"><i class="fas fa-database"></i> Ngân hàng câu hỏi</a>
-                    </li>
                     <li class="<?php echo ($act == 'quanly-nguoidung') ? 'active' : ''; ?>">
                         <a href="index.php?act=quanly-nguoidung"><i class="fas fa-user-cog"></i> Người dùng</a>
                     </li>
