@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../core/ApiSecurityValidator.php";
@@ -13,19 +13,12 @@ $id_nguoidung = (int) ($user["id_nguoidung"] ?? 0);
 try {
     $idRaw = $data["id_baithi"] ?? 0;
     $id_baithi = ($idRaw === "" || $idRaw === null) ? 0 : ApiSecurityValidator::validateInt($idRaw, "ID bài thi", 0);
-    $only_xao_tron = !empty($data["only_xao_tron"]);
-    $xao_tron = ApiSecurityValidator::validateBool($data["xao_tron"] ?? false, "Xáo trộn");
+    $only_toggle = !empty($data["only_toggle"]) || !empty($data["only_xao_tron"]);
+    
+    $xao_tron = isset($data["xao_tron"]) ? ApiSecurityValidator::validateBool($data["xao_tron"], "Xáo trộn") : null;
+    $hien_dapan = isset($data["hien_dapan"]) ? ApiSecurityValidator::validateBool($data["hien_dapan"], "Hiện đáp án") : null;
 
-    if ($only_xao_tron) {
-        $id_monhoc = 0;
-        $ten_baithi = "";
-        $tongcauhoi = 0;
-        $thoigianlam = 0;
-        $trangthai = "Đang mở";
-        $thoigianbatdau = "";
-        $thoigianketthuc = null;
-        $mieuta = null;
-    } else {
+    if (!$only_toggle) {
         $id_monhoc = ApiSecurityValidator::validateInt($data["id_monhoc"] ?? 0, "ID môn học", 1);
         $ten_baithi = ApiSecurityValidator::validateString($data["ten_baithi"] ?? "", "Tên bài thi", 3, 200);
         $tongcauhoi = isset($data["tongcauhoi"]) ? ApiSecurityValidator::validateInt($data["tongcauhoi"], "Số câu hỏi", 5, 1000) : 0;
@@ -42,7 +35,7 @@ try {
 $conn = Database::connect();
 $shouldCloseConnection = true;
 
-if (!$only_xao_tron) {
+if (!$only_toggle) {
     $sqlMon = "SELECT id_monhoc FROM monhoc WHERE id_monhoc = ? AND id_nguoidung = ?";
     $stmtMon = $conn->prepare($sqlMon);
     $stmtMon->bind_param("ii", $id_monhoc, $id_nguoidung);
@@ -67,37 +60,31 @@ if ($id_baithi > 0) {
         $conn->close();
         Api::json(["error" => "Bạn không có quyền sửa bài thi này"], 403);
     }
-
-    if (isBaiThiLocked($id_baithi)) {
-        if (!$only_xao_tron) {
-            $conn->close();
-            Api::json(["error" => "Bài thi này đã có thí sinh làm, chỉ có thể chỉnh xáo trộn."], 400);
-        }
-
-        $payload = [
-            "id_baithi" => $id_baithi,
-            "xao_tron" => !empty($data["xao_tron"]) ? 1 : 0,
-            "only_xao_tron" => true,
-        ];
-    }
 }
 
-if (!isset($payload)) {
-    $payload = [
-        "id_baithi" => $id_baithi,
-        "id_monhoc" => $id_monhoc,
-        "ten_baithi" => $ten_baithi,
-        "tongcauhoi" => $tongcauhoi,
-        "thoigianlam" => $thoigianlam,
-        "thoigianbatdau" => $thoigianbatdau,
-        "thoigianketthuc" => $thoigianketthuc,
-        "trangthai" => $trangthai,
-        "xao_tron" => $xao_tron ? 1 : 0,
-        "mieuta" => $mieuta,
-    ];
+$payload = [
+    "id_baithi" => $id_baithi,
+    "only_toggle" => $only_toggle
+];
+
+if ($only_toggle) {
+    if ($xao_tron !== null) $payload["xao_tron"] = $xao_tron;
+    if ($hien_dapan !== null) $payload["hien_dapan"] = $hien_dapan;
+} else {
+    $payload["id_monhoc"] = $id_monhoc;
+    $payload["ten_baithi"] = $ten_baithi;
+    $payload["tongcauhoi"] = $tongcauhoi;
+    $payload["thoigianlam"] = $thoigianlam;
+    $payload["thoigianbatdau"] = $thoigianbatdau;
+    $payload["thoigianketthuc"] = $thoigianketthuc;
+    $payload["trangthai"] = $trangthai;
+    $payload["xao_tron"] = $xao_tron;
+    $payload["hien_dapan"] = $hien_dapan;
+    $payload["mieuta"] = $mieuta;
 }
 
 $ok = save_baithi($payload);
+
 if ($shouldCloseConnection) {
     $conn->close();
 }

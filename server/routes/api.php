@@ -37,6 +37,12 @@ return [
         "auth" => true,
         "roles" => ["admin", "giangvien"],
     ],
+    "nganhang/import-word" => [
+        "handler" => __DIR__ . "/../api/nganhang_import_word.php",
+        "methods" => ["POST"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
     "profile/detail" => [
         "handler" => __DIR__ . "/../api/profile_detail.php",
         "methods" => ["GET"],
@@ -124,6 +130,12 @@ return [
     "cauhoi/delete" => [
         "handler" => __DIR__ . "/../api/cauhoi_delete.php",
         "methods" => ["DELETE"],
+        "auth" => true,
+        "roles" => ["admin", "giangvien"],
+    ],
+    "cauhoi/import-bank" => [
+        "handler" => __DIR__ . "/../api/cauhoi_import_bank.php",
+        "methods" => ["POST"],
         "auth" => true,
         "roles" => ["admin", "giangvien"],
     ],

@@ -260,4 +260,69 @@ class CauHoiModel
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
     }
+
+    public function importFromBank($id_baithi, $id_nhch, $counts)
+    {
+        if ($this->isBaiThiLocked($id_baithi)) {
+            return ['success' => false, 'message' => 'Bài thi này đã có thí sinh làm.'];
+        }
+
+        $examInfo = $this->getBaiThiInfo($id_baithi);
+        $maxQuestions = (int) ($examInfo['tongcauhoi'] ?? 0);
+        $currentQuestions = $this->getByBaiThi($id_baithi);
+        $currentCount = count($currentQuestions);
+        
+        $totalToImport = array_sum($counts);
+        if ($currentCount + $totalToImport > $maxQuestions) {
+            return ['success' => false, 'message' => "Tổng số câu hỏi sẽ vượt quá giới hạn {$maxQuestions} câu của bài thi."];
+        }
+
+        $this->conn->begin_transaction();
+        try {
+            $importedCount = 0;
+            foreach ($counts as $dokho => $count) {
+                if ($count <= 0) continue;
+
+                // Fetch random questions from bank
+                // Table: cauhoi has id_nhch and id_baithi IS NULL for bank questions
+                $sql = "SELECT * FROM cauhoi WHERE id_nhch = ? AND id_baithi IS NULL AND dokho = ? ORDER BY RAND() LIMIT ?";
+                $stmt = $this->conn->prepare($sql);
+                $stmt->bind_param("isi", $id_nhch, $dokho, $count);
+                $stmt->execute();
+                $res = $stmt->get_result();
+
+                while ($q = $res->fetch_assoc()) {
+                    // Check if question already exists in exam (to avoid duplicates if importing multiple times)
+                    if ($this->checkDuplicate($id_baithi, $q['noidungcauhoi'])) continue;
+
+                    // Copy question
+                    $sql_iq = "INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, ngaytao) VALUES (?, ?, ?, ?, NOW())";
+                    $stmt_iq = $this->conn->prepare($sql_iq);
+                    $stmt_iq->bind_param("iiss", $id_baithi, $id_nhch, $q['noidungcauhoi'], $q['dokho']);
+                    $stmt_iq->execute();
+                    $id_new = $this->conn->insert_id;
+
+                    // Copy answers
+                    $sql_ans = "SELECT * FROM dapan WHERE id_cauhoi = ?";
+                    $stmt_ans = $this->conn->prepare($sql_ans);
+                    $stmt_ans->bind_param("i", $q['id_cauhoi']);
+                    $stmt_ans->execute();
+                    $res_ans = $stmt_ans->get_result();
+                    while ($ans = $res_ans->fetch_assoc()) {
+                        $sql_ia = "INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung) VALUES (?, ?, ?)";
+                        $stmt_ia = $this->conn->prepare($sql_ia);
+                        $stmt_ia->bind_param("isi", $id_new, $ans['noidungdapan'], $ans['dapandung']);
+                        $stmt_ia->execute();
+                    }
+                    $importedCount++;
+                }
+            }
+
+            $this->conn->commit();
+            return ['success' => true, 'count' => $importedCount];
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
 }

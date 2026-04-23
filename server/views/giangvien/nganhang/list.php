@@ -12,6 +12,29 @@
         <button type="button" class="btn btn-primary" id="openQuestionBtn" onclick="openQuestionModal()" disabled>
             <i class="fas fa-circle-plus me-2"></i>Thêm câu hỏi
         </button>
+        <button type="button" class="btn btn-outline-success" id="openImportWordBtn" onclick="openImportWordModal()" disabled>
+            <i class="fas fa-file-word me-2"></i>Import Word
+        </button>
+    </div>
+</div>
+
+<!-- Modal Import Word -->
+<div id="importWordModalBank" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.55);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(2px);">
+    <div style="width:100%;max-width:500px;background:#fff;border-radius:18px;box-shadow:0 24px 80px rgba(15,23,42,0.28);padding:24px;">
+        <h4 style="margin:0 0 8px;">Import câu hỏi từ Word</h4>
+        <p class="text-muted small mb-4">Định dạng file: Câu 1: [Nội dung]... A. [Đáp án]... Đáp án: [A-D]... Độ khó: [Dễ/Trung bình/Khó]</p>
+        <form id="bankImportWordForm">
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Chọn file .docx</label>
+                <input type="file" class="form-control" id="bankWordFile" accept=".docx" required>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:12px;">
+                <button type="button" class="btn btn-light" onclick="closeImportWordModal()">Đóng</button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-upload me-2"></i>Bắt đầu Import
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -283,8 +306,54 @@ function renderQuestionPanelMeta() {
 
     title.textContent = selectedBank.ten_nganhang || 'Ngân hàng câu hỏi';
     meta.textContent = `${selectedBank.subjects?.length || 0} môn học được gắn vào ngân hàng này.`;
-    openBtn.disabled = !(selectedBank.subjects && selectedBank.subjects.length);
+    const hasSubjects = !!(selectedBank.subjects && selectedBank.subjects.length);
+    openBtn.disabled = !hasSubjects;
+    document.getElementById('openImportWordBtn').disabled = !hasSubjects;
 }
+
+function openImportWordModal() {
+    if (!selectedBank) return;
+    document.getElementById('bankImportWordForm').reset();
+    document.getElementById('importWordModalBank').style.display = 'flex';
+}
+
+function closeImportWordModal() {
+    document.getElementById('importWordModalBank').style.display = 'none';
+}
+
+document.getElementById('bankImportWordForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const fileInput = document.getElementById('bankWordFile');
+    if (!fileInput.files.length) return;
+
+    const formData = new FormData();
+    formData.append('id_nhch', selectedBank.id_nganhang);
+    formData.append('word_file', fileInput.files[0]);
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+
+    try {
+        const res = await fetch(serverApiUrl('nganhang/import-word'), {
+            method: 'POST',
+            body: formData
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'Import thất bại');
+        
+        closeImportWordModal();
+        showBankAlert(json.message);
+        await loadBankQuestions(Number(selectedBank.id_nganhang), document.getElementById('subjectFilter').value || '');
+        await loadBanks();
+    } catch (error) {
+        showBankAlert(error.message, 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+});
 
 function renderQuestionTable() {
     const tbody = document.getElementById('bankQuestionTableBody');

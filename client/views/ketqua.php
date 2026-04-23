@@ -73,15 +73,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         const json = await res.json();
 
         if (json.success) {
-            const { lanthi, questions } = json;
+            const { lanthi, questions, stats } = json;
+            const canSeeAnswers = parseInt(lanthi.hien_dapan) === 1;
             
-            let correct = 0, wrong = 0, empty = 0;
-            questions.forEach(q => {
-                let selected = q.answers.find(a => a.selected);
-                if (!selected) empty++;
-                else if (selected.dapandung) correct++;
-                else wrong++;
-            });
+            const { correct, wrong, empty } = stats;
 
             let html = `
                 <div class="row justify-content-center">
@@ -118,28 +113,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                         <!-- Mini Review -->
                         <div class="mt-5">
-                            <h5 class="fw-bold mb-4">Xem lại đáp án</h5>
-            `;
-
-            questions.forEach((q, i) => {
-                let selected = q.answers.find(a => a.selected);
-                let typeCls = !selected ? 'empty' : (selected.dapandung ? 'correct' : 'wrong');
-                
-                html += `
-                    <div class="question-item ${typeCls}">
-                        <p class="fw-bold mb-3">Câu ${i+1}: ${q.noidungcauhoi}</p>
-                        <div class="options">
-                            ${q.answers.map(ans => {
-                                let cls = "ans-opt";
-                                if (ans.dapandung) cls += " correct";
-                                if (ans.selected && !ans.dapandung) cls += " selected-wrong";
-                                return `<div class="${cls}">${ans.noidungdapan} ${ans.selected ? '<strong>(Bạn chọn)</strong>' : ''}</div>`;
-                            }).join('')}
+                            ${canSeeAnswers ? `
+                                <h5 class="fw-bold mb-4">Xem lại đáp án</h5>
+                                ${questions.map((q, i) => {
+                                    let selected = q.answers.find(a => a.selected);
+                                    let typeCls = !selected ? 'empty' : (selected.dapandung ? 'correct' : 'wrong');
+                                    return `
+                                        <div class="question-item ${typeCls}">
+                                            <p class="fw-bold mb-3">Câu ${i+1}: ${q.noidungcauhoi}</p>
+                                            <div class="options">
+                                                ${q.answers.map(ans => {
+                                                    let cls = "ans-opt";
+                                                    if (ans.dapandung) cls += " correct";
+                                                    if (ans.selected && !ans.dapandung) cls += " selected-wrong";
+                                                    return `<div class="${cls}">${ans.noidungdapan} ${ans.selected ? '<strong>(Bạn chọn)</strong>' : ''}</div>`;
+                                                }).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            ` : `
+                                <div class="alert alert-info text-center p-4">
+                                    <i class="fas fa-lock mb-3 d-block" style="font-size: 2rem;"></i>
+                                    <h6 class="fw-bold">Đáp án đã được ẩn</h6>
+                                    <p class="small mb-0">Giảng viên đã khóa tính năng xem đáp án cho đề thi này.</p>
+                                </div>
+                            `}
                         </div>
                     </div>
-                `;
-            });
-
+                </div>
+            `;
+            
             html += `
                             <div class="d-flex gap-3 justify-content-center mt-5">
                                 <a href="index.php?act=dethi" class="btn btn-primary px-4 rounded-pill">

@@ -14,7 +14,7 @@ if ($id_lanthi === 0) {
 }
 
 $stmt = $conn->prepare("
-    SELECT l.*, b.ten_baithi
+    SELECT l.*, b.ten_baithi, b.hien_dapan
     FROM lanthi l
     JOIN baithi b ON l.id_baithi = b.id_baithi
     WHERE l.id_lanthi = ? AND l.id_nguoidung = ?
@@ -64,18 +64,55 @@ while ($row = $res->fetch_assoc()) {
     }
 
     $selected = ((string) $row["cautraloichon"] !== "" && (int) $row["cautraloichon"] === (int) $row["id_dapan"]);
+    $can_see_answers = (int) ($lanthi["hien_dapan"] ?? 0) === 1;
 
     $questions[$qid]["answers"][] = [
         "id_dapan" => (int) $row["id_dapan"],
         "noidungdapan" => htmlspecialchars($row["noidungdapan"]),
-        "dapandung" => (int) $row["dapandung"] === 1,
+        "dapandung" => $can_see_answers ? ((int) $row["dapandung"] === 1) : null,
         "selected" => $selected,
     ];
+}
+
+$questions_arr = [];
+$correct = 0;
+$wrong = 0;
+$empty = 0;
+
+foreach ($questions as $qid => $q) {
+    $selected_ans = null;
+    foreach ($q["answers"] as $ans) {
+        if ($ans["selected"]) {
+            $selected_ans = $ans;
+            break;
+        }
+    }
+
+    if (!$selected_ans) {
+        $empty++;
+    } else if ($selected_ans["dapandung"]) {
+        $correct++;
+    } else {
+        $wrong++;
+    }
+
+    // Now obfuscate if needed
+    if (!$can_see_answers) {
+        foreach ($q["answers"] as &$ans) {
+            $ans["dapandung"] = null;
+        }
+    }
+    $questions_arr[] = $q;
 }
 
 Response::json([
     "success" => true,
     "lanthi" => $lanthi,
-    "questions" => array_values($questions),
+    "stats" => [
+        "correct" => $correct,
+        "wrong" => $wrong,
+        "empty" => $empty
+    ],
+    "questions" => $questions_arr,
 ]);
 

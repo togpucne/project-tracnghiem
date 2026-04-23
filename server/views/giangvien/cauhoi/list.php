@@ -8,10 +8,76 @@
             <h2 style="margin:0;" id="questionExamTitle">Đang tải...</h2>
             <p style="color:#666; margin-top:6px;" id="questionMeta">Đang tải thông tin bài thi...</p>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-            <a href="index.php?act=quanly-dethi" style="background:#6c757d; color:white; padding:8px 15px; border-radius:6px; text-decoration:none;">Quay lại</a>
-            <button id="importWordBtn" onclick="openImportModal()" style="background:#0d6efd; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer;">Import Word</button>
-            <button id="addQuestionBtn" onclick="openAddModal()" style="background:#27ae60; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer;">Thêm tay</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px; background:#fff; padding:6px 14px; border-radius:99px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-right:5px;" title="Chỉ ẩn/hiện ở bảng này để bạn dễ theo dõi">
+                <span style="font-size:13px; font-weight:600; color:#475569;">Xem nhanh đáp án</span>
+                <label class="premium-switch">
+                    <input type="checkbox" id="toggleAnswersUI" checked onchange="renderQuestionTable()">
+                    <span class="premium-slider"></span>
+                </label>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; background:#fff; padding:6px 14px; border-radius:99px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-right:5px;" title="Cho phép thí sinh xem kết quả sau khi nộp bài">
+                <span style="font-size:13px; font-weight:600; color:#475569;">Hiện đáp án (Thí sinh)</span>
+                <label class="premium-switch">
+                    <input type="checkbox" id="examShowAnswersToggle" onchange="updateExamSetting({hien_dapan: this.checked})">
+                    <span class="premium-slider"></span>
+                </label>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; background:#fff; padding:6px 14px; border-radius:99px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-right:15px;" id="shuffleToggleContainer" title="Xáo trộn cả câu hỏi và thứ tự đáp án">
+                <span style="font-size:13px; font-weight:600; color:#475569;">Xáo trộn</span>
+                <label class="premium-switch">
+                    <input type="checkbox" id="examShuffleToggle" onchange="updateExamSetting({xao_tron: this.checked})">
+                    <span class="premium-slider"></span>
+                </label>
+            </div>
+            
+            <a href="index.php?act=quanly-baithi" style="background:#6c757d; color:white; padding:8px 15px; border-radius:6px; text-decoration:none; font-size:14px; font-weight:500;">
+                <i class="fas fa-arrow-left me-1"></i> Quay lại
+            </a>
+            <button id="importWordBtn" onclick="openImportModal()" style="background:#0d6efd; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer; font-size:14px; font-weight:500;">Import Word</button>
+            <button id="importBankBtn" onclick="openBankModal()" style="background:#8e44ad; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer; font-size:14px; font-weight:500;">Ngân hàng câu hỏi</button>
+            <button id="addQuestionBtn" onclick="openAddModal()" style="background:#27ae60; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer; font-size:14px; font-weight:500;">Thêm tay</button>
+        </div>
+    </div>
+
+    <style>
+        .premium-switch { position: relative; display: inline-block; width: 38px; height: 20px; }
+        .premium-switch input { opacity: 0; width: 0; height: 0; }
+        .premium-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 20px; }
+        .premium-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        input:checked + .premium-slider { background-color: #3b82f6; }
+        input:checked + .premium-slider:before { transform: translateX(18px); }
+        input:disabled + .premium-slider { opacity: 0.5; cursor: not-allowed; }
+    </style>
+
+    <!-- Modal chọn từ Ngân hàng -->
+    <div id="bankModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:10px; width:500px;">
+            <h3 style="margin-top:0;">Chọn Câu Hỏi Từ Ngân Hàng</h3>
+            <form id="importBankForm">
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Chọn ngân hàng:</label>
+                    <select id="selectBankId" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;" required></select>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+                    <div>
+                        <label style="font-weight:bold; font-size:13px;">Số câu Dễ:</label>
+                        <input type="number" id="countEasy" value="0" min="0" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                    </div>
+                    <div>
+                        <label style="font-weight:bold; font-size:13px;">Trung bình:</label>
+                        <input type="number" id="countMedium" value="0" min="0" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                    </div>
+                    <div>
+                        <label style="font-weight:bold; font-size:13px;">Số câu Khó:</label>
+                        <input type="number" id="countHard" value="0" min="0" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <button type="button" onclick="closeBankModal()" style="padding:8px 20px; border:1px solid #ccc; border-radius:4px; cursor:pointer; background:white;">Hủy</button>
+                    <button type="submit" style="background:#8e44ad; color:white; border:none; padding:8px 25px; border-radius:4px; margin-left:10px; cursor:pointer;">Xác nhận thêm</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -197,33 +263,86 @@ async function loadQuestions() {
         maxQuestions = Number(examInfo.tongcauhoi || 0);
 
         document.getElementById('questionExamTitle').innerText = examInfo.ten_baithi || 'Quản lý câu hỏi';
-        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong>${questionItems.length}</strong>/${maxQuestions}${examLocked ? ' | <span style="color:#c0392b;font-weight:700;">Chế độ chỉ xem vì đã có thí sinh làm bài</span>' : ''}`;
+        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong>${questionItems.length}</strong>/${maxQuestions}${examLocked ? ' | <span style="color:#c0392b;font-weight:700;">Chế độ chỉ xem nội dung vì đã có thí sinh làm bài (vẫn có thể chỉnh Tùy chọn xáo trộn/hiện đáp án)</span>' : ''}`;
+
         document.getElementById('addQuestionBtn').disabled = examLocked;
         document.getElementById('addQuestionBtn').style.opacity = examLocked ? '0.6' : '1';
         document.getElementById('addQuestionBtn').style.cursor = examLocked ? 'not-allowed' : 'pointer';
         document.getElementById('importWordBtn').disabled = examLocked;
         document.getElementById('importWordBtn').style.opacity = examLocked ? '0.6' : '1';
         document.getElementById('importWordBtn').style.cursor = examLocked ? 'not-allowed' : 'pointer';
+        document.getElementById('importBankBtn').disabled = examLocked;
+        document.getElementById('importBankBtn').style.opacity = examLocked ? '0.6' : '1';
+        document.getElementById('importBankBtn').style.cursor = examLocked ? 'not-allowed' : 'pointer';
+
+        document.getElementById('examShuffleToggle').checked = Number(examInfo.xao_tron) === 1;
+        document.getElementById('examShowAnswersToggle').checked = Number(examInfo.hien_dapan) === 1;
 
         renderExamInfoCard();
+        renderQuestionTable();
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">${escapeHtml(error.message)}</td></tr>`;
+    }
+}
 
-        if (!questionItems.length) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Chưa có câu hỏi nào.</td></tr>';
-            return;
+async function updateExamSetting(settings) {
+    if (examLocked) return;
+    try {
+        const payload = { 
+            id_baithi: examId, 
+            only_toggle: true,
+            ...settings
+        };
+        const res = await fetch(serverApiUrl('baithi/save'), {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'Cập nhật thất bại');
+        
+        showQuestionAlert(json.message, 'success');
+        
+        // Update local examInfo
+        Object.assign(examInfo, settings);
+        renderExamInfoCard();
+    } catch (error) {
+        showQuestionAlert(error.message, 'error');
+        // Revert toggle UI
+        loadQuestions();
+    }
+}
+
+function renderQuestionTable() {
+    const tbody = document.getElementById('questionTableBody');
+    const showAnswers = document.getElementById('toggleAnswersUI').checked;
+
+    if (!questionItems.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Chưa có câu hỏi nào.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = questionItems.map((ch, index) => {
+        let answersHtml = '<span style="color:#94a3b8; font-style:italic; font-size:13px;">Đang ẩn đáp án</span>';
+        if (showAnswers) {
+            answersHtml = (ch.dapan || []).map(d => `
+                <div style="margin:5px 0;display:flex;align-items:center;">
+                    <input type="checkbox" ${Number(d.dapandung) === 1 ? 'checked' : ''} disabled style="margin-right:8px;">
+                    <span style="${Number(d.dapandung) === 1 ? 'color:#27ae60;font-weight:bold;' : 'color:#666;'}">${escapeHtml(d.noidungdapan)}</span>
+                </div>
+            `).join('');
         }
 
-        tbody.innerHTML = questionItems.map((ch, index) => `
+        return `
             <tr style="border-bottom:1px solid #eee;" class="question-row">
                 <td style="padding:12px;text-align:center;">${index + 1}</td>
                 <td style="padding:12px;"><strong>${escapeHtml(ch.noidungcauhoi)}</strong></td>
-                <td style="padding:12px;">${(ch.dapan || []).map(d => `<div style="margin:5px 0;display:flex;align-items:center;"><input type="checkbox" ${Number(d.dapandung) === 1 ? 'checked' : ''} disabled style="margin-right:8px;"><span style="${Number(d.dapandung) === 1 ? 'color:#27ae60;font-weight:bold;' : 'color:#666;'}">${escapeHtml(d.noidungdapan)}</span></div>`).join('')}</td>
+                <td style="padding:12px;">${answersHtml}</td>
                 <td style="padding:12px;text-align:center;">${escapeHtml(ch.dokho)}</td>
                 <td style="padding:12px;text-align:center;">${renderQuestionActions(ch)}</td>
             </tr>
-        `).join('');
-    } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#c0392b;">${escapeHtml(error.message)}</td></tr>`;
-    }
+        `;
+    }).join('');
 }
 
 function openAddModal() {
@@ -276,6 +395,80 @@ function openImportModal() {
 function closeImportModal() {
     document.getElementById('importModal').style.display = 'none';
 }
+
+async function openBankModal() {
+    if (examLocked) {
+        showQuestionAlert('Bài thi đã có thí sinh làm, không được phép import câu hỏi.', 'error');
+        return;
+    }
+    const select = document.getElementById('selectBankId');
+    select.innerHTML = '<option value="">Đang tải...</option>';
+    document.getElementById('bankModal').style.display = 'flex';
+
+    try {
+        const res = await fetch(serverApiUrl('nganhang/list', { id_monhoc: examInfo.id_monhoc }));
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'Không thể tải danh sách ngân hàng');
+        
+        const banks = json.banks || [];
+        if (banks.length === 0) {
+            select.innerHTML = '<option value="">Chưa có ngân hàng nào</option>';
+        } else {
+            select.innerHTML = banks.map(b => `<option value="${b.id_nganhang}">${escapeHtml(b.ten_nganhang)} (${b.tenmonhoc || 'Nhiều môn'})</option>`).join('');
+        }
+    } catch (error) {
+        select.innerHTML = `<option value="">Lỗi: ${escapeHtml(error.message)}</option>`;
+    }
+}
+
+function closeBankModal() {
+    document.getElementById('bankModal').style.display = 'none';
+}
+
+document.getElementById('importBankForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id_nhch = document.getElementById('selectBankId').value;
+    if (!id_nhch) return;
+
+    const counts = {
+        'Dễ': parseInt(document.getElementById('countEasy').value) || 0,
+        'Trung bình': parseInt(document.getElementById('countMedium').value) || 0,
+        'Khó': parseInt(document.getElementById('countHard').value) || 0
+    };
+
+    if (Object.values(counts).every(v => v === 0)) {
+        showQuestionAlert('Vui lòng nhập ít nhất một loại độ khó', 'error');
+        return;
+    }
+
+    const btn = this.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+
+    try {
+        const res = await fetch(serverApiUrl('cauhoi/import-bank'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_baithi: examId,
+                id_nhch: Number(id_nhch),
+                counts: counts
+            })
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'Import thất bại');
+        
+        closeBankModal();
+        showQuestionAlert(json.message, 'success');
+        loadQuestions();
+    } catch (error) {
+        showQuestionAlert(error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+});
 
 async function deleteQuestion(id) {
     if (examLocked) {
@@ -415,6 +608,9 @@ window.addEventListener('click', (event) => {
     }
     if (event.target === document.getElementById('importModal')) {
         closeImportModal();
+    }
+    if (event.target === document.getElementById('bankModal')) {
+        closeBankModal();
     }
 });
 

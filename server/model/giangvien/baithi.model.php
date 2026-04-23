@@ -61,30 +61,57 @@ function save_baithi($data)
     $conn = Database::connect();
 
     $id_baithi = !empty($data['id_baithi']) ? (int) $data['id_baithi'] : 0;
-    $id_monhoc = isset($data['id_monhoc']) ? (int) $data['id_monhoc'] : 0;
-    $xao_tron = !empty($data['xao_tron']) ? 1 : 0;
-    $only_xao_tron = !empty($data['only_xao_tron']);
-
-    if ($only_xao_tron && $id_baithi > 0) {
-        $sql = "UPDATE baithi SET xao_tron = ? WHERE id_baithi = ?";
+    
+    // Explicit check for toggles
+    $only_toggle = !empty($data['only_toggle']);
+    
+    if ($only_toggle && $id_baithi > 0) {
+        $updates = [];
+        $params = [];
+        $types = "";
+        
+        if (isset($data['xao_tron'])) {
+            $updates[] = "xao_tron = ?";
+            $params[] = $data['xao_tron'] ? 1 : 0;
+            $types .= "i";
+        }
+        if (isset($data['hien_dapan'])) {
+            $updates[] = "hien_dapan = ?";
+            $params[] = $data['hien_dapan'] ? 1 : 0;
+            $types .= "i";
+        }
+        
+        if (empty($updates)) {
+            $conn->close();
+            return true;
+        }
+        
+        $sql = "UPDATE baithi SET " . implode(", ", $updates) . " WHERE id_baithi = ?";
+        $params[] = $id_baithi;
+        $types .= "i";
+        
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ii", $xao_tron, $id_baithi);
+        $stmt->bind_param($types, ...$params);
         $res = $stmt->execute();
         $conn->close();
         return $res;
     }
 
+    $id_monhoc = isset($data['id_monhoc']) ? (int) $data['id_monhoc'] : 0;
+    $xao_tron = isset($data['xao_tron']) ? ($data['xao_tron'] ? 1 : 0) : 0;
+    $hien_dapan = isset($data['hien_dapan']) ? ($data['hien_dapan'] ? 1 : 0) : 0;
+
     $ten = trim($data['ten_baithi']);
     $ten = mb_strtolower($ten, 'UTF-8');
     $ten = mb_ucfirst($ten);
 
-    $tongcauhoi = abs((int) $data['tongcauhoi']);
-    $thoigianlam = abs((int) $data['thoigianlam']);
+    $tongcauhoi = abs((int) ($data['tongcauhoi'] ?? 0));
+    $thoigianlam = abs((int) ($data['thoigianlam'] ?? 0));
     $trangthai = !empty($data['trangthai']) ? $data['trangthai'] : "Đang mở";
     $mieuta = !empty($data['mieuta']) ? $data['mieuta'] : null;
 
     if ($id_baithi > 0 && isBaiThiLocked($id_baithi)) {
-        $_SESSION['error'] = "Bài thi này đã có thí sinh làm, chỉ có thể chỉnh xáo trộn.";
+        $_SESSION['error'] = "Bài thi này đã có thí sinh làm, chỉ có thể chỉnh các tùy chọn xáo trộn/hiện đáp án.";
         $conn->close();
         return false;
     }
@@ -102,16 +129,16 @@ function save_baithi($data)
     }
 
     if ($id_baithi === 0) {
-        $sql = "INSERT INTO baithi (id_monhoc, ten_baithi, mieuta, tongcauhoi, thoigianlam, thoigianbatdau, thoigianketthuc, trangthai, xao_tron, ngaytao)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        $sql = "INSERT INTO baithi (id_monhoc, ten_baithi, mieuta, tongcauhoi, thoigianlam, thoigianbatdau, thoigianketthuc, trangthai, xao_tron, hien_dapan, ngaytao)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("issiisssi", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron);
+        $stmt->bind_param("issiisssii", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan);
     } else {
         $sql = "UPDATE baithi
-                SET id_monhoc = ?, ten_baithi = ?, mieuta = ?, tongcauhoi = ?, thoigianlam = ?, thoigianbatdau = ?, thoigianketthuc = ?, trangthai = ?, xao_tron = ?
+                SET id_monhoc = ?, ten_baithi = ?, mieuta = ?, tongcauhoi = ?, thoigianlam = ?, thoigianbatdau = ?, thoigianketthuc = ?, trangthai = ?, xao_tron = ?, hien_dapan = ?
                 WHERE id_baithi = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("issiisssii", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron, $id_baithi);
+        $stmt->bind_param("issiisssiii", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan, $id_baithi);
     }
 
     $res = $stmt->execute();

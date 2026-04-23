@@ -34,36 +34,48 @@ function getAccessibleBankSubjects($id_nguoidung, $vaitro)
     return $list;
 }
 
-function getQuestionBanks($id_nguoidung, $vaitro)
+function getQuestionBanks($id_nguoidung, $vaitro, $id_monhoc = 0)
 {
     $conn = Database::connect();
     $list = [];
 
-    $sql = "SELECT nh.id_nganhang,
-                   nh.ten_nganhang,
-                   nh.mieuta,
-                   nh.id_nguoidung,
-                   nh.trangthai,
+    // Use aliases to maintain compatibility with the old frontend JS
+    $sql = "SELECT nh.id_nhch AS id_nganhang, 
+                   nh.ten_nganhang, 
+                   nh.mota AS mieuta, 
+                   nh.id_giangvien AS id_nguoidung, 
+                   CASE WHEN nh.trangthai = 1 THEN 'active' ELSE 'inactive' END AS trangthai,
                    nh.ngaytao,
                    u.ten AS ten_nguoidung,
-                   COUNT(DISTINCT nm.id_monhoc) AS so_monhoc,
-                   COUNT(DISTINCT ch.id_cauhoi_nganhang) AS so_cauhoi,
-                   GROUP_CONCAT(DISTINCT m.tenmonhoc ORDER BY m.tenmonhoc ASC SEPARATOR '||') AS ds_monhoc
+                   1 AS so_monhoc,
+                   (SELECT COUNT(*) FROM cauhoi ch WHERE ch.id_nhch = nh.id_nhch AND ch.id_baithi IS NULL) AS so_cauhoi,
+                   m.tenmonhoc AS ds_monhoc,
+                   m.tenmonhoc
             FROM nganhang_cauhoi nh
-            LEFT JOIN nguoidung u ON nh.id_nguoidung = u.id_nguoidung
-            LEFT JOIN nganhang_monhoc nm ON nh.id_nganhang = nm.id_nganhang
-            LEFT JOIN monhoc m ON nm.id_monhoc = m.id_monhoc
-            LEFT JOIN cauhoi_nganhang ch ON nh.id_nganhang = ch.id_nganhang AND ch.trangthai = 'active'";
+            LEFT JOIN nguoidung u ON nh.id_giangvien = u.id_nguoidung
+            LEFT JOIN monhoc m ON nh.id_mon = m.id_monhoc
+            WHERE 1=1";
+
+    $params = [];
+    $types = "";
 
     if ($vaitro !== 'admin') {
-        $sql .= " WHERE nh.id_nguoidung = ?";
+        $sql .= " AND nh.id_giangvien = ?";
+        $params[] = $id_nguoidung;
+        $types .= "i";
     }
 
-    $sql .= " GROUP BY nh.id_nganhang ORDER BY nh.id_nganhang DESC";
+    if ($id_monhoc > 0) {
+        $sql .= " AND nh.id_mon = ?";
+        $params[] = $id_monhoc;
+        $types .= "i";
+    }
+
+    $sql .= " ORDER BY nh.id_nhch DESC";
 
     $stmt = $conn->prepare($sql);
-    if ($vaitro !== 'admin') {
-        $stmt->bind_param("i", $id_nguoidung);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
     }
     $stmt->execute();
     $result = $stmt->get_result();
@@ -79,13 +91,18 @@ function getQuestionBanks($id_nguoidung, $vaitro)
 function getQuestionBankById($id_nganhang, $id_nguoidung, $vaitro)
 {
     $conn = Database::connect();
-    $sql = "SELECT nh.*, u.ten AS ten_nguoidung
+    $sql = "SELECT nh.id_nhch AS id_nganhang, 
+                   nh.ten_nganhang, 
+                   nh.mota AS mieuta, 
+                   nh.id_giangvien AS id_nguoidung, 
+                   CASE WHEN nh.trangthai = 1 THEN 'active' ELSE 'inactive' END AS trangthai,
+                   u.ten AS ten_nguoidung
             FROM nganhang_cauhoi nh
-            LEFT JOIN nguoidung u ON nh.id_nguoidung = u.id_nguoidung
-            WHERE nh.id_nganhang = ?";
+            LEFT JOIN nguoidung u ON nh.id_giangvien = u.id_nguoidung
+            WHERE nh.id_nhch = ?";
 
     if ($vaitro !== 'admin') {
-        $sql .= " AND nh.id_nguoidung = ?";
+        $sql .= " AND nh.id_giangvien = ?";
     }
 
     $sql .= " LIMIT 1";
@@ -105,11 +122,11 @@ function getQuestionBankById($id_nganhang, $id_nguoidung, $vaitro)
         return null;
     }
 
-    $stmtSubjects = $conn->prepare("SELECT nm.id_monhoc, m.tenmonhoc
-                                    FROM nganhang_monhoc nm
-                                    JOIN monhoc m ON nm.id_monhoc = m.id_monhoc
-                                    WHERE nm.id_nganhang = ?
-                                    ORDER BY m.tenmonhoc ASC");
+    // New schema only has one subject per bank
+    $stmtSubjects = $conn->prepare("SELECT m.id_monhoc, m.tenmonhoc
+                                    FROM nganhang_cauhoi nh
+                                    JOIN monhoc m ON nh.id_mon = m.id_monhoc
+                                    WHERE nh.id_nhch = ?");
     $stmtSubjects->bind_param("i", $id_nganhang);
     $stmtSubjects->execute();
     $resSubjects = $stmtSubjects->get_result();
@@ -141,6 +158,7 @@ function validateBankSubjects($subjectIds, $id_nguoidung, $vaitro)
         $types = str_repeat('i', count($subjectIds));
         $stmt->bind_param($types, ...$subjectIds);
     } else {
+        // Only allow subjects belonging to the lecturer
         $sql = "SELECT id_monhoc FROM monhoc WHERE id_monhoc IN ($placeholders) AND id_nguoidung = ?";
         $stmt = $conn->prepare($sql);
         $types = str_repeat('i', count($subjectIds)) . 'i';
@@ -157,36 +175,26 @@ function validateBankSubjects($subjectIds, $id_nguoidung, $vaitro)
 
     $stmt->close();
     $conn->close();
-    sort($subjectIds);
-    sort($validIds);
-    return $subjectIds === $validIds ? $validIds : false;
+    
+    // Return the list of valid IDs found in the DB
+    return $validIds;
 }
 
 function createQuestionBank($ten_nganhang, $mieuta, $subjectIds, $id_nguoidung)
 {
     $conn = Database::connect();
-    $conn->begin_transaction();
+    $id_mon = !empty($subjectIds) ? (int) $subjectIds[0] : 0;
 
     try {
-        $stmt = $conn->prepare("INSERT INTO nganhang_cauhoi (ten_nganhang, mieuta, id_nguoidung, trangthai, ngaytao)
-                                VALUES (?, ?, ?, 'active', NOW())");
-        $stmt->bind_param("ssi", $ten_nganhang, $mieuta, $id_nguoidung);
+        $stmt = $conn->prepare("INSERT INTO nganhang_cauhoi (ten_nganhang, mota, id_mon, id_giangvien, trangthai, ngaytao)
+                                VALUES (?, ?, ?, ?, 1, NOW())");
+        $stmt->bind_param("ssii", $ten_nganhang, $mieuta, $id_mon, $id_nguoidung);
         $stmt->execute();
         $id_nganhang = (int) $conn->insert_id;
         $stmt->close();
-
-        foreach ($subjectIds as $id_monhoc) {
-            $stmtMap = $conn->prepare("INSERT INTO nganhang_monhoc (id_nganhang, id_monhoc) VALUES (?, ?)");
-            $stmtMap->bind_param("ii", $id_nganhang, $id_monhoc);
-            $stmtMap->execute();
-            $stmtMap->close();
-        }
-
-        $conn->commit();
         $conn->close();
         return $id_nganhang;
     } catch (Exception $e) {
-        $conn->rollback();
         $conn->close();
         return 0;
     }
@@ -195,33 +203,19 @@ function createQuestionBank($ten_nganhang, $mieuta, $subjectIds, $id_nguoidung)
 function updateQuestionBank($id_nganhang, $ten_nganhang, $mieuta, $trangthai, $subjectIds)
 {
     $conn = Database::connect();
-    $conn->begin_transaction();
+    $id_mon = !empty($subjectIds) ? (int) $subjectIds[0] : 0;
+    $statusNum = ($trangthai === 'active') ? 1 : 0;
 
     try {
         $stmt = $conn->prepare("UPDATE nganhang_cauhoi
-                                SET ten_nganhang = ?, mieuta = ?, trangthai = ?
-                                WHERE id_nganhang = ?");
-        $stmt->bind_param("sssi", $ten_nganhang, $mieuta, $trangthai, $id_nganhang);
+                                SET ten_nganhang = ?, mota = ?, id_mon = ?, trangthai = ?
+                                WHERE id_nhch = ?");
+        $stmt->bind_param("ssiii", $ten_nganhang, $mieuta, $id_mon, $statusNum, $id_nganhang);
         $stmt->execute();
         $stmt->close();
-
-        $stmtDelete = $conn->prepare("DELETE FROM nganhang_monhoc WHERE id_nganhang = ?");
-        $stmtDelete->bind_param("i", $id_nganhang);
-        $stmtDelete->execute();
-        $stmtDelete->close();
-
-        foreach ($subjectIds as $id_monhoc) {
-            $stmtMap = $conn->prepare("INSERT INTO nganhang_monhoc (id_nganhang, id_monhoc) VALUES (?, ?)");
-            $stmtMap->bind_param("ii", $id_nganhang, $id_monhoc);
-            $stmtMap->execute();
-            $stmtMap->close();
-        }
-
-        $conn->commit();
         $conn->close();
         return true;
     } catch (Exception $e) {
-        $conn->rollback();
         $conn->close();
         return false;
     }
@@ -230,7 +224,7 @@ function updateQuestionBank($id_nganhang, $ten_nganhang, $mieuta, $trangthai, $s
 function softDeleteQuestionBank($id_nganhang)
 {
     $conn = Database::connect();
-    $stmt = $conn->prepare("UPDATE nganhang_cauhoi SET trangthai = 'inactive' WHERE id_nganhang = ?");
+    $stmt = $conn->prepare("UPDATE nganhang_cauhoi SET trangthai = 0 WHERE id_nhch = ?");
     $stmt->bind_param("i", $id_nganhang);
     $ok = $stmt->execute();
     $stmt->close();
@@ -243,20 +237,26 @@ function getQuestionBankQuestions($id_nganhang, $id_monhoc, $id_nguoidung, $vait
     $conn = Database::connect();
     $questions = [];
 
-    $sql = "SELECT ch.*
-            FROM cauhoi_nganhang ch
-            JOIN nganhang_cauhoi nh ON ch.id_nganhang = nh.id_nganhang
-            WHERE ch.id_nganhang = ? AND ch.id_monhoc = ?";
+    // Use cauhoi table for bank questions (id_baithi IS NULL)
+    $sql = "SELECT ch.id_cauhoi AS id_cauhoi_nganhang, 
+                   ch.noidungcauhoi, 
+                   ch.dokho, 
+                   'active' AS trangthai,
+                   ch.id_nhch AS id_nganhang
+            FROM cauhoi ch
+            JOIN nganhang_cauhoi nh ON ch.id_nhch = nh.id_nhch
+            WHERE ch.id_nhch = ? AND ch.id_baithi IS NULL";
+    
     if ($vaitro !== 'admin') {
-        $sql .= " AND nh.id_nguoidung = ?";
+        $sql .= " AND nh.id_giangvien = ?";
     }
-    $sql .= " ORDER BY ch.id_cauhoi_nganhang DESC";
+    $sql .= " ORDER BY ch.id_cauhoi DESC";
 
     $stmt = $conn->prepare($sql);
     if ($vaitro !== 'admin') {
-        $stmt->bind_param("iii", $id_nganhang, $id_monhoc, $id_nguoidung);
+        $stmt->bind_param("ii", $id_nganhang, $id_nguoidung);
     } else {
-        $stmt->bind_param("ii", $id_nganhang, $id_monhoc);
+        $stmt->bind_param("i", $id_nganhang);
     }
     $stmt->execute();
     $result = $stmt->get_result();
@@ -272,7 +272,11 @@ function getQuestionBankQuestions($id_nganhang, $id_monhoc, $id_nguoidung, $vait
 
 function getBankAnswersByQuestionIdWithConnection($conn, $id_cauhoi_nganhang)
 {
-    $stmt = $conn->prepare("SELECT * FROM dapan_nganhang WHERE id_cauhoi_nganhang = ? ORDER BY id_dapan_nganhang ASC");
+    // Use the base dapan table
+    $stmt = $conn->prepare("SELECT id_dapan AS id_dapan_nganhang, noidungdapan, dapandung 
+                            FROM dapan 
+                            WHERE id_cauhoi = ? 
+                            ORDER BY id_dapan ASC");
     $stmt->bind_param("i", $id_cauhoi_nganhang);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -287,12 +291,17 @@ function getBankAnswersByQuestionIdWithConnection($conn, $id_cauhoi_nganhang)
 function getQuestionBankQuestionById($id_cauhoi_nganhang, $id_nguoidung, $vaitro)
 {
     $conn = Database::connect();
-    $sql = "SELECT ch.*
-            FROM cauhoi_nganhang ch
-            JOIN nganhang_cauhoi nh ON ch.id_nganhang = nh.id_nganhang
-            WHERE ch.id_cauhoi_nganhang = ?";
+    $sql = "SELECT ch.id_cauhoi AS id_cauhoi_nganhang, 
+                   ch.noidungcauhoi, 
+                   ch.dokho, 
+                   'active' AS trangthai,
+                   ch.id_nhch AS id_nganhang
+            FROM cauhoi ch
+            JOIN nganhang_cauhoi nh ON ch.id_nhch = nh.id_nhch
+            WHERE ch.id_cauhoi = ? AND ch.id_baithi IS NULL";
+    
     if ($vaitro !== 'admin') {
-        $sql .= " AND nh.id_nguoidung = ?";
+        $sql .= " AND nh.id_giangvien = ?";
     }
     $sql .= " LIMIT 1";
 
@@ -320,24 +329,25 @@ function createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $d
     $conn->begin_transaction();
 
     try {
-        $stmt = $conn->prepare("INSERT INTO cauhoi_nganhang (id_nganhang, id_monhoc, noidungcauhoi, dokho, trangthai, ngaytao)
-                                VALUES (?, ?, ?, ?, 'active', NOW())");
-        $stmt->bind_param("iiss", $id_nganhang, $id_monhoc, $noidungcauhoi, $dokho);
+        // id_baithi is NULL for bank questions
+        $stmt = $conn->prepare("INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, ngaytao)
+                                VALUES (NULL, ?, ?, ?, NOW())");
+        $stmt->bind_param("iss", $id_nganhang, $noidungcauhoi, $dokho);
         $stmt->execute();
-        $id_cauhoi_nganhang = (int) $conn->insert_id;
+        $id_cauhoi = (int) $conn->insert_id;
         $stmt->close();
 
         foreach ($answers as $answer) {
-            $stmtAnswer = $conn->prepare("INSERT INTO dapan_nganhang (id_cauhoi_nganhang, noidungdapan, dapandung)
+            $stmtAnswer = $conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung)
                                           VALUES (?, ?, ?)");
-            $stmtAnswer->bind_param("isi", $id_cauhoi_nganhang, $answer['noidung'], $answer['dapandung']);
+            $stmtAnswer->bind_param("isi", $id_cauhoi, $answer['noidung'], $answer['dapandung']);
             $stmtAnswer->execute();
             $stmtAnswer->close();
         }
 
         $conn->commit();
         $conn->close();
-        return $id_cauhoi_nganhang;
+        return $id_cauhoi;
     } catch (Exception $e) {
         $conn->rollback();
         $conn->close();
@@ -351,20 +361,20 @@ function updateQuestionBankQuestion($id_cauhoi_nganhang, $id_monhoc, $noidungcau
     $conn->begin_transaction();
 
     try {
-        $stmt = $conn->prepare("UPDATE cauhoi_nganhang
-                                SET id_monhoc = ?, noidungcauhoi = ?, dokho = ?, trangthai = ?
-                                WHERE id_cauhoi_nganhang = ?");
-        $stmt->bind_param("isssi", $id_monhoc, $noidungcauhoi, $dokho, $trangthai, $id_cauhoi_nganhang);
+        $stmt = $conn->prepare("UPDATE cauhoi
+                                SET noidungcauhoi = ?, dokho = ?
+                                WHERE id_cauhoi = ?");
+        $stmt->bind_param("ssi", $noidungcauhoi, $dokho, $id_cauhoi_nganhang);
         $stmt->execute();
         $stmt->close();
 
-        $stmtDelete = $conn->prepare("DELETE FROM dapan_nganhang WHERE id_cauhoi_nganhang = ?");
+        $stmtDelete = $conn->prepare("DELETE FROM dapan WHERE id_cauhoi = ?");
         $stmtDelete->bind_param("i", $id_cauhoi_nganhang);
         $stmtDelete->execute();
         $stmtDelete->close();
 
         foreach ($answers as $answer) {
-            $stmtAnswer = $conn->prepare("INSERT INTO dapan_nganhang (id_cauhoi_nganhang, noidungdapan, dapandung)
+            $stmtAnswer = $conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung)
                                           VALUES (?, ?, ?)");
             $stmtAnswer->bind_param("isi", $id_cauhoi_nganhang, $answer['noidung'], $answer['dapandung']);
             $stmtAnswer->execute();
@@ -384,10 +394,46 @@ function updateQuestionBankQuestion($id_cauhoi_nganhang, $id_monhoc, $noidungcau
 function softDeleteQuestionBankQuestion($id_cauhoi_nganhang)
 {
     $conn = Database::connect();
-    $stmt = $conn->prepare("UPDATE cauhoi_nganhang SET trangthai = 'inactive' WHERE id_cauhoi_nganhang = ?");
+    $stmt = $conn->prepare("UPDATE cauhoi SET id_nhch = NULL WHERE id_cauhoi = ? AND id_baithi IS NULL");
     $stmt->bind_param("i", $id_cauhoi_nganhang);
     $ok = $stmt->execute();
     $stmt->close();
     $conn->close();
     return $ok;
 }
+
+function createManyInBank($id_nhch, $questions)
+{
+    $conn = Database::connect();
+    $conn->begin_transaction();
+
+    try {
+        $count = 0;
+        foreach ($questions as $q) {
+            $stmt = $conn->prepare("INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, ngaytao)
+                                    VALUES (NULL, ?, ?, ?, NOW())");
+            $stmt->bind_param("iss", $id_nhch, $q['noidungcauhoi'], $q['dokho']);
+            $stmt->execute();
+            $id_cauhoi = (int) $conn->insert_id;
+            $stmt->close();
+
+            foreach ($q['dapan_list'] as $dapan) {
+                $stmtAnswer = $conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung)
+                                              VALUES (?, ?, ?)");
+                $stmtAnswer->bind_param("isi", $id_cauhoi, $dapan['noidung'], $dapan['dapandung']);
+                $stmtAnswer->execute();
+                $stmtAnswer->close();
+            }
+            $count++;
+        }
+
+        $conn->commit();
+        $conn->close();
+        return ["success" => true, "count" => $count];
+    } catch (Exception $e) {
+        $conn->rollback();
+        $conn->close();
+        return ["success" => false, "message" => $e->getMessage()];
+    }
+}
+
