@@ -33,10 +33,12 @@ $sql = "
     SELECT
         c.id_cauhoi,
         c.noidungcauhoi,
+        c.loai_cauhoi,
         d.id_dapan,
         d.noidungdapan,
         d.dapandung,
-        ts.cautraloichon
+        ts.cautraloichon,
+        ts.noidungtraloi
     FROM cauhoi c
     JOIN dapan d ON c.id_cauhoi = d.id_cauhoi
     LEFT JOIN traloithisinh ts
@@ -59,12 +61,17 @@ while ($row = $res->fetch_assoc()) {
         $questions[$qid] = [
             "id_cauhoi" => $qid,
             "noidungcauhoi" => htmlspecialchars($row["noidungcauhoi"]),
+            "loai_cauhoi" => (int)$row["loai_cauhoi"],
+            "user_text_ans" => $row["noidungtraloi"],
             "answers" => [],
         ];
     }
 
-    $selected = ((string) $row["cautraloichon"] !== "" && (int) $row["cautraloichon"] === (int) $row["id_dapan"]);
     $can_see_answers = (int) ($lanthi["hien_dapan"] ?? 0) === 1;
+    $selected = false;
+    if ($questions[$qid]["loai_cauhoi"] === 1) {
+        $selected = ((string) $row["cautraloichon"] !== "" && (int) $row["cautraloichon"] === (int) $row["id_dapan"]);
+    }
 
     $questions[$qid]["answers"][] = [
         "id_dapan" => (int) $row["id_dapan"],
@@ -80,28 +87,60 @@ $wrong = 0;
 $empty = 0;
 
 foreach ($questions as $qid => $q) {
-    $selected_ans = null;
-    foreach ($q["answers"] as $ans) {
-        if ($ans["selected"]) {
-            $selected_ans = $ans;
-            break;
+    $isCorrect = false;
+    $isEmpty = false;
+
+    if ($q["loai_cauhoi"] === 2) {
+        $userVal = $q["user_text_ans"];
+        if (!$userVal) {
+            $isEmpty = true;
+        } else {
+            // Grading logic (same as submit.php)
+            $submitted = json_decode($userVal, true) ?: [$userVal];
+            $correctAnswers = array_filter($q["answers"], fn($a) => $a["dapandung"]);
+            $correctAnswers = array_values($correctAnswers); // Re-index
+
+            $allMatch = true;
+            if (count($submitted) < count($correctAnswers)) {
+                $allMatch = false;
+            } else {
+                foreach ($correctAnswers as $idx => $corRow) {
+                    $sub = trim(mb_strtolower((string)($submitted[$idx] ?? ""), 'UTF-8'));
+                    $cor = trim(mb_strtolower((string)($corRow["noidungdapan"] ?? ""), 'UTF-8'));
+                    if ($sub !== $cor) {
+                        $allMatch = false;
+                        break;
+                    }
+                }
+            }
+            $isCorrect = $allMatch;
+        }
+    } else {
+        $selected_ans = null;
+        foreach ($q["answers"] as $ans) {
+            if ($ans["selected"]) {
+                $selected_ans = $ans;
+                break;
+            }
+        }
+        if (!$selected_ans) {
+            $isEmpty = true;
+        } else if ($selected_ans["dapandung"]) {
+            $isCorrect = true;
         }
     }
 
-    if (!$selected_ans) {
-        $empty++;
-    } else if ($selected_ans["dapandung"]) {
+    if ($isCorrect) {
         $correct++;
+        $q["status"] = "correct";
+    } else if ($isEmpty) {
+        $empty++;
+        $q["status"] = "empty";
     } else {
         $wrong++;
+        $q["status"] = "wrong";
     }
 
-    // Now obfuscate if needed
-    if (!$can_see_answers) {
-        foreach ($q["answers"] as &$ans) {
-            $ans["dapandung"] = null;
-        }
-    }
     $questions_arr[] = $q;
 }
 

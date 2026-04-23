@@ -153,7 +153,14 @@
                         <label class="form-label fw-semibold">Môn học</label>
                         <select class="form-select" id="bankQuestionSubject" required></select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Loại câu hỏi</label>
+                        <select class="form-select" id="bankQuestionType" onchange="toggleBankAnswerType()">
+                            <option value="1">Trắc nghiệm</option>
+                            <option value="2">Điền từ</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label fw-semibold">Độ khó</label>
                         <select class="form-select" id="bankQuestionDifficulty">
                             <option value="de">Dễ</option>
@@ -161,7 +168,7 @@
                             <option value="kho">Khó</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label fw-semibold">Trạng thái</label>
                         <select class="form-select" id="bankQuestionStatus">
                             <option value="active">Đang hoạt động</option>
@@ -173,12 +180,16 @@
                         <textarea class="form-control" id="bankQuestionContent" rows="4" required></textarea>
                     </div>
                     <div class="col-12">
-                        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <div id="bankAnswerHeader" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
                             <label class="form-label fw-semibold mb-0">Đáp án</label>
-                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addBankAnswerOption()">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnAddNewAnswer" onclick="addBankAnswerOption()">
                                 <i class="fas fa-plus me-1"></i>Thêm đáp án
                             </button>
                         </div>
+                        <p id="bankAnswerDesc" class="text-muted small mt-1 mb-0" style="display:none;">
+                            Sử dụng ký hiệu <strong>[...]</strong> trong nội dung câu hỏi để tạo chỗ trống.<br>
+                            Ví dụ: "Học đi đôi với [...]" -> thêm 1 đáp án là "hành".
+                        </p>
                         <div id="bankAnswerOptions" style="display:flex;flex-direction:column;gap:10px;margin-top:12px;"></div>
                     </div>
                 </div>
@@ -196,17 +207,15 @@
 <script>
 let bankItems = [];
 let subjectItems = [];
+
+function escapeHtml(text) {
+    if (!text) return "";
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return text.toString().replace(/[&<>"']/g, m => map[m]);
+}
+
 let selectedBank = null;
 let bankQuestions = [];
-
-function escapeHtml(value) {
-    return String(value ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-}
 
 function showBankAlert(message, type = 'success') {
     document.getElementById('bankAlert').innerHTML = `
@@ -383,6 +392,7 @@ function renderQuestionTable() {
                     </div>
                 `).join('')}
             </td>
+            <td>${Number(question.loai_cauhoi) === 2 ? 'Điền từ' : 'Trắc nghiệm'}</td>
             <td>${escapeHtml(difficultyLabel(question.dokho))}</td>
             <td><span class="badge ${question.trangthai === 'inactive' ? 'text-bg-secondary' : 'text-bg-success'}">${escapeHtml(statusLabel(question.trangthai))}</span></td>
             <td class="text-end">
@@ -513,7 +523,21 @@ function fillQuestionSubjectOptions(selectedId = '') {
 }
 
 function addBankAnswerOption(content = '', checked = false) {
+    const type = parseInt(document.getElementById('bankQuestionType').value || 1);
     const container = document.getElementById('bankAnswerOptions');
+    
+    if (type === 2) {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;';
+        row.innerHTML = `
+            <input type="text" class="form-control bank-answer-input" value="${escapeHtml(content)}" placeholder="Nhập từ cần điền (theo thứ tự các dấu [...])">
+            <input type="hidden" name="bank_correct_answer" value="on">
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">Xóa</button>
+        `;
+        container.appendChild(row);
+        return;
+    }
+
     const index = container.children.length;
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:10px;';
@@ -525,6 +549,33 @@ function addBankAnswerOption(content = '', checked = false) {
         <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">Xóa</button>
     `;
     container.appendChild(row);
+}
+
+function toggleBankAnswerType() {
+    const type = parseInt(document.getElementById('bankQuestionType').value || 1);
+    const btnAdd = document.getElementById('btnAddNewAnswer');
+    const desc = document.getElementById('bankAnswerDesc');
+    const container = document.getElementById('bankAnswerOptions');
+
+    // Get current values to preserve
+    const currentValues = Array.from(container.querySelectorAll('.bank-answer-input')).map(inp => inp.value);
+    
+    // Refresh container
+    container.innerHTML = '';
+    if (currentValues.length > 0) {
+        currentValues.forEach((val, i) => addBankAnswerOption(val, i === 0));
+    } else {
+        addBankAnswerOption();
+        addBankAnswerOption();
+    }
+    
+    if (type === 2) {
+        btnAdd.style.display = 'inline-block'; // Allow adding multiple blanks
+        desc.style.display = 'block';
+    } else {
+        btnAdd.style.display = 'inline-block';
+        desc.style.display = 'none';
+    }
 }
 
 function openQuestionModal(id = 0) {
@@ -680,6 +731,7 @@ document.getElementById('bankQuestionForm').addEventListener('submit', async fun
         id_monhoc: Number(document.getElementById('bankQuestionSubject').value || 0),
         noidungcauhoi: document.getElementById('bankQuestionContent').value.trim(),
         dokho: document.getElementById('bankQuestionDifficulty').value,
+        loai_cauhoi: parseInt(document.getElementById('bankQuestionType').value || 1),
         trangthai: document.getElementById('bankQuestionStatus').value,
         options,
         correct_index: correctIndex

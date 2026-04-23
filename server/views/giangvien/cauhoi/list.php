@@ -129,19 +129,34 @@ D. Programming HTML Page
                 <textarea name="noidungcauhoi" id="noidungcauhoi" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></textarea>
             </div>
 
-            <div style="margin-bottom:15px;">
-                <label style="display:block; margin-bottom:5px; font-weight:bold;">Độ khó:</label>
-                <select name="dokho" id="dokho" style="width:200px; padding:8px; border:1px solid #ddd; border-radius:6px;">
-                    <option value="Dễ">Dễ</option>
-                    <option value="Trung bình">Trung bình</option>
-                    <option value="Khó">Khó</option>
-                </select>
+            <div style="display:flex; gap:15px; margin-bottom:15px;">
+                <div style="flex:1;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Loại câu hỏi:</label>
+                    <select name="loai_cauhoi" id="loai_cauhoi" onchange="toggleAnswerType()" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="1">Trắc nghiệm</option>
+                        <option value="2">Điền từ</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Độ khó:</label>
+                    <select name="dokho" id="dokho" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="Dễ">Dễ</option>
+                        <option value="Trung bình">Trung bình</option>
+                        <option value="Khó">Khó</option>
+                    </select>
+                </div>
             </div>
 
             <div style="margin-bottom:15px;">
-                <label style="font-weight:bold;">Đáp án:</label>
+                <div id="answerHeader" style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="font-weight:bold;">Đáp án:</label>
+                    <button type="button" id="btnAddOption" onclick="addOption()" style="background:#3498db; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:13px;">+ Thêm đáp án</button>
+                </div>
+                <p id="answerTypeDesc" style="display:none; color:#666; font-size:12px; margin:5px 0;">
+                    Sử dụng <strong>[...]</strong> trong nội dung câu hỏi để tạo chỗ trống.<br>
+                    Các đáp án dưới đây sẽ được khớp theo thứ tự các dấu [...] xuất hiện.
+                </p>
                 <div id="optionsContainer" style="margin-top:10px;"></div>
-                <button type="button" onclick="addOption()" style="background:#3498db; color:white; border:none; padding:8px 15px; border-radius:4px; margin-top:10px; cursor:pointer;">+ Thêm đáp án</button>
             </div>
 
             <div style="margin-top:20px; text-align:right; border-top:1px solid #eee; padding-top:15px;">
@@ -180,6 +195,12 @@ D. Programming HTML Page
 </div>
 
 <script>
+function escapeHtml(text) {
+    if (!text) return "";
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return text.toString().replace(/[&<>"']/g, m => map[m]);
+}
+
 const examId = <?= $id_baithi ?>;
 let questionItems = [];
 let examInfo = null;
@@ -223,7 +244,22 @@ function renderExamInfoCard() {
 }
 
 function addOption(content = '', isCorrect = false) {
+    const type = parseInt(document.getElementById('loai_cauhoi').value || 1);
     const container = document.getElementById('optionsContainer');
+
+    if (type === 2) {
+        const div = document.createElement('div');
+        div.className = 'option-item';
+        div.style.cssText = 'margin-bottom:10px;display:flex;gap:10px;align-items:center;';
+        div.innerHTML = `
+            <input type="text" name="option[]" value="${escapeHtml(content)}" placeholder="Đáp án cho dấu [...] ..." required style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;">
+            <input type="hidden" name="is_correct_radio" value="on">
+            <button type="button" onclick="this.parentElement.remove()" style="background:#e74c3c;color:white;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">Xóa</button>
+        `;
+        container.appendChild(div);
+        return;
+    }
+
     const div = document.createElement('div');
     div.className = 'option-item';
     div.style.cssText = 'margin-bottom:10px;display:flex;gap:10px;align-items:center;';
@@ -235,6 +271,33 @@ function addOption(content = '', isCorrect = false) {
         <button type="button" onclick="this.parentElement.remove()" style="background:#e74c3c;color:white;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">Xóa</button>
     `;
     container.appendChild(div);
+}
+
+function toggleAnswerType() {
+    const type = parseInt(document.getElementById('loai_cauhoi').value || 1);
+    const btnAdd = document.getElementById('btnAddOption');
+    const desc = document.getElementById('answerTypeDesc');
+    const container = document.getElementById('optionsContainer');
+
+    // Get current answer values to preserve them
+    const currentValues = Array.from(container.querySelectorAll('input[name="option[]"]')).map(inp => inp.value);
+    
+    // Clear and redraw
+    container.innerHTML = '';
+    if (currentValues.length > 0) {
+        currentValues.forEach((val, i) => addOption(val, i === 0));
+    } else {
+        addOption();
+        addOption();
+    }
+
+    if (type === 2) {
+        btnAdd.style.display = 'inline-block';
+        desc.style.display = 'block';
+    } else {
+        btnAdd.style.display = 'inline-block';
+        desc.style.display = 'none';
+    }
 }
 
 function renderQuestionActions(question) {
@@ -325,12 +388,17 @@ function renderQuestionTable() {
     tbody.innerHTML = questionItems.map((ch, index) => {
         let answersHtml = '<span style="color:#94a3b8; font-style:italic; font-size:13px;">Đang ẩn đáp án</span>';
         if (showAnswers) {
-            answersHtml = (ch.dapan || []).map(d => `
-                <div style="margin:5px 0;display:flex;align-items:center;">
-                    <input type="checkbox" ${Number(d.dapandung) === 1 ? 'checked' : ''} disabled style="margin-right:8px;">
-                    <span style="${Number(d.dapandung) === 1 ? 'color:#27ae60;font-weight:bold;' : 'color:#666;'}">${escapeHtml(d.noidungdapan)}</span>
-                </div>
-            `).join('');
+            if (Number(ch.loai_cauhoi) === 2) {
+                const correct = (ch.dapan || [])[0]?.noidungdapan || '---';
+                answersHtml = `<div style="color:#27ae60; font-weight:bold; font-size:14px;">[Điền từ] ${escapeHtml(correct)}</div>`;
+            } else {
+                answersHtml = (ch.dapan || []).map(d => `
+                    <div style="margin:5px 0;display:flex;align-items:center;">
+                        <input type="checkbox" ${Number(d.dapandung) === 1 ? 'checked' : ''} disabled style="margin-right:8px;">
+                        <span style="${Number(d.dapandung) === 1 ? 'color:#27ae60;font-weight:bold;' : 'color:#666;'}">${escapeHtml(d.noidungdapan)}</span>
+                    </div>
+                `).join('');
+            }
         }
 
         return `
@@ -358,7 +426,9 @@ function openAddModal() {
     document.getElementById('modalTitle').innerText = 'Thêm câu hỏi mới';
     document.getElementById('questionForm').reset();
     document.getElementById('edit_id_cauhoi').value = '';
+    document.getElementById('loai_cauhoi').value = '1';
     document.getElementById('optionsContainer').innerHTML = '';
+    toggleAnswerType();
     addOption();
     addOption();
     document.getElementById('questionModal').style.display = 'flex';
@@ -374,6 +444,8 @@ function openEditModal(data) {
     document.getElementById('noidungcauhoi').value = data.noidungcauhoi;
     document.getElementById('dokho').value = data.dokho;
     document.getElementById('edit_id_cauhoi').value = data.id_cauhoi;
+    document.getElementById('loai_cauhoi').value = data.loai_cauhoi || 1;
+    toggleAnswerType();
     document.getElementById('optionsContainer').innerHTML = '';
     (data.dapan || []).forEach(d => addOption(d.noidungdapan, Number(d.dapandung) === 1));
     document.getElementById('questionModal').style.display = 'flex';
@@ -518,6 +590,7 @@ document.getElementById('questionForm').addEventListener('submit', async functio
     const radios = document.querySelectorAll('input[name="is_correct_radio"]');
     let selectedIndex = -1;
     radios.forEach((radio, index) => { if (radio.checked) selectedIndex = index; });
+    const loai_cauhoi = parseInt(document.getElementById('loai_cauhoi').value || 1);
 
     if (!id_cauhoi && questionItems.length >= maxQuestions) {
         showQuestionAlert(`Bài thi đã đạt giới hạn tối đa ${maxQuestions} câu.`, 'error');
@@ -527,17 +600,26 @@ document.getElementById('questionForm').addEventListener('submit', async functio
         showQuestionAlert('Nội dung câu hỏi không được để trống', 'error');
         return;
     }
-    if (optionsValues.length < 2 || optionsValues.some(opt => opt === '')) {
-        showQuestionAlert('Cần ít nhất 2 đáp án hợp lệ', 'error');
-        return;
-    }
-    if (new Set(optionsValues.map(v => v.toLowerCase())).size !== optionsValues.length) {
-        showQuestionAlert('Các đáp án của một câu hỏi không được trùng nhau', 'error');
-        return;
-    }
-    if (selectedIndex < 0) {
-        showQuestionAlert('Vui lòng chọn một đáp án đúng', 'error');
-        return;
+
+    if (loai_cauhoi === 1) {
+        if (optionsValues.length < 2 || optionsValues.some(opt => opt === '')) {
+            showQuestionAlert('Trắc nghiệm cần ít nhất 2 đáp án hợp lệ', 'error');
+            return;
+        }
+        if (new Set(optionsValues.map(v => v.toLowerCase())).size !== optionsValues.length) {
+            showQuestionAlert('Các đáp án của một câu hỏi không được trùng nhau', 'error');
+            return;
+        }
+        if (selectedIndex < 0) {
+            showQuestionAlert('Vui lòng chọn một đáp án đúng', 'error');
+            return;
+        }
+    } else {
+        if (optionsValues.length < 1 || optionsValues[0] === '') {
+            showQuestionAlert('Vui lòng nhập đáp án đúng cho câu điền từ', 'error');
+            return;
+        }
+        selectedIndex = 0;
     }
 
     const payload = {
@@ -545,6 +627,7 @@ document.getElementById('questionForm').addEventListener('submit', async functio
         id_cauhoi: id_cauhoi || 0,
         noidungcauhoi: noidung,
         dokho: document.getElementById('dokho').value,
+        loai_cauhoi: loai_cauhoi,
         options: optionsValues,
         correct_index: selectedIndex
     };

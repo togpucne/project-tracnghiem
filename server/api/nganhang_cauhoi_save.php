@@ -14,6 +14,7 @@ try {
     $noidungcauhoi = ApiSecurityValidator::validateString($data["noidungcauhoi"] ?? "", "Nội dung câu hỏi", 5, 5000);
     $dokho = ApiSecurityValidator::validateEnum($data["dokho"] ?? "de", "Độ khó", ["de", "trungbinh", "kho"]);
     $trangthai = ApiSecurityValidator::validateEnum($data["trangthai"] ?? "active", "Trạng thái", ["active", "inactive"]);
+    $loai_cauhoi = (int) ($data["loai_cauhoi"] ?? 1);
 } catch (Exception $e) {
     Api::json(["error" => $e->getMessage()], 400);
 }
@@ -30,8 +31,17 @@ if (!in_array($id_monhoc, $bankSubjectIds, true)) {
 
 $options = $data["options"] ?? [];
 $correctIndex = isset($data["correct_index"]) ? (int) $data["correct_index"] : -1;
-if (!is_array($options) || count($options) < 2 || $correctIndex < 0) {
-    Api::json(["error" => "Danh sách đáp án không hợp lệ"], 400);
+
+// Flexible validation based on type
+if ($loai_cauhoi === 1) {
+    if (!is_array($options) || count($options) < 2 || $correctIndex < 0) {
+        Api::json(["error" => "Trắc nghiệm cần ít nhất 2 đáp án và 1 đáp án đúng"], 400);
+    }
+} else {
+    if (!is_array($options) || count($options) < 1) {
+        Api::json(["error" => "Điền từ cần chính xác 1 đáp án đúng"], 400);
+    }
+    $correctIndex = 0; // Force first one as correct for fill-in
 }
 
 $answers = [];
@@ -58,7 +68,7 @@ if ($id_cauhoi_nganhang > 0) {
         Api::json(["error" => "Không tìm thấy câu hỏi ngân hàng"], 404);
     }
 
-    $ok = updateQuestionBankQuestion($id_cauhoi_nganhang, $id_monhoc, $noidungcauhoi, $dokho, $trangthai, $answers);
+    $ok = updateQuestionBankQuestion($id_cauhoi_nganhang, $id_monhoc, $noidungcauhoi, $dokho, $loai_cauhoi, $trangthai, $answers);
     if (!$ok) {
         Api::json(["error" => "Không thể cập nhật câu hỏi ngân hàng"], 500);
     }
@@ -69,7 +79,7 @@ if ($id_cauhoi_nganhang > 0) {
     ]);
 }
 
-$newId = createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $dokho, $answers);
+$newId = createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $dokho, $loai_cauhoi, $answers);
 if ($newId <= 0) {
     Api::json(["error" => "Không thể tạo câu hỏi ngân hàng"], 500);
 }

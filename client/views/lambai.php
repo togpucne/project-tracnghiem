@@ -173,6 +173,12 @@ $user_id = $_SESSION['user']['id'];
 </div>
 
 <script>
+function escapeHtml(text) {
+    if (!text) return "";
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return text.toString().replace(/[&<>"']/g, m => map[m]);
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     const id_baithi = <?= $id_baithi ?>;
     const userId = <?= $user_id ?>;
@@ -233,35 +239,83 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function renderQuestions(questions) {
-        questionsContainer.innerHTML = questions.map((q, i) => `
-            <div class="question-card" id="q${q.id_cauhoi}">
-                <div class="q-header">
-                    <span class="q-num">Câu ${i + 1}</span>
-                    <button type="button" class="flag-btn ${flags[q.id_cauhoi] ? 'active' : ''}" data-id="${q.id_cauhoi}" title="Đánh dấu">
-                        <i class="fa-solid fa-flag"></i>
-                    </button>
+        questionsContainer.innerHTML = questions.map((q, i) => {
+            let finalContent = q.noidung;
+            let inlineInputs = '';
+            
+            if (q.loai_cauhoi === 2) {
+                let count = 0;
+                const hasCloze = finalContent.includes('[...]');
+                
+                if (hasCloze) {
+                    finalContent = finalContent.replace(/\[\.\.\.\]/g, () => {
+                        const currentIdx = count++;
+                        const currentVal = (Array.isArray(answers[q.id_cauhoi]) ? answers[q.id_cauhoi][currentIdx] : (currentIdx === 0 ? answers[q.id_cauhoi] : '')) || '';
+                        return `<input type="text" class="cloze-input" data-id="${q.id_cauhoi}" data-index="${currentIdx}" 
+                                 value="${escapeHtml(currentVal)}" 
+                                 style="border:none; border-bottom:2px solid #3b5bdb; width:120px; text-align:center; outline:none; font-weight:600; color:#1e40af; background:transparent;">`;
+                    });
+                } else {
+                    const currentVal = (Array.isArray(answers[q.id_cauhoi]) ? answers[q.id_cauhoi][0] : answers[q.id_cauhoi]) || '';
+                    inlineInputs = `<input type="text" class="form-control fill-in-input" data-id="${q.id_cauhoi}" 
+                                     placeholder="Nhập câu trả lời của bạn..." 
+                                     value="${escapeHtml(currentVal)}" 
+                                     style="border: 1.5px solid #e2e8f0; border-radius: 9px; padding: 12px 16px; width: 100%;">`;
+                }
+            }
+
+            return `
+                <div class="question-card" id="q${q.id_cauhoi}">
+                    <div class="q-header">
+                        <span class="q-num">Câu ${i + 1}</span>
+                        <button type="button" class="flag-btn ${flags[q.id_cauhoi] ? 'active' : ''}" data-id="${q.id_cauhoi}" title="Đánh dấu">
+                            <i class="fa-solid fa-flag"></i>
+                        </button>
+                    </div>
+                    <div class="q-content">${finalContent}</div>
+                    <div class="answers">
+                        ${q.loai_cauhoi === 2 
+                            ? inlineInputs
+                            : q.dapan.map(ans => `
+                                <label class="answer-option">
+                                    <input type="radio" name="q${q.id_cauhoi}" value="${ans.id_dapan}"
+                                        ${answers[q.id_cauhoi] == ans.id_dapan ? 'checked' : ''}>
+                                    <span>${ans.noidungdapan}</span>
+                                </label>
+                            `).join('')}
+                    </div>
                 </div>
-                <div class="q-content">${q.noidung}</div>
-                <div class="answers">
-                    ${q.dapan.map(ans => `
-                        <label class="answer-option">
-                            <input type="radio" name="q${q.id_cauhoi}" value="${ans.id_dapan}"
-                                ${answers[q.id_cauhoi] == ans.id_dapan ? 'checked' : ''}>
-                            <span>${ans.noidungdapan}</span>
-                        </label>
-                    `).join('')}
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         // Listen for changes
         questionsContainer.querySelectorAll("input[type=radio]").forEach(radio => {
             radio.onchange = () => {
                 const qid = radio.name.replace("q", "");
                 answers[qid] = radio.value;
-                localStorage.setItem(`answers_${userId}_${id_baithi}`, JSON.stringify(answers));
-                document.querySelector(`.qnav[data-id='${qid}']`).classList.add("answered");
-                syncDraft();
+                onAnswerChanged(qid);
+            };
+        });
+
+        questionsContainer.querySelectorAll(".fill-in-input, .cloze-input").forEach(input => {
+            input.oninput = (e) => {
+                const qid = input.dataset.id;
+                const idx = input.dataset.index;
+                
+                if (idx !== undefined) {
+                    // Cloze multi-input
+                    if (!Array.isArray(answers[qid])) {
+                        // Initialize array if it was a string or null
+                        const oldVal = answers[qid];
+                        answers[qid] = [];
+                        if (oldVal) answers[qid][0] = oldVal;
+                    }
+                    answers[qid][parseInt(idx)] = e.target.value;
+                } else {
+                    // Single input
+                    answers[qid] = e.target.value;
+                }
+                onAnswerChanged(qid);
             };
         });
 
@@ -283,6 +337,17 @@ document.addEventListener("DOMContentLoaded", async () => {
                 localStorage.setItem(`flags_${userId}_${id_baithi}`, JSON.stringify(flags));
             };
         });
+    }
+
+    function onAnswerChanged(qid) {
+        localStorage.setItem(`answers_${userId}_${id_baithi}`, JSON.stringify(answers));
+        const navBtn = document.querySelector(`.qnav[data-id='${qid}']`);
+        if (answers[qid] && answers[qid].toString().trim() !== "") {
+            navBtn.classList.add("answered");
+        } else {
+            navBtn.classList.remove("answered");
+        }
+        syncDraft();
     }
 
     function renderNav(questions) {

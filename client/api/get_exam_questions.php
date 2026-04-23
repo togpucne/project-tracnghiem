@@ -73,7 +73,7 @@ if (!empty($cautraloi_tam)) {
 
 $sql = "
     SELECT
-        c.id_cauhoi, c.noidungcauhoi,
+        c.id_cauhoi, c.noidungcauhoi, c.loai_cauhoi,
         d.id_dapan, d.noidungdapan
     FROM cauhoi c
     JOIN dapan d ON c.id_cauhoi = d.id_cauhoi
@@ -92,6 +92,7 @@ while ($row = $res->fetch_assoc()) {
         $cauhoi_map[$id] = [
             "id_cauhoi" => $id,
             "noidung" => htmlspecialchars($row["noidungcauhoi"]),
+            "loai_cauhoi" => (int)($row["loai_cauhoi"] ?? 1),
             "dapan" => [],
         ];
     }

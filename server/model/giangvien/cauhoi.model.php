@@ -40,7 +40,7 @@ class CauHoiModel
         return (int) ($row['count'] ?? 0) > 0;
     }
 
-    public function create($id_baithi, $noidungcauhoi, $dokho, $dapan_list)
+    public function create($id_baithi, $noidungcauhoi, $dokho, $loai_cauhoi, $dapan_list)
     {
         if ($this->isBaiThiLocked($id_baithi)) {
             return ['success' => false, 'message' => 'Bài thi này đã có thí sinh làm, không được phép thêm câu hỏi mới.'];
@@ -52,9 +52,9 @@ class CauHoiModel
 
         $this->conn->begin_transaction();
         try {
-            $sql = "INSERT INTO cauhoi (id_baithi, noidungcauhoi, dokho, ngaytao) VALUES (?, ?, ?, NOW())";
+            $sql = "INSERT INTO cauhoi (id_baithi, noidungcauhoi, dokho, loai_cauhoi, ngaytao) VALUES (?, ?, ?, ?, NOW())";
             $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("iss", $id_baithi, $noidungcauhoi, $dokho);
+            $stmt->bind_param("issi", $id_baithi, $noidungcauhoi, $dokho, $loai_cauhoi);
             $stmt->execute();
 
             $id_cauhoi = $this->conn->insert_id;
@@ -74,7 +74,7 @@ class CauHoiModel
         }
     }
 
-    public function update($id_cauhoi, $noidungcauhoi, $dokho, $dapan_list)
+    public function update($id_cauhoi, $noidungcauhoi, $dokho, $loai_cauhoi, $dapan_list)
     {
         $cauhoi = $this->getById($id_cauhoi);
         if (!$cauhoi) {
@@ -91,9 +91,9 @@ class CauHoiModel
 
         $this->conn->begin_transaction();
         try {
-            $sql = "UPDATE cauhoi SET noidungcauhoi = ?, dokho = ? WHERE id_cauhoi = ?";
+            $sql = "UPDATE cauhoi SET noidungcauhoi = ?, dokho = ?, loai_cauhoi = ? WHERE id_cauhoi = ?";
             $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("ssi", $noidungcauhoi, $dokho, $id_cauhoi);
+            $stmt->bind_param("ssii", $noidungcauhoi, $dokho, $loai_cauhoi, $id_cauhoi);
             $stmt->execute();
 
             $stmt_del = $this->conn->prepare("DELETE FROM dapan WHERE id_cauhoi = ?");
@@ -296,9 +296,9 @@ class CauHoiModel
                     if ($this->checkDuplicate($id_baithi, $q['noidungcauhoi'])) continue;
 
                     // Copy question
-                    $sql_iq = "INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, ngaytao) VALUES (?, ?, ?, ?, NOW())";
+                    $sql_iq = "INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, loai_cauhoi, ngaytao) VALUES (?, ?, ?, ?, ?, NOW())";
                     $stmt_iq = $this->conn->prepare($sql_iq);
-                    $stmt_iq->bind_param("iiss", $id_baithi, $id_nhch, $q['noidungcauhoi'], $q['dokho']);
+                    $stmt_iq->bind_param("iissi", $id_baithi, $id_nhch, $q['noidungcauhoi'], $q['dokho'], $q['loai_cauhoi']);
                     $stmt_iq->execute();
                     $id_new = $this->conn->insert_id;
 

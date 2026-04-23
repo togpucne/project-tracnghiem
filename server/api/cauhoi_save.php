@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/Database.php";
@@ -11,11 +11,24 @@ $id_baithi = (int) ($data["id_baithi"] ?? 0);
 $id_cauhoi = (int) ($data["id_cauhoi"] ?? 0);
 $noidungcauhoi = trim($data["noidungcauhoi"] ?? "");
 $dokho = $data["dokho"] ?? "Dễ";
+$loai_cauhoi = (int) ($data["loai_cauhoi"] ?? 1);
 $options = $data["options"] ?? [];
 $correctIndex = isset($data["correct_index"]) ? (int) $data["correct_index"] : -1;
 
-if ($id_baithi <= 0 || $noidungcauhoi === "" || count($options) < 2 || $correctIndex < 0) {
+if ($id_baithi <= 0 || $noidungcauhoi === "") {
     Api::json(["error" => "Dữ liệu câu hỏi không hợp lệ"], 400);
+}
+
+if ($loai_cauhoi === 1) {
+    if (count($options) < 2 || $correctIndex < 0) {
+        Api::json(["error" => "Trắc nghiệm cần ít nhất 2 đáp án và 1 đáp án đúng"], 400);
+    }
+} else {
+    // Fill-in-the-blank
+    if (count($options) < 1) {
+        Api::json(["error" => "Điền từ cần chính xác 1 đáp án đúng"], 400);
+    }
+    $correctIndex = 0; // Force first
 }
 
 $conn = Database::connect();
@@ -56,8 +69,8 @@ foreach ($options as $index => $noidung) {
 
 $model = new CauHoiModel();
 $result = $id_cauhoi > 0
-    ? $model->update($id_cauhoi, $noidungcauhoi, $dokho, $dapan_list)
-    : $model->create($id_baithi, $noidungcauhoi, $dokho, $dapan_list);
+    ? $model->update($id_cauhoi, $noidungcauhoi, $dokho, $loai_cauhoi, $dapan_list)
+    : $model->create($id_baithi, $noidungcauhoi, $dokho, $loai_cauhoi, $dapan_list);
 
 if (!($result["success"] ?? false)) {
     Api::json(["error" => $result["message"] ?? "Không thể lưu câu hỏi"], 400);

@@ -68,6 +68,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById("result-container");
     const id_lanthi = <?= $id_lanthi ?>;
 
+    function escapeHtml(text) {
+        if (!text) return "";
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.toString().replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function json_decode_safe(str) {
+        try { return JSON.parse(str); } catch(e) { return null; }
+    }
+
     try {
         const res = await fetch(apiUrl("result/detail", { id: id_lanthi }));
         const json = await res.json();
@@ -116,22 +126,54 @@ document.addEventListener("DOMContentLoaded", async () => {
                             ${canSeeAnswers ? `
                                 <h5 class="fw-bold mb-4">Xem lại đáp án</h5>
                                 ${questions.map((q, i) => {
-                                    let selected = q.answers.find(a => a.selected);
-                                    let typeCls = !selected ? 'empty' : (selected.dapandung ? 'correct' : 'wrong');
-                                    return `
-                                        <div class="question-item ${typeCls}">
-                                            <p class="fw-bold mb-3">Câu ${i+1}: ${q.noidungcauhoi}</p>
-                                            <div class="options">
-                                                ${q.answers.map(ans => {
-                                                    let cls = "ans-opt";
-                                                    if (ans.dapandung) cls += " correct";
-                                                    if (ans.selected && !ans.dapandung) cls += " selected-wrong";
-                                                    return `<div class="${cls}">${ans.noidungdapan} ${ans.selected ? '<strong>(Bạn chọn)</strong>' : ''}</div>`;
-                                                }).join('')}
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
+                                     let typeCls = q.status; // 'correct', 'wrong', 'empty'
+                                     
+                                     let qContent = q.noidungcauhoi;
+                                     let answersHtml = '';
+
+                                     if (q.loai_cauhoi === 2) {
+                                         const decoded = json_decode_safe(q.user_text_ans);
+                                         const userAns = Array.isArray(decoded) ? decoded : [q.user_text_ans || ''];
+                                         const correctAnswers = q.answers.filter(a => a.dapandung);
+                                         let count = 0;
+
+                                         qContent = qContent.replace(/\[\.\.\.\]/g, () => {
+                                             const idx = count++;
+                                             const sub = userAns[idx] || '';
+                                             const cor = correctAnswers[idx]?.noidungdapan || '';
+                                             const isMatch = sub.trim().toLowerCase() === cor.trim().toLowerCase();
+                                             
+                                             let style = 'border-bottom: 2px solid #cbd5e1; padding: 0 5px; font-weight: 600;';
+                                             if (sub) {
+                                                 style += isMatch ? 'color: #166534; border-color: #22c55e;' : 'color: #991b1b; border-color: #ef4444;';
+                                             }
+
+                                             return `<span style="${style}">${escapeHtml(sub || '...')}</span> ${(!isMatch && sub) ? `<small class="text-success">[${escapeHtml(cor)}]</small>` : ''}`;
+                                         });
+
+                                         if (typeCls === 'wrong' || typeCls === 'empty') {
+                                             answersHtml = `<div class="mt-2 text-muted small">Đáp án đúng là: ${correctAnswers.map(a => `<b class='text-success'>${a.noidungdapan}</b>`).join(', ')}</div>`;
+                                         }
+                                     } else {
+                                         answersHtml = `
+                                             <div class="options">
+                                                 ${q.answers.map(ans => {
+                                                     let cls = "ans-opt";
+                                                     if (ans.dapandung) cls += " correct";
+                                                     if (ans.selected && !ans.dapandung) cls += " selected-wrong";
+                                                     return `<div class="${cls}">${ans.noidungdapan} ${ans.selected ? '<strong>(Bạn chọn)</strong>' : ''}</div>`;
+                                                 }).join('')}
+                                             </div>
+                                         `;
+                                     }
+
+                                     return `
+                                         <div class="question-item ${typeCls}">
+                                             <p class="fw-bold mb-3">Câu ${i+1}: ${qContent}</p>
+                                             ${answersHtml}
+                                         </div>
+                                     `;
+                                 }).join('')}
                             ` : `
                                 <div class="alert alert-info text-center p-4">
                                     <i class="fas fa-lock mb-3 d-block" style="font-size: 2rem;"></i>
