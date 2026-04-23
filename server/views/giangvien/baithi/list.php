@@ -221,6 +221,7 @@ function validateExamForm() {
 
 function openExamModal(data = null) {
     const modal = document.getElementById('examModal');
+    const submitBtn = document.getElementById('examSubmitBtn'); 
     const startInput = document.getElementById('m_start');
     const endInput = document.getElementById('m_end');
     const now = new Date();
