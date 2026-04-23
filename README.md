@@ -8,6 +8,7 @@ PT QUIZ là dự án nghiên cứu và phát triển hệ thống thi trắc ngh
 
 Dự án được thực hiện nhằm mô phỏng môi trường thi trực tuyến trong thực tế, kết hợp giữa ứng dụng Web và ứng dụng Desktop. Hệ thống cho phép người dùng tham gia làm bài thi trắc nghiệm, quản lý dữ liệu bài thi và xử lý thông tin thông qua API trung gian.
 
+
 Mục tiêu chính của dự án là nghiên cứu các phương pháp thiết kế API an toàn và áp dụng vào việc xây dựng một hệ thống demo phục vụ học tập và nghiên cứu trong lĩnh vực An toàn thông tin.
 
 ## 2. Mục tiêu dự án
