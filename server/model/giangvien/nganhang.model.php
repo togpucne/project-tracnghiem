@@ -221,15 +221,38 @@ function updateQuestionBank($id_nganhang, $ten_nganhang, $mieuta, $trangthai, $s
     }
 }
 
-function softDeleteQuestionBank($id_nganhang)
+function deleteQuestionBank($id_nganhang)
 {
     $conn = Database::connect();
-    $stmt = $conn->prepare("UPDATE nganhang_cauhoi SET trangthai = 0 WHERE id_nhch = ?");
-    $stmt->bind_param("i", $id_nganhang);
-    $ok = $stmt->execute();
-    $stmt->close();
-    $conn->close();
-    return $ok;
+    $conn->begin_transaction();
+
+    try {
+        // 1. Get all question IDs in this bank (where id_baithi is NULL)
+        $qIds = [];
+        $res = $conn->query("SELECT id_cauhoi FROM cauhoi WHERE id_nhch = $id_nganhang AND id_baithi IS NULL");
+        while($r = $res->fetch_assoc()) $qIds[] = $r['id_cauhoi'];
+
+        if (!empty($qIds)) {
+            $idsStr = implode(',', $qIds);
+            // 2. Delete answers
+            $conn->query("DELETE FROM dapan WHERE id_cauhoi IN ($idsStr)");
+            // 3. Delete questions
+            $conn->query("DELETE FROM cauhoi WHERE id_cauhoi IN ($idsStr)");
+        }
+
+        // 4. Delete the bank itself
+        $stmt = $conn->prepare("DELETE FROM nganhang_cauhoi WHERE id_nhch = ?");
+        $stmt->bind_param("i", $id_nganhang);
+        $stmt->execute();
+
+        $conn->commit();
+        $conn->close();
+        return true;
+    } catch (Exception $e) {
+        $conn->rollback();
+        $conn->close();
+        return false;
+    }
 }
 
 function getQuestionBankQuestions($id_nganhang, $id_monhoc, $id_nguoidung, $vaitro)
@@ -391,15 +414,31 @@ function updateQuestionBankQuestion($id_cauhoi_nganhang, $id_monhoc, $noidungcau
     }
 }
 
-function softDeleteQuestionBankQuestion($id_cauhoi_nganhang)
+function deleteQuestionBankQuestion($id_cauhoi_nganhang)
 {
     $conn = Database::connect();
-    $stmt = $conn->prepare("UPDATE cauhoi SET id_nhch = NULL WHERE id_cauhoi = ? AND id_baithi IS NULL");
-    $stmt->bind_param("i", $id_cauhoi_nganhang);
-    $ok = $stmt->execute();
-    $stmt->close();
-    $conn->close();
-    return $ok;
+    $conn->begin_transaction();
+
+    try {
+        // Only delete if it's truly a bank question (id_baithi IS NULL)
+        // 1. Delete answers
+        $stmt1 = $conn->prepare("DELETE FROM dapan WHERE id_cauhoi = ? AND EXISTS (SELECT 1 FROM cauhoi WHERE id_cauhoi = ? AND id_baithi IS NULL)");
+        $stmt1->bind_param("ii", $id_cauhoi_nganhang, $id_cauhoi_nganhang);
+        $stmt1->execute();
+
+        // 2. Delete question
+        $stmt2 = $conn->prepare("DELETE FROM cauhoi WHERE id_cauhoi = ? AND id_baithi IS NULL");
+        $stmt2->bind_param("i", $id_cauhoi_nganhang);
+        $stmt2->execute();
+
+        $conn->commit();
+        $conn->close();
+        return true;
+    } catch (Exception $e) {
+        $conn->rollback();
+        $conn->close();
+        return false;
+    }
 }
 
 function createManyInBank($id_nhch, $questions)

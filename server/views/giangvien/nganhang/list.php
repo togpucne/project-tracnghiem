@@ -271,7 +271,7 @@ function renderBankList() {
                 </div>
                 <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
                     <button type="button" class="btn btn-sm btn-outline-primary btn-edit-bank" data-id="${Number(bank.id_nganhang)}">Sửa</button>
-                    <button type="button" class="btn btn-sm btn-outline-danger btn-delete-bank" data-id="${Number(bank.id_nganhang)}">Khóa</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-delete-bank" data-id="${Number(bank.id_nganhang)}">Xóa</button>
                 </div>
             </div>
         `;
@@ -305,7 +305,9 @@ function renderQuestionPanelMeta() {
     }
 
     title.textContent = selectedBank.ten_nganhang || 'Ngân hàng câu hỏi';
-    meta.textContent = `${selectedBank.subjects?.length || 0} môn học được gắn vào ngân hàng này.`;
+    const qCount = bankQuestions.length;
+    meta.textContent = `${selectedBank.subjects?.length || 0} môn học | Tổng số ${qCount} câu hỏi đang hiển thị`;
+    
     const hasSubjects = !!(selectedBank.subjects && selectedBank.subjects.length);
     openBtn.disabled = !hasSubjects;
     document.getElementById('openImportWordBtn').disabled = !hasSubjects;
@@ -385,7 +387,7 @@ function renderQuestionTable() {
             <td><span class="badge ${question.trangthai === 'inactive' ? 'text-bg-secondary' : 'text-bg-success'}">${escapeHtml(statusLabel(question.trangthai))}</span></td>
             <td class="text-end">
                 <button type="button" class="btn btn-sm btn-outline-primary btn-edit-bank-question" data-id="${Number(question.id_cauhoi_nganhang)}">Sửa</button>
-                <button type="button" class="btn btn-sm btn-outline-danger btn-delete-bank-question" data-id="${Number(question.id_cauhoi_nganhang)}">Khóa</button>
+                <button type="button" class="btn btn-sm btn-outline-danger btn-delete-bank-question" data-id="${Number(question.id_cauhoi_nganhang)}">Xóa</button>
             </td>
         </tr>
     `).join('');
@@ -628,12 +630,12 @@ document.getElementById('bankList').addEventListener('click', async function(eve
     const deleteBtn = event.target.closest('.btn-delete-bank');
     if (deleteBtn) {
         event.stopPropagation();
-        if (!confirm('Bạn có chắc muốn khóa ngân hàng câu hỏi này không?')) {
+        if (!confirm('Bạn có chắc muốn XÓA VĨNH VIỄN ngân hàng câu hỏi này và toàn bộ câu hỏi bên trong không?')) {
             return;
         }
         try {
             const json = await deleteBank(Number(deleteBtn.dataset.id));
-            showBankAlert(json.message || 'Khóa ngân hàng thành công');
+            showBankAlert(json.message || 'Xóa ngân hàng thành công');
             if (selectedBank && Number(selectedBank.id_nganhang) === Number(deleteBtn.dataset.id)) {
                 selectedBank = null;
                 bankQuestions = [];
@@ -703,12 +705,12 @@ document.getElementById('bankQuestionTableBody').addEventListener('click', async
 
     const deleteBtn = event.target.closest('.btn-delete-bank-question');
     if (deleteBtn) {
-        if (!confirm('Bạn có chắc muốn khóa câu hỏi ngân hàng này không?')) {
+        if (!confirm('Bạn có chắc muốn XÓA VĨNH VIỄN câu hỏi ngân hàng này không?')) {
             return;
         }
         try {
             const json = await deleteBankQuestion(Number(deleteBtn.dataset.id));
-            showBankAlert(json.message || 'Khóa câu hỏi thành công');
+            showBankAlert(json.message || 'Xóa câu hỏi thành công');
             await loadBankQuestions(Number(selectedBank.id_nganhang), document.getElementById('subjectFilter').value || '');
             await loadBanks();
         } catch (error) {

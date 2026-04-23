@@ -16,11 +16,11 @@ if (!$question) {
     Api::json(["error" => "Không tìm thấy câu hỏi ngân hàng"], 404);
 }
 
-if (!softDeleteQuestionBankQuestion($id_cauhoi_nganhang)) {
-    Api::json(["error" => "Không thể khóa câu hỏi ngân hàng"], 500);
+if (!deleteQuestionBankQuestion($id_cauhoi_nganhang)) {
+    Api::json(["error" => "Không thể xóa câu hỏi ngân hàng"], 500);
 }
 
 Api::json([
     "success" => true,
-    "message" => "Đã khóa câu hỏi ngân hàng thành công",
+    "message" => "Đã xóa câu hỏi ngân hàng thành công",
 ]);
