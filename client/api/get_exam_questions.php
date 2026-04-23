@@ -44,7 +44,9 @@ if ($res->num_rows > 0) {
     $row = $res->fetch_assoc();
     $id_lanthi = $row["id_lanthi"];
     $elapsed_seconds = (int) $row["elapsed_seconds"];
-    $thoigianconlai = isset($row["thoigianconlai"]) ? (int) $row["thoigianconlai"] : null;
+    // Always calculate remaining time based on start time to ensure it "keeps running"
+    $thoigianconlai = ($thoigianlam * 60) - $elapsed_seconds;
+    if ($thoigianconlai < 0) $thoigianconlai = 0;
     $cautraloi_tam = $row["cautraloi_tam"];
 } else {
     $stmt = $conn->prepare("
@@ -54,6 +56,7 @@ if ($res->num_rows > 0) {
     $stmt->bind_param("ii", $user_id, $id_baithi);
     $stmt->execute();
     $id_lanthi = $conn->insert_id;
+    $thoigianconlai = $thoigianlam * 60;
 }
 
 $cautraloi_tam_str = "";

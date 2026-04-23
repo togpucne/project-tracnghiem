@@ -116,6 +116,15 @@ $user_id = $_SESSION['user']['id'];
     .answer-option:hover { border-color: #3b5bdb; background: #f5f8ff; }
     .answer-option input[type=radio] { accent-color: #3b5bdb; width: 16px; height: 16px; flex-shrink: 0; }
     .answer-option:has(input:checked) { border-color: #3b5bdb; background: #eef2ff; color: #1e40af; font-weight: 500; }
+
+    /* Anti-Copy */
+    body {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    .q-content { font-style: normal; }
 </style>
 
 <div class="container-fluid px-3 px-lg-4 my-4" id="exam-app">
@@ -296,14 +305,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function startCountdown() {
+        // Calculate absolute end time
+        const endTime = Date.now() + (remainingSeconds * 1000);
+        
         const tick = () => {
+            const now = Date.now();
+            remainingSeconds = Math.max(0, Math.floor((endTime - now) / 1000));
+            
             if (remainingSeconds <= 0) {
                 clearInterval(timerInterval);
+                localStorage.removeItem(`exam_time_${userId}_${id_baithi}`);
                 alert("Hết thời gian làm bài!");
                 sendSubmit();
                 return;
             }
-            remainingSeconds--;
+            
             localStorage.setItem(`exam_time_${userId}_${id_baithi}`, remainingSeconds);
             
             const mins = Math.floor(remainingSeconds / 60);
@@ -316,6 +332,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         tick();
         timerInterval = setInterval(tick, 1000);
     }
+
+    // Disable Right Click, Copy, and DevTools Shortcuts
+    document.addEventListener("contextmenu", e => e.preventDefault());
+    document.addEventListener("copy", e => e.preventDefault());
+    document.addEventListener("keydown", e => {
+        if (e.ctrlKey && (e.key === "c" || e.key === "x" || e.key === "u" || e.key === "s" || e.key === "a")) {
+            e.preventDefault();
+            alert("Hành động này bị chặn để đảm bảo tính công bằng!");
+        }
+        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+            e.preventDefault();
+        }
+    });
 
     async function syncDraft() {
         try {
