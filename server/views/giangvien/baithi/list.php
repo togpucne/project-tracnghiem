@@ -1,8 +1,8 @@
-﻿<div id="baithiAlert"></div>
+<div id="baithiAlert"></div>
 
 <div class="card" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
     <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-        <h2 style="margin: 0; color: #333;">Quản lý Bài thi</h2>
+        <h2 style="margin: 0; color: #333;">Bài thi</h2>
         <button onclick="openExamModal()"
             style="background: #27ae60; color: white; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
             <i class="fas fa-plus"></i> Thêm bài thi
@@ -15,14 +15,12 @@
 
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="background: #f4f4f4; border-bottom: 2px solid #ddd;">
-                <th style="padding: 12px; text-align: center; width: 50px;">STT</th>
-                <th style="padding: 12px; text-align: left;">Tên bài thi</th>
-                <th style="padding: 12px; text-align: left;">Môn học</th>
-                <th style="padding: 12px; text-align: center;">Số câu</th>
-                <th style="padding: 12px; text-align: center;">Thời gian làm</th>
-                <th style="padding: 12px; text-align: center;">Trạng thái</th>
-                <th style="padding: 12px; text-align: center;">Thao tác</th>
+            <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                <th style="padding: 14px 20px; text-align: center; color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; width:60px;">STT</th>
+                <th style="padding: 14px 20px; text-align: left; color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.025em;">Bài thi</th>
+                <th style="padding: 14px 20px; text-align: center; color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.025em; width:150px;">Cấu hình</th>
+                <th style="padding: 14px 20px; text-align: center; color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.025em; width:180px;">Trạng thái</th>
+                <th style="padding: 14px 20px; text-align: right; color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.025em; width:180px;">Thao tác</th>
             </tr>
         </thead>
         <tbody id="baithiTableBody">
@@ -141,7 +139,7 @@ function getExamById(id) {
 
 async function loadExamData() {
     const tbody = document.getElementById('baithiTableBody');
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;">Đang tải dữ liệu...</td></tr>';
 
     try {
         const res = await fetch(serverApiUrl('baithi/list'));
@@ -153,37 +151,48 @@ async function loadExamData() {
         renderSubjectOptions();
 
         if (!examItems.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Chưa có dữ liệu.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b;">Chưa có bài thi nào được tạo.</td></tr>';
             return;
         }
 
         tbody.innerHTML = examItems.map((bt, index) => {
-            const isLocked = bt.is_locked ? true : false;
-            const statusHtml = isLocked
-                ? `<span style="background:#f8d7da;color:#721c24;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;">Đã có người làm</span>`
-                : `<span style="background:#d4edda;color:#155724;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;">Chưa có người làm</span>`;
-
-            const actionHtml = isLocked
-                ? `<button class="btn-shuffle-exam" data-id="${Number(bt.id_baithi)}" style="background:#3498db;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">Xáo trộn</button>
-                   <button class="btn-delete-exam" data-id="${Number(bt.id_baithi)}" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-left:5px;">Xóa</button>`
-                : `<button class="btn-edit-exam" data-id="${Number(bt.id_baithi)}" style="background:#f39c12;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"> <i class="fas fa-edit"></i> Sửa</button>
-                   <button class="btn-delete-exam" data-id="${Number(bt.id_baithi)}" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-left:5px;"> <i class="fas fa-trash"></i> Xóa</button>`;
+            const isLocked = !!bt.is_locked;
+            const statusLabel = isLocked ? 'Đã có người làm' : 'Chưa có người làm';
+            const statusColor = isLocked ? '#b91c1c' : '#15803d';
+            const statusBg = isLocked ? '#fef2f2' : '#f0fdf4';
+            const statusBorder = isLocked ? '#fee2e2' : '#dcfce7';
 
             return `
-            <tr class="exam-row" data-id="${Number(bt.id_baithi)}" style="border-bottom:1px solid #eee;cursor:pointer;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
-                <td style="padding:12px;text-align:center;color:#666;">${index + 1}</td>
-                <td style="padding:12px;"><strong>${escapeHtml(bt.ten_baithi)}</strong></td>
-                <td style="padding:12px;">${escapeHtml(bt.tenmonhoc)}</td>
-                <td style="padding:12px;text-align:center;"><span style="background:#e1f5fe;color:#0288d1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">${bt.tongcauhoi} câu</span></td>
-                <td style="padding:12px;text-align:center;"><i class="far fa-clock"></i> ${bt.thoigianlam} phút</td>
-                <td style="padding:12px;text-align:center;">${statusHtml}</td>
-                <td style="padding:12px;text-align:center;">
-                    ${actionHtml}
+            <tr class="exam-row" data-id="${Number(bt.id_baithi)}" style="border-bottom:1px solid #f1f5f9; cursor:pointer; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <td style="padding:16px 20px; text-align:center; color:#94a3b8; font-size:14px; font-weight:600;">${index + 1}</td>
+                <td style="padding:16px 20px;">
+                    <div style="font-weight:700; color:#1e293b; font-size:15px;">${escapeHtml(bt.ten_baithi)}</div>
+                    <div style="font-size:12px; color:#64748b; margin-top:4px;">
+                        Môn: <span style="color:#3b82f6; font-weight:600;">${escapeHtml(bt.tenmonhoc)}</span>
+                    </div>
+                </td>
+                <td style="padding:16px 20px; text-align:center;">
+                    <div style="font-size:13px; color:#1e293b; font-weight:600;">${bt.tongcauhoi} câu</div>
+                    <div style="font-size:11px; color:#94a3b8; margin-top:2px;">${bt.thoigianlam} phút</div>
+                </td>
+                <td style="padding:16px 20px; text-align:center;">
+                    <span style="display:inline-block; background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder}; padding:4px 12px; border-radius:12px; font-size:11px; font-weight:700; white-space:nowrap;">
+                        ${statusLabel}
+                    </span>
+                </td>
+                <td style="padding:16px 20px; text-align:right;">
+                    <div style="display:flex; gap:8px; justify-content:flex-end;">
+                        ${isLocked 
+                            ? `<button class="btn-shuffle-exam" data-id="${Number(bt.id_baithi)}" style="background:#fff; color:#3b82f6; border:1px solid #dbeafe; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Xáo trộn</button>` 
+                            : `<button class="btn-edit-exam" data-id="${Number(bt.id_baithi)}" style="background:#fff; color:#f59e0b; border:1px solid #fef3c7; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Sửa</button>`
+                        }
+                        <button class="btn-delete-exam" data-id="${Number(bt.id_baithi)}" style="background:#fff; color:#ef4444; border:1px solid #fee2e2; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Xóa</button>
+                    </div>
                 </td>
             </tr>
         `}).join('');
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#c0392b;">${escapeHtml(error.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#ef4444;">${escapeHtml(error.message)}</td></tr>`;
     }
 }
 

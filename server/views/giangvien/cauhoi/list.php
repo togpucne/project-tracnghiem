@@ -3,40 +3,32 @@
 <div id="questionAlert"></div>
 
 <div class="container" style="max-width: 1240px; margin: 0 auto; padding: 20px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:25px; padding-bottom:15px; border-bottom:1px solid #eee;">
         <div>
-            <h2 style="margin:0;" id="questionExamTitle">Đang tải...</h2>
-            <p style="color:#666; margin-top:6px;" id="questionMeta">Đang tải thông tin bài thi...</p>
+            <h2 style="margin:0; font-size:24px; color:#1e293b;" id="questionExamTitle">Đang tải...</h2>
+            <div id="questionMeta" style="margin-top:8px; color:#64748b; font-size:14px;"></div>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
-            <div style="display:flex; align-items:center; gap:8px; background:#fff; padding:6px 14px; border-radius:99px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-right:5px;" title="Chỉ ẩn/hiện ở bảng này để bạn dễ theo dõi">
-                <span style="font-size:13px; font-weight:600; color:#475569;">Xem nhanh đáp án</span>
-                <label class="premium-switch">
-                    <input type="checkbox" id="toggleAnswersUI" checked onchange="renderQuestionTable()">
-                    <span class="premium-slider"></span>
-                </label>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:12px;">
+            <div style="display:flex; gap:15px; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:13px; color:#475569;">Xem nhanh:</span>
+                    <label class="premium-switch"><input type="checkbox" id="toggleAnswersUI" checked onchange="renderQuestionTable()"><span class="premium-slider"></span></label>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:13px; color:#475569;">Hiện đáp án:</span>
+                    <label class="premium-switch"><input type="checkbox" id="examShowAnswersToggle" onchange="updateExamSetting({hien_dapan: this.checked})"><span class="premium-slider"></span></label>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:13px; color:#475569;">Xáo trộn:</span>
+                    <label class="premium-switch"><input type="checkbox" id="examShuffleToggle" onchange="updateExamSetting({xao_tron: this.checked})"><span class="premium-slider"></span></label>
+                </div>
             </div>
-            <div style="display:flex; align-items:center; gap:8px; background:#fff; padding:6px 14px; border-radius:99px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-right:5px;" title="Cho phép thí sinh xem kết quả sau khi nộp bài">
-                <span style="font-size:13px; font-weight:600; color:#475569;">Hiện đáp án (Thí sinh)</span>
-                <label class="premium-switch">
-                    <input type="checkbox" id="examShowAnswersToggle" onchange="updateExamSetting({hien_dapan: this.checked})">
-                    <span class="premium-slider"></span>
-                </label>
+            <div style="display:flex; gap:8px;">
+                <a href="index.php?act=quanly-baithi" style="background:#f1f5f9; color:#475569; padding:8px 16px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:600; border:1px solid #e2e8f0;">Quay lại</a>
+                <button id="importWordBtn" onclick="openImportModal()" style="background:#3b82f6; color:white; padding:8px 16px; border-radius:6px; border:none; cursor:pointer; font-size:13px; font-weight:600;">Import</button>
+                <button id="importBankBtn" onclick="openBankModal()" style="background:#8b5cf6; color:white; padding:8px 16px; border-radius:6px; border:none; cursor:pointer; font-size:13px; font-weight:600;">Ngân hàng</button>
+                <button id="addQuestionBtn" onclick="openAddModal()" style="background:#10b981; color:white; padding:8px 16px; border-radius:6px; border:none; cursor:pointer; font-size:13px; font-weight:600;">Thêm câu hỏi</button>
             </div>
-            <div style="display:flex; align-items:center; gap:8px; background:#fff; padding:6px 14px; border-radius:99px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-right:15px;" id="shuffleToggleContainer" title="Xáo trộn cả câu hỏi và thứ tự đáp án">
-                <span style="font-size:13px; font-weight:600; color:#475569;">Xáo trộn</span>
-                <label class="premium-switch">
-                    <input type="checkbox" id="examShuffleToggle" onchange="updateExamSetting({xao_tron: this.checked})">
-                    <span class="premium-slider"></span>
-                </label>
-            </div>
-            
-            <a href="index.php?act=quanly-baithi" style="background:#6c757d; color:white; padding:8px 15px; border-radius:6px; text-decoration:none; font-size:14px; font-weight:500;">
-                <i class="fas fa-arrow-left me-1"></i> Quay lại
-            </a>
-            <button id="importWordBtn" onclick="openImportModal()" style="background:#0d6efd; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer; font-size:14px; font-weight:500;">Import Word</button>
-            <button id="importBankBtn" onclick="openBankModal()" style="background:#8e44ad; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer; font-size:14px; font-weight:500;">Ngân hàng câu hỏi</button>
-            <button id="addQuestionBtn" onclick="openAddModal()" style="background:#27ae60; color:white; padding:8px 20px; border-radius:6px; border:none; cursor:pointer; font-size:14px; font-weight:500;">Thêm tay</button>
         </div>
     </div>
 
@@ -221,26 +213,23 @@ function showQuestionAlert(message, type = 'success') {
 
 function renderExamInfoCard() {
     const items = [
-        ['id_baithi', examInfo.id_baithi],
-        ['id_monhoc', examInfo.id_monhoc],
-        ['ten_baithi', examInfo.ten_baithi || ''],
-        ['tongcauhoi', examInfo.tongcauhoi || 0],
-        ['thoigianlam', `${examInfo.thoigianlam || 0} phút`],
-        ['thoigianbatdau', examInfo.thoigianbatdau || '---'],
-        ['thoigianketthuc', examInfo.thoigianketthuc || '---'],
-        ['trangthai', examInfo.trangthai || '---'],
-        ['xao_tron', Number(examInfo.xao_tron) === 1 ? 'Câu hỏi và đáp án' : 'Không'],
-        ['ngaytao', examInfo.ngaytao || '---'],
+        ['Số câu hỏi', `${examInfo.tongcauhoi || 0} câu`],
+        ['Thời gian làm bài', `${examInfo.thoigianlam || 0} phút`],
+        ['Trạng thái', `<span style="color:${examInfo.trangthai === 'open' ? '#27ae60' : '#e67e22'}; font-weight:700;">${examInfo.trangthai === 'open' ? 'Đang mở' : 'Đã đóng'}</span>`],
+        ['Thời gian mở', examInfo.thoigianbatdau || '---'],
+        ['Thời gian đóng', examInfo.thoigianketthuc || '---'],
+        ['Xáo trộn', Number(examInfo.xao_tron) === 1 ? '<span class="badge bg-primary">Bật</span>' : '<span class="badge bg-secondary">Tắt</span>'],
+        ['Ngày tạo', examInfo.ngaytao || '---'],
     ];
 
     document.getElementById('examInfoGrid').innerHTML = items.map(([label, value]) => `
-        <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:10px; padding:14px;">
-            <div style="color:#6c757d; font-size:13px; margin-bottom:6px;">${escapeHtml(label)}</div>
-            <div style="font-weight:700; color:#333; word-break:break-word;">${escapeHtml(value)}</div>
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div style="color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.025em; margin-bottom:8px;">${label}</div>
+            <div style="font-size:15px; font-weight:700; color:#1e293b;">${value}</div>
         </div>
     `).join('');
 
-    document.getElementById('examDescription').innerHTML = examInfo.mieuta ? escapeHtml(examInfo.mieuta) : '<span style="color:#6c757d;">Chưa có miêu tả.</span>';
+    document.getElementById('examDescription').innerHTML = examInfo.mieuta ? escapeHtml(examInfo.mieuta) : '<span style="color:#94a3b8; font-style:italic;">Chưa có miêu tả cho bài thi này.</span>';
 }
 
 function addOption(content = '', isCorrect = false) {
@@ -325,19 +314,35 @@ async function loadQuestions() {
         questionItems = json.questions || [];
         maxQuestions = Number(examInfo.tongcauhoi || 0);
 
-        document.getElementById('questionExamTitle').innerText = examInfo.ten_baithi || 'Quản lý câu hỏi';
-        document.getElementById('questionMeta').innerHTML = `Môn: ${escapeHtml(examInfo.tenmonhoc || '')} | Số câu hiện có: <strong>${questionItems.length}</strong>/${maxQuestions}${examLocked ? ' | <span style="color:#c0392b;font-weight:700;">Chế độ chỉ xem nội dung vì đã có thí sinh làm bài (vẫn có thể chỉnh Tùy chọn xáo trộn/hiện đáp án)</span>' : ''}`;
+        document.getElementById('questionExamTitle').innerText = (examInfo.ten_baithi ? 'Bài thi: ' + examInfo.ten_baithi : 'Quản lý câu hỏi');
+        
+        let metaHtml = `
+            <div style="display:flex; align-items:center; gap:20px;">
+                <span>Môn: <strong>${escapeHtml(examInfo.tenmonhoc || '---')}</strong></span>
+                <span>Tiến độ: <strong>${questionItems.length}/${maxQuestions} câu</strong></span>
+            </div>
+        `;
+        
+        if (examLocked) {
+            metaHtml += `
+            <div style="margin-top:8px; color:#ef4444; font-size:13px; font-weight:600;">
+                Thông báo: Đã có thí sinh làm bài, chỉ được phép thay đổi Tùy chọn hiển thị (không được Sửa/Xóa câu hỏi).
+            </div>
+            `;
+        }
+        
+        document.getElementById('questionMeta').innerHTML = metaHtml;
 
         document.getElementById('addQuestionBtn').disabled = examLocked;
         document.getElementById('addQuestionBtn').style.opacity = examLocked ? '0.6' : '1';
-        document.getElementById('addQuestionBtn').style.cursor = examLocked ? 'not-allowed' : 'pointer';
         document.getElementById('importWordBtn').disabled = examLocked;
         document.getElementById('importWordBtn').style.opacity = examLocked ? '0.6' : '1';
-        document.getElementById('importWordBtn').style.cursor = examLocked ? 'not-allowed' : 'pointer';
         document.getElementById('importBankBtn').disabled = examLocked;
         document.getElementById('importBankBtn').style.opacity = examLocked ? '0.6' : '1';
-        document.getElementById('importBankBtn').style.cursor = examLocked ? 'not-allowed' : 'pointer';
 
+        // Always enable these toggles
+        document.getElementById('examShuffleToggle').disabled = false;
+        document.getElementById('examShowAnswersToggle').disabled = false;
         document.getElementById('examShuffleToggle').checked = Number(examInfo.xao_tron) === 1;
         document.getElementById('examShowAnswersToggle').checked = Number(examInfo.hien_dapan) === 1;
 
@@ -349,7 +354,6 @@ async function loadQuestions() {
 }
 
 async function updateExamSetting(settings) {
-    if (examLocked) return;
     try {
         const payload = { 
             id_baithi: examId, 

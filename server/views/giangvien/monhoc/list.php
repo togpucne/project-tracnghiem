@@ -2,7 +2,7 @@
 
 <div class="card" style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
     <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-        <h2 style="margin: 0; color: #333;">Quản lý Môn học</h2>
+        <h2 style="margin: 0; color: #333;">Môn học</h2>
         <button onclick="openFormModal()"
             style="background: #27ae60; color: white; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
             <i class="fas fa-plus"></i> Thêm môn học
@@ -15,12 +15,11 @@
 
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="background: #f4f4f4; border-bottom: 2px solid #ddd;">
-                <th style="padding: 12px; text-align: center; width: 50px;">STT</th>
-                <th style="padding: 12px; text-align: left;">Tên môn học</th>
-                <th style="padding: 12px; text-align: center;">Số bài thi</th>
-                <th style="padding: 12px; text-align: center;">Số câu hỏi</th>
-                <th style="padding: 12px; text-align: center;">Thao tác</th>
+            <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                <th style="padding: 14px 20px; text-align: center; color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; width:60px;">STT</th>
+                <th style="padding: 14px 20px; text-align: left; color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.025em;">Môn học</th>
+                <th style="padding: 14px 20px; text-align: center; color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.025em; width:150px;">Số Bài thi</th>
+                <th style="padding: 14px 20px; text-align: right; color:#64748b; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.025em; width:180px;">Thao tác</th>
             </tr>
         </thead>
         <tbody id="monhocTableBody">
@@ -150,7 +149,7 @@ function closeDetailModal() {
 
 async function loadMonHoc() {
     const tbody = document.getElementById('monhocTableBody');
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;">Đang tải dữ liệu...</td></tr>';
 
     try {
         const res = await fetch(serverApiUrl('monhoc/list'));
@@ -159,24 +158,34 @@ async function loadMonHoc() {
 
         monhocItems = json.data || [];
         if (!monhocItems.length) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#999;">Chưa có môn học nào.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:#64748b;">Chưa có môn học nào.</td></tr>';
             return;
         }
 
         tbody.innerHTML = monhocItems.map((mon, index) => `
-            <tr class="subject-row" data-id="${Number(mon.id_monhoc)}" style="border-bottom:1px solid #eee;cursor:pointer;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
-                <td style="padding:12px;text-align:center;color:#666;">${index + 1}</td>
-                <td style="padding:12px;"><strong>${escapeHtml(mon.tenmonhoc)}</strong></td>
-                <td style="padding:12px;text-align:center;"><span style="background:#e1f5fe;color:#0288d1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">${Number(mon.so_bai_thi || 0)} bài thi</span></td>
-                <td style="padding:12px;text-align:center;"><span style="background:#f1f3f5;color:#495057;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">${Number(mon.so_cau_hoi || 0)} câu hỏi</span></td>
-                <td style="padding:12px;text-align:center;">
-                    <button class="btn-edit-monhoc" data-id="${Number(mon.id_monhoc)}" style="background:#f39c12;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">Sửa</button>
-                    <button class="btn-delete-monhoc" data-id="${Number(mon.id_monhoc)}" data-name="${escapeHtml(mon.tenmonhoc)}" data-count="${Number(mon.so_bai_thi || 0)}" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-left:5px;">Xóa</button>
+            <tr class="subject-row" data-id="${Number(mon.id_monhoc)}" style="border-bottom:1px solid #f1f5f9; cursor:pointer; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <td style="padding:16px 20px; text-align:center; color:#94a3b8; font-size:14px; font-weight:600;">${index + 1}</td>
+                <td style="padding:16px 20px;">
+                    <div style="font-weight:700; color:#1e293b; font-size:15px;">${escapeHtml(mon.tenmonhoc)}</div>
+                    <div style="font-size:12px; color:#64748b; margin-top:4px; max-width:400px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        <span style="color:#94a3b8; font-weight:500;">Mô tả:</span> ${mon.mieuta ? escapeHtml(mon.mieuta) : '...'}
+                    </div>
+                </td>
+                <td style="padding:16px 20px; text-align:center;">
+                    <span style="background:#eff6ff; color:#1d4ed8; padding:4px 14px; border-radius:12px; font-size:12px; font-weight:700; border:1px solid #dbeafe;">
+                        ${Number(mon.so_bai_thi || 0)} Bài thi
+                    </span>
+                </td>
+                <td style="padding:16px 20px; text-align:right;">
+                    <div style="display:flex; gap:8px; justify-content:flex-end;">
+                        <button class="btn-edit-monhoc" data-id="${Number(mon.id_monhoc)}" style="background:#fff; color:#f59e0b; border:1px solid #fef3c7; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Sửa</button>
+                        <button class="btn-delete-monhoc" data-id="${Number(mon.id_monhoc)}" data-name="${escapeHtml(mon.tenmonhoc)}" data-count="${Number(mon.so_bai_thi || 0)}" style="background:#fff; color:#ef4444; border:1px solid #fee2e2; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Xóa</button>
+                    </div>
                 </td>
             </tr>
         `).join('');
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:#c0392b;">${escapeHtml(error.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:#ef4444;">${escapeHtml(error.message)}</td></tr>`;
     }
 }
 
