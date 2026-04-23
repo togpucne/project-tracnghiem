@@ -142,13 +142,24 @@ if (isset($_POST['btn_login'])) {
         <form method="POST" action="">
             <div class="mb-3">
                 <label class="form-label text-uppercase">Tài khoản Email</label>
-                <input type="email" name="email" class="form-control" placeholder="name@example.com" required
-                    value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-envelope text-muted"></i>
+                    </span>
+                    <input type="email" name="email" class="form-control border-start-0" placeholder="name@example.com" required
+                        value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>">
+                </div>
             </div>
             <div class="mb-4">
                 <label class="form-label text-uppercase">Mật khẩu</label>
-                <div class="input-group">
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-lock text-muted"></i>
+                    </span>
+                    <input type="password" name="password" id="password" class="form-control border-start-0 border-end-0" placeholder="••••••••" required>
+                    <span class="input-group-text bg-white border-start-0" id="togglePassword" style="cursor: pointer;">
+                        <i class="fas fa-eye text-muted" id="eyeIcon"></i>
+                    </span>
                 </div>
             </div>
             <button type="submit" name="btn_login" class="btn btn-primary w-100 btn-login shadow-sm">
@@ -162,6 +173,22 @@ if (isset($_POST['btn_login'])) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        });
+    </script>
 </body>
 
 </html>
