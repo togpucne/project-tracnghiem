@@ -139,4 +139,10 @@ return [
         "auth" => true,
         "roles" => ["admin", "giangvien"],
     ],
+    "ketqua/export-excel" => [
+        "handler" => __DIR__ . "/../api/ketqua_export_csv.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["giangvien"],
+    ],
 ];

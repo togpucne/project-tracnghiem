@@ -5,24 +5,27 @@
         <h2 style="margin:0;color:#0f172a;">Ngân hàng câu hỏi</h2>
         <p style="margin:6px 0 0;color:#64748b;">Tạo ngân hàng, gắn môn học và quản lý câu hỏi theo độ khó bằng API nội bộ.</p>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button type="button" class="btn btn-outline-primary" onclick="openBankModal()">
-            <i class="fas fa-folder-plus me-2"></i>Thêm ngân hàng
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button type="button" onclick="openBankModal()"
+            style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); transition: all 0.2s;">
+            <i class="fas fa-folder-plus"></i> Thêm ngân hàng
         </button>
-        <button type="button" class="btn btn-primary" id="openQuestionBtn" onclick="openQuestionModal()" disabled>
-            <i class="fas fa-circle-plus me-2"></i>Thêm câu hỏi
+        <button type="button" id="openQuestionBtn" onclick="openQuestionModal()" disabled
+            style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: all 0.2s; opacity: 0.5;">
+            <i class="fas fa-plus"></i> Thêm câu hỏi
         </button>
-        <button type="button" class="btn btn-outline-success" id="openImportWordBtn" onclick="openImportWordModal()" disabled>
-            <i class="fas fa-file-word me-2"></i>Import Word
+        <button type="button" id="openImportWordBtn" onclick="openImportWordModal()" disabled
+            style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); transition: all 0.2s; opacity: 0.5;">
+            <i class="fas fa-file-word"></i> Import Word
         </button>
     </div>
 </div>
 
 <!-- Modal Import Word -->
-<div id="importWordModalBank" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.55);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(2px);">
-    <div style="width:100%;max-width:500px;background:#fff;border-radius:18px;box-shadow:0 24px 80px rgba(15,23,42,0.28);padding:24px;">
-        <h4 style="margin:0 0 8px;">Import câu hỏi từ Word</h4>
-        <p class="text-muted small mb-4">Định dạng file: Câu 1: [Nội dung]... A. [Đáp án]... Đáp án: [A-D]... Độ khó: [Dễ/Trung bình/Khó]</p>
+<div id="importWordModalBank" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
+    <div style="width:100%;max-width:520px;background:#fff;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.2);padding:35px;position:relative;">
+        <h4 style="margin:0 0 10px; color:#1e293b; font-weight:700;">Import câu hỏi từ Word</h4>
+        <p style="color:#64748b; font-size:14px; margin-bottom:25px; line-height:1.6;">Định dạng file: <strong>Câu 1: [Nội dung]... A. [Đáp án]... Đáp án: [A-D]... Độ khó: [Dễ/Trung bình/Khó]</strong></p>
         <form id="bankImportWordForm">
             <div class="mb-4">
                 <label class="form-label fw-semibold">Chọn file .docx</label>
@@ -92,13 +95,13 @@
     </div>
 </div>
 
-<div id="bankModal" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.55);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(2px);">
-    <div style="width:100%;max-width:720px;background:#fff;border-radius:18px;box-shadow:0 24px 80px rgba(15,23,42,0.28);overflow:hidden;">
+<div id="bankModal" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
+    <div style="width:100%;max-width:720px;background:#fff;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.2);overflow:hidden;">
         <form id="bankForm">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:22px 24px 0;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:35px 35px 0;">
                 <div>
-                    <h4 id="bankModalTitle" style="margin:0;">Thêm ngân hàng câu hỏi</h4>
-                    <small class="text-muted">Mỗi ngân hàng câu hỏi chỉ thuộc về một môn học duy nhất.</small>
+                    <h4 id="bankModalTitle" style="margin:0; color:#1e293b; font-weight:700; font-size:22px;">Thêm ngân hàng câu hỏi</h4>
+                    <p style="margin:8px 0 0; color:#64748b; font-size:14px;">Mỗi ngân hàng câu hỏi chỉ thuộc về một môn học duy nhất.</p>
                 </div>
                 <button type="button" class="btn-close" onclick="closeBankModal()" aria-label="Close"></button>
             </div>
@@ -136,13 +139,13 @@
     </div>
 </div>
 
-<div id="questionModalBank" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.55);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(2px);">
-    <div style="width:100%;max-width:820px;background:#fff;border-radius:18px;box-shadow:0 24px 80px rgba(15,23,42,0.28);overflow:hidden;max-height:90vh;overflow-y:auto;">
-        <form id="bankQuestionForm">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:22px 24px 0;">
+<div id="questionModalBank" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
+    <div style="width:100%;max-width:860px;background:#fff;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.2);overflow:hidden;max-height:90vh;display:flex;flex-direction:column;">
+        <form id="bankQuestionForm" style="display:contents;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:35px 35px 0;">
                 <div>
-                    <h4 id="bankQuestionModalTitle" style="margin:0;">Thêm câu hỏi ngân hàng</h4>
-                    <small class="text-muted">Câu hỏi sẽ được gắn vào môn học đang chọn trong ngân hàng.</small>
+                    <h4 id="bankQuestionModalTitle" style="margin:0; color:#1e293b; font-weight:700; font-size:22px;">Thêm câu hỏi ngân hàng</h4>
+                    <p style="margin:8px 0 0; color:#64748b; font-size:14px;">Câu hỏi sẽ được gắn vào môn học đang chọn trong ngân hàng.</p>
                 </div>
                 <button type="button" class="btn-close" onclick="closeQuestionModal()" aria-label="Close"></button>
             </div>
@@ -194,9 +197,9 @@
                     </div>
                 </div>
             </div>
-            <div style="display:flex;justify-content:flex-end;gap:12px;padding:8px 24px 24px;">
-                <button type="button" class="btn btn-light" onclick="closeQuestionModal()">Đóng</button>
-                <button type="submit" class="btn btn-primary">
+            <div style="display:flex;justify-content:flex-end;gap:12px;padding:20px 35px 35px;background:#fff;">
+                <button type="button" class="btn" style="background:#f1f5f9; color:#64748b; font-weight:600; padding:10px 25px; border-radius:8px; border:none;" onclick="closeQuestionModal()">Đóng</button>
+                <button type="submit" class="btn" style="background:#3b82f6; color:#white; font-weight:700; padding:10px 35px; border-radius:8px; border:none; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">
                     <i class="fas fa-save me-2"></i>Lưu câu hỏi
                 </button>
             </div>

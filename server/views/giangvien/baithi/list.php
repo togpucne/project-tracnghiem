@@ -4,7 +4,9 @@
     <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
         <h2 style="margin: 0; color: #333;">Bài thi</h2>
         <button onclick="openExamModal()"
-            style="background: #27ae60; color: white; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
+            style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: transform 0.2s, box-shadow 0.2s;"
+            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 15px rgba(16, 185, 129, 0.3)'"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.2)'">
             <i class="fas fa-plus"></i> Thêm bài thi
         </button>
     </div>
@@ -30,8 +32,8 @@
 </div>
 
 <div id="examModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
-    <div style="background: white; padding: 30px; border-radius: 10px; width: 650px;">
-        <h3 id="modalTitle" style="margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px;">Thêm Bài Thi</h3>
+    <div style="background: white; padding: 35px; border-radius: 16px; width: 680px; max-width: 95vw; box-shadow: 0 20px 50px rgba(0,0,0,0.15);">
+        <h3 id="modalTitle" style="margin-top: 0; color: #1e293b; font-size: 20px; font-weight: 700;">Thêm Bài Thi</h3>
         <form id="examForm">
             <input type="hidden" name="id_baithi" id="m_id">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
@@ -75,17 +77,19 @@
                     <textarea name="mieuta" id="m_mieuta" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"></textarea>
                 </div>
             </div>
-            <div style="margin-top: 30px; text-align: right;">
-                <button type="button" onclick="closeExamModal()" style="padding: 10px 25px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer;">Hủy</button>
-                <button type="submit" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; margin-left: 10px;">Lưu</button>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 35px;">
+                <button type="button" onclick="closeExamModal()"
+                    style="background: #f1f5f9; color: #64748b; padding: 10px 25px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">Hủy</button>
+                <button type="submit" id="examSubmitBtn"
+                    style="background: #3b82f6; color: white; border: none; padding: 10px 35px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">Lưu bài thi</button>
             </div>
         </form>
     </div>
 </div>
 
 <div id="shuffleModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
-    <div style="background: white; padding: 30px; border-radius: 10px; width: 400px;">
-        <h3 style="margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px;">Chỉnh Xáo Trộn Câu Hỏi</h3>
+    <div style="background: white; padding: 35px; border-radius: 16px; width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.15);">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 700;">Chỉnh Xáo Trộn Câu Hỏi</h3>
         <form id="shuffleForm">
             <input type="hidden" id="s_id" value="">
             <div style="margin: 20px 0;">
@@ -94,9 +98,11 @@
                     <span>Xáo trộn câu hỏi và đáp án</span>
                 </label>
             </div>
-            <div style="margin-top: 30px; text-align: right;">
-                <button type="button" onclick="closeShuffleModal()" style="padding: 10px 25px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer;">Hủy</button>
-                <button type="submit" style="background: #3498db; color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; margin-left: 10px;">Lưu</button>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px;">
+                <button type="button" onclick="closeShuffleModal()"
+                    style="background: #f1f5f9; color: #64748b; padding: 10px 22px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">Hủy</button>
+                <button type="submit"
+                    style="background: #3b82f6; color: white; border: none; padding: 10px 28px; border-radius: 8px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">Lưu cấu hình</button>
             </div>
         </form>
     </div>
@@ -221,19 +227,9 @@ function openExamModal(data = null) {
     const currentStr = getLocalDateTimeString(now);
 
     if (data) {
-        document.getElementById('modalTitle').innerText = 'Cập nhật Bài Thi';
-        document.getElementById('m_id').value = data.id_baithi;
-        document.getElementById('m_ten').value = data.ten_baithi;
-        renderSubjectOptions(data.id_monhoc);
-        document.getElementById('m_cau').value = data.tongcauhoi;
-        document.getElementById('m_time').value = data.thoigianlam;
-        document.getElementById('m_status').value = data.trangthai || 'Đang mở';
-        document.getElementById('m_shuffle').checked = !!data.xao_tron;
-        document.getElementById('m_mieuta').value = data.mieuta || '';
-        startInput.value = (data.thoigianbatdau || '').replace(' ', 'T').substring(0, 16);
-        endInput.value = data.thoigianketthuc ? data.thoigianketthuc.replace(' ', 'T').substring(0, 16) : '';
-        startInput.removeAttribute('min');
-        endInput.min = startInput.value;
+        submitBtn.innerText = 'Cập nhật';
+        submitBtn.style.background = '#f59e0b';
+        submitBtn.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.25)';
     } else {
         document.getElementById('modalTitle').innerText = 'Thêm Bài Thi Mới';
         document.getElementById('examForm').reset();
@@ -243,6 +239,9 @@ function openExamModal(data = null) {
         document.getElementById('m_status').value = 'Đang mở';
         document.getElementById('m_shuffle').checked = false;
         renderSubjectOptions();
+        submitBtn.innerText = 'Lưu bài thi';
+        submitBtn.style.background = '#3b82f6';
+        submitBtn.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.25)';
         startInput.value = currentStr;
         startInput.min = currentStr;
         endInput.value = '';

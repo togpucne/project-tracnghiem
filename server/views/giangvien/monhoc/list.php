@@ -4,7 +4,9 @@
     <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
         <h2 style="margin: 0; color: #333;">Môn học</h2>
         <button onclick="openFormModal()"
-            style="background: #27ae60; color: white; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
+            style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: transform 0.2s, box-shadow 0.2s;"
+            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 15px rgba(16, 185, 129, 0.3)'"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.2)'">
             <i class="fas fa-plus"></i> Thêm môn học
         </button>
     </div>
@@ -68,8 +70,8 @@
 
 <div id="formModal"
     style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
-    <div style="background: white; padding: 30px; border-radius: 10px; width: 520px; max-width:92vw;">
-        <h3 id="formTitle" style="margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px;">Thêm môn học</h3>
+    <div style="background: white; padding: 35px; border-radius: 16px; width: 520px; max-width:92vw; box-shadow: 0 20px 50px rgba(0,0,0,0.15);">
+        <h3 id="formTitle" style="margin-top: 0; color: #1e293b; font-size: 20px; font-weight: 700;">Thêm môn học</h3>
 
         <form id="monhocForm">
             <input type="hidden" name="id_monhoc" id="form_id_monhoc">
@@ -78,19 +80,23 @@
                 <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Tên môn học</label>
                 <input type="text" name="tenmonhoc" id="form_tenmonhoc" required
                     placeholder="VD: Lập trình Web, Cơ sở dữ liệu..."
-                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; box-sizing: border-box;">
+                    style="width: 100%; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; box-sizing: border-box; outline: none; transition: border-color 0.2s; background: #f8fafc;"
+                    onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'"
+                    onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
             </div>
             <div style="margin: 18px 0;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Miêu tả môn học</label>
                 <textarea name="mieuta" id="form_mieuta" placeholder="Nhập ghi chú hoặc miêu tả môn học..."
-                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; box-sizing: border-box; min-height: 100px; font-family: inherit;"></textarea>
+                    style="width: 100%; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; box-sizing: border-box; min-height: 120px; font-family: inherit; outline: none; transition: border-color 0.2s; background: #f8fafc;"
+                    onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'"
+                    onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'"></textarea>
             </div>
 
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px;">
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px;">
                 <button type="button" onclick="closeFormModal()"
-                    style="background: #f1f3f5; color: #333; padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;">Hủy</button>
+                    style="background: #f1f5f9; color: #475569; padding: 10px 22px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: background 0.2s;">Hủy</button>
                 <button type="submit" id="formSubmitBtn"
-                    style="background: #27ae60; color: white; padding: 10px 24px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;">Lưu</button>
+                    style="background: #3b82f6; color: white; padding: 10px 28px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">Lưu</button>
             </div>
         </form>
     </div>
@@ -203,14 +209,16 @@ function openFormModal(id = null, name = '', description = '') {
         inputName.value = name;
         inputDesc.value = description;
         submitBtn.innerText = 'Cập nhật';
-        submitBtn.style.background = '#f39c12';
+        submitBtn.style.background = '#f59e0b';
+        submitBtn.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.25)';
     } else {
         title.innerText = 'Thêm môn học';
         inputId.value = '';
         inputName.value = '';
         inputDesc.value = '';
-        submitBtn.innerText = 'Lưu';
-        submitBtn.style.background = '#27ae60';
+        submitBtn.innerText = 'Lưu môn học';
+        submitBtn.style.background = '#3b82f6';
+        submitBtn.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.25)';
     }
 
     modal.style.display = 'flex';

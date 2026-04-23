@@ -6,6 +6,8 @@ require_once "model/Database.php";
 require_once "model/giangvien/monhoc.model.php";
 require_once "model/giangvien/baithi.model.php";
 require_once "model/giangvien/cauhoi.model.php"; // Thêm model câu hỏi
+require_once "model/giangvien/ketqua.model.php"; // Thêm model kết quả thi
+
 
 $user_role = $_SESSION['user']['vaitro'] ?? '';
 $act = $_GET['act'] ?? 'dashboard';
@@ -123,6 +125,17 @@ switch ($act) {
     case 'cauhoi-delete':
         $_GET['act'] = 'cauhoi-delete';
         require_once "controller/giangvien/cauhoi.controller.php";
+        break;
+
+    // --- KẾT QUẢ THI ---
+    case 'ketqua-thi':
+        require_once "controller/giangvien/ketqua.controller.php";
+        $result = ketqua_index();
+        $title = $result['title'];
+        $view = $result['view'];
+        $data = $result['data'] ?? null;
+        $baithi = $result['baithi'] ?? null;
+        $id_baithi = $result['id_baithi'] ?? null;
         break;
 
     default:

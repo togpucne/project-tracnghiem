@@ -226,6 +226,10 @@
                     <li class="<?php echo ($act == 'quanly-dethi') ? 'active' : ''; ?>">
                         <a href="index.php?act=quanly-dethi"><i class="fas fa-copy"></i> Đề thi & Bài tập</a>
                     </li>
+                    <div class="menu-label">Thống kê & Báo cáo</div>
+                    <li class="<?php echo ($act == 'ketqua-thi') ? 'active' : ''; ?>">
+                        <a href="index.php?act=ketqua-thi"><i class="fas fa-chart-line"></i> Kết quả thi</a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if ($_SESSION['user']['vaitro'] == 'admin'): ?>
