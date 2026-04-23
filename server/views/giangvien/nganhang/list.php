@@ -98,7 +98,7 @@
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:22px 24px 0;">
                 <div>
                     <h4 id="bankModalTitle" style="margin:0;">Thêm ngân hàng câu hỏi</h4>
-                    <small class="text-muted">Một ngân hàng có thể chứa nhiều môn học và nhiều câu hỏi theo từng môn.</small>
+                    <small class="text-muted">Mỗi ngân hàng câu hỏi chỉ thuộc về một môn học duy nhất.</small>
                 </div>
                 <button type="button" class="btn-close" onclick="closeBankModal()" aria-label="Close"></button>
             </div>
@@ -121,7 +121,7 @@
                         <textarea class="form-control" id="bankDescription" rows="3"></textarea>
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-semibold">Môn học thuộc ngân hàng</label>
+                        <label class="form-label fw-semibold">Môn học</label>
                         <div id="bankSubjectList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;"></div>
                     </div>
                 </div>
@@ -236,7 +236,7 @@ function renderSubjectCheckboxes(selectedIds = []) {
 
     box.innerHTML = subjectItems.map((subject) => `
         <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;cursor:pointer;">
-            <input type="checkbox" class="bank-subject-checkbox" value="${Number(subject.id_monhoc)}" ${selectedIds.includes(Number(subject.id_monhoc)) ? 'checked' : ''}>
+            <input type="radio" name="bank_subject_radio" class="bank-subject-radio" value="${Number(subject.id_monhoc)}" ${selectedIds.includes(Number(subject.id_monhoc)) ? 'checked' : ''} required>
             <span>
                 <strong style="display:block;color:#0f172a;">${escapeHtml(subject.tenmonhoc)}</strong>
                 <small class="text-muted">${escapeHtml(subject.ten || '')}</small>
@@ -470,8 +470,8 @@ function closeBankModal() {
 }
 
 function getSelectedBankSubjectIds() {
-    return Array.from(document.querySelectorAll('.bank-subject-checkbox:checked'))
-        .map((input) => Number(input.value));
+    const radio = document.querySelector('.bank-subject-radio:checked');
+    return radio ? [Number(radio.value)] : [];
 }
 
 async function saveBank(payload) {
