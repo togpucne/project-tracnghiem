@@ -188,10 +188,7 @@ async function loadExamData() {
                 </td>
                 <td style="padding:16px 20px; text-align:right;">
                     <div style="display:flex; gap:8px; justify-content:flex-end;">
-                        ${isLocked 
-                            ? `<button class="btn-shuffle-exam" data-id="${Number(bt.id_baithi)}" style="background:#fff; color:#3b82f6; border:1px solid #dbeafe; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Xáo trộn</button>` 
-                            : `<button class="btn-edit-exam" data-id="${Number(bt.id_baithi)}" style="background:#fff; color:#f59e0b; border:1px solid #fef3c7; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Sửa</button>`
-                        }
+                        <button class="btn-edit-exam" data-id="${Number(bt.id_baithi)}" style="background:#fff; color:#f59e0b; border:1px solid #fef3c7; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Sửa</button>
                         <button class="btn-delete-exam" data-id="${Number(bt.id_baithi)}" style="background:#fff; color:#ef4444; border:1px solid #fee2e2; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Xóa</button>
                     </div>
                 </td>
@@ -240,7 +237,7 @@ function openExamModal(data = null) {
         if (data.thoigianbatdau) {
             const startD = new Date(data.thoigianbatdau.replace(' ', 'T'));
             startInput.value = getLocalDateTimeString(startD);
-            startInput.min = ''; // Cho phép sửa cả đề cũ
+            startInput.min = ''; 
         }
         if (data.thoigianketthuc) {
             const endD = new Date(data.thoigianketthuc.replace(' ', 'T'));
@@ -250,6 +247,16 @@ function openExamModal(data = null) {
         }
         
         document.getElementById('m_mieuta').value = data.mieuta || '';
+
+        // Khóa các trường nhạy cảm nếu đã có người làm
+        const isLocked = !!data.is_locked;
+        document.getElementById('m_mon').disabled = isLocked;
+        document.getElementById('m_cau').readOnly = isLocked;
+        document.getElementById('m_cau').style.background = isLocked ? '#f8fafc' : 'white';
+        
+        if (isLocked) {
+            showExamAlert('Bài thi này đã có người làm. Bạn chỉ có thể sửa thông tin cơ bản và thời gian.', 'info');
+        }
 
         submitBtn.innerText = 'Cập nhật';
         submitBtn.style.background = '#f59e0b';
@@ -263,6 +270,13 @@ function openExamModal(data = null) {
         document.getElementById('m_status').value = 'Đang mở';
         document.getElementById('m_shuffle').checked = false;
         renderSubjectOptions();
+        document.getElementById('m_mieuta').value = '';
+
+        // Mở khóa tất cả cho bài mới
+        document.getElementById('m_mon').disabled = false;
+        document.getElementById('m_cau').readOnly = false;
+        document.getElementById('m_cau').style.background = 'white';
+        
         submitBtn.innerText = 'Lưu bài thi';
         submitBtn.style.background = '#3b82f6';
         submitBtn.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.25)';
@@ -348,7 +362,14 @@ document.getElementById('examForm').addEventListener('submit', async function(e)
     e.preventDefault();
     if (!validateExamForm()) return;
 
-    const payload = Object.fromEntries(new FormData(this).entries());
+    const form = document.getElementById('examForm');
+    const disabledFields = form.querySelectorAll(':disabled');
+    disabledFields.forEach(f => f.disabled = false);
+
+    const payload = Object.fromEntries(new FormData(form).entries());
+
+    // Khôi phục trạng thái disabled sau khi lấy dữ liệu
+    disabledFields.forEach(f => f.disabled = true);
 
     try {
         const res = await fetch(serverApiUrl('baithi/save'), {

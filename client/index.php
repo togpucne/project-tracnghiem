@@ -19,6 +19,12 @@ switch ($act) {
         $view = "views/dangnhap.php";
         break;
 
+    case 'quenmatkhau':
+        $title = "Quên mật khẩu - PT QUIZ";
+        $page_css = "dangnhap-dangky.css";
+        $view = "views/quenmatkhau.php";
+        break;
+
     case 'gioithieu':
         $title = "Giới thiệu - PT QUIZ";
         $page_css = "gioithieu-dangky.css";

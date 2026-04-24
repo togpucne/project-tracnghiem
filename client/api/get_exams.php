@@ -12,7 +12,9 @@ $mon = isset($_GET["mon"]) ? (int) $_GET["mon"] : 0;
 $term = $_GET["term"] ?? "";
 $limit = isset($_GET["limit"]) ? (int) $_GET["limit"] : 0;
 
-$where = "WHERE b.trangthai = 'Đang mở'";
+$where = "WHERE b.trangthai = 'Đang mở' 
+          AND b.thoigianbatdau <= NOW() 
+          AND (b.thoigianketthuc IS NULL OR b.thoigianketthuc >= NOW())";
 $params = [$user_id];
 $types = "i";
 

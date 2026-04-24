@@ -111,9 +111,15 @@ function save_baithi($data)
     $mieuta = !empty($data['mieuta']) ? $data['mieuta'] : null;
 
     if ($id_baithi > 0 && isBaiThiLocked($id_baithi)) {
-        $_SESSION['error'] = "Bài thi này đã có thí sinh làm, chỉ có thể chỉnh các tùy chọn xáo trộn/hiện đáp án.";
+        // Nếu đã khóa, chỉ cho phép cập nhật các trường không ảnh hưởng đến nội dung bài thi
+        $sql = "UPDATE baithi 
+                SET ten_baithi = ?, mieuta = ?, thoigianlam = ?, thoigianbatdau = ?, thoigianketthuc = ?, trangthai = ?, xao_tron = ?, hien_dapan = ?
+                WHERE id_baithi = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ssiisssii", $ten, $mieuta, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan, $id_baithi);
+        $res = $stmt->execute();
         $conn->close();
-        return false;
+        return $res;
     }
 
     $tg_ketthuc = !empty($data['thoigianketthuc']) ? $data['thoigianketthuc'] : null;

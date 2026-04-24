@@ -13,6 +13,18 @@ return [
         "handler" => __DIR__ . "/../api/auth/google_callback.php",
         "methods" => ["POST"],
     ],
+    "auth/forgot-password" => [
+        "handler" => __DIR__ . "/../api/auth/forgot_password.php",
+        "methods" => ["POST"],
+    ],
+    "auth/verify-otp" => [
+        "handler" => __DIR__ . "/../api/auth/verify_otp.php",
+        "methods" => ["POST"],
+    ],
+    "auth/reset-password" => [
+        "handler" => __DIR__ . "/../api/auth/reset_password.php",
+        "methods" => ["POST"],
+    ],
     "exam/list" => [
         "handler" => __DIR__ . "/../api/get_exams.php",
         "methods" => ["GET"],

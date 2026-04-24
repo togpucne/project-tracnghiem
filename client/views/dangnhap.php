@@ -24,7 +24,7 @@
                 </div>
 
                 <!-- Password -->
-                <div class="mb-3">
+                <div class="mb-2">
                     <div class="input-group custom-input-group">
                         <span class="input-group-text border-0 bg-light text-muted px-3">
                             <i class="fa-solid fa-lock"></i>
@@ -36,26 +36,35 @@
                     </div>
                 </div>
 
+                <div class="text-end mb-4">
+                    <a href="index.php?act=quenmatkhau" class="text-muted small text-decoration-none" style="font-size: 0.85rem;">Quên mật khẩu?</a>
+                </div>
+
                 <button class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm custom-btn" type="submit">
                     Đăng nhập ngay
                 </button>
 
                 <div class="divider d-flex align-items-center my-4">
-                    <p class="text-center fw-bold mx-3 mb-0 text-muted">HOẶC</p>
+                    <div class="flex-grow-1 border-top"></div>
+                    <span class="mx-3 text-muted small fw-bold">HOẶC</span>
+                    <div class="flex-grow-1 border-top"></div>
                 </div>
 
-                <div id="g_id_onload"
-                    data-client_id="406738188655-6tbqad65pusvs16vf2ep4gli1jae2agt.apps.googleusercontent.com"
-                    data-login_uri="http://localhost/project-tracnghiem/client/api/auth/google_callback.php"
-                    data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin w-100"
-                    data-type="standard"
-                    data-size="large"
-                    data-theme="outline"
-                    data-text="sign_in_with"
-                    data-shape="rectangular"
-                    data-logo_alignment="left">
+                <div class="d-flex justify-content-center w-100">
+                    <div id="g_id_onload"
+                        data-client_id="406738188655-6tbqad65pusvs16vf2ep4gli1jae2agt.apps.googleusercontent.com"
+                        data-login_uri="http://localhost/project-tracnghiem/client/api/auth/google_callback.php"
+                        data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin"
+                        data-type="standard"
+                        data-size="large"
+                        data-theme="outline"
+                        data-text="continue_with"
+                        data-shape="rectangular"
+                        data-logo_alignment="left"
+                        data-width="340">
+                    </div>
                 </div>
 
                 <!-- Link register -->
