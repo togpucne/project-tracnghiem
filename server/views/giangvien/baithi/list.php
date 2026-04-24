@@ -228,6 +228,29 @@ function openExamModal(data = null) {
     const currentStr = getLocalDateTimeString(now);
 
     if (data) {
+        document.getElementById('modalTitle').innerText = 'Cập nhật bài thi';
+        document.getElementById('m_id').value = data.id_baithi;
+        document.getElementById('m_ten').value = data.ten_baithi;
+        renderSubjectOptions(data.id_monhoc);
+        document.getElementById('m_status').value = data.trangthai;
+        document.getElementById('m_shuffle').checked = !!Number(data.xao_tron);
+        document.getElementById('m_cau').value = data.tongcauhoi;
+        document.getElementById('m_time').value = data.thoigianlam;
+        
+        if (data.thoigianbatdau) {
+            const startD = new Date(data.thoigianbatdau.replace(' ', 'T'));
+            startInput.value = getLocalDateTimeString(startD);
+            startInput.min = ''; // Cho phép sửa cả đề cũ
+        }
+        if (data.thoigianketthuc) {
+            const endD = new Date(data.thoigianketthuc.replace(' ', 'T'));
+            endInput.value = getLocalDateTimeString(endD);
+        } else {
+            endInput.value = '';
+        }
+        
+        document.getElementById('m_mieuta').value = data.mieuta || '';
+
         submitBtn.innerText = 'Cập nhật';
         submitBtn.style.background = '#f59e0b';
         submitBtn.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.25)';
