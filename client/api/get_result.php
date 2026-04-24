@@ -73,10 +73,14 @@ while ($row = $res->fetch_assoc()) {
         $selected = ((string) $row["cautraloichon"] !== "" && (int) $row["cautraloichon"] === (int) $row["id_dapan"]);
     }
 
+    // Luôn lấy trạng thái đáp án đúng để chấm điểm hiển thị, nhưng chỉ trả về cho client nếu được phép
+    $is_true_correct = (int) $row["dapandung"] === 1;
+
     $questions[$qid]["answers"][] = [
         "id_dapan" => (int) $row["id_dapan"],
         "noidungdapan" => htmlspecialchars($row["noidungdapan"]),
-        "dapandung" => $can_see_answers ? ((int) $row["dapandung"] === 1) : null,
+        "dapandung" => $can_see_answers ? $is_true_correct : null,
+        "is_true_correct" => $is_true_correct, // Dùng nội bộ để tính status bên dưới
         "selected" => $selected,
     ];
 }
@@ -95,10 +99,9 @@ foreach ($questions as $qid => $q) {
         if (!$userVal) {
             $isEmpty = true;
         } else {
-            // Grading logic (same as submit.php)
             $submitted = json_decode($userVal, true) ?: [$userVal];
-            $correctAnswers = array_filter($q["answers"], fn($a) => $a["dapandung"]);
-            $correctAnswers = array_values($correctAnswers); // Re-index
+            $correctAnswers = array_filter($q["answers"], fn($a) => $a["is_true_correct"]);
+            $correctAnswers = array_values($correctAnswers);
 
             $allMatch = true;
             if (count($submitted) < count($correctAnswers)) {
@@ -115,6 +118,13 @@ foreach ($questions as $qid => $q) {
             }
             $isCorrect = $allMatch;
         }
+        
+        // Nếu không được xem đáp án, xóa sạch nội dung đáp án đúng khỏi payload trả về
+        if (!$can_see_answers) {
+            foreach($q["answers"] as &$a) {
+                $a["noidungdapan"] = "???";
+            }
+        }
     } else {
         $selected_ans = null;
         foreach ($q["answers"] as $ans) {
@@ -125,8 +135,13 @@ foreach ($questions as $qid => $q) {
         }
         if (!$selected_ans) {
             $isEmpty = true;
-        } else if ($selected_ans["dapandung"]) {
+        } else if ($selected_ans["is_true_correct"]) {
             $isCorrect = true;
+        }
+        
+        // Xóa dấu hiệu đáp án đúng nếu bị ẩn
+        foreach($q["answers"] as &$a) {
+            unset($a["is_true_correct"]);
         }
     }
 
@@ -147,6 +162,7 @@ foreach ($questions as $qid => $q) {
 Response::json([
     "success" => true,
     "lanthi" => $lanthi,
+    "can_see_answers" => $can_see_answers, // Gửi thêm flag này cho chắc
     "stats" => [
         "correct" => $correct,
         "wrong" => $wrong,

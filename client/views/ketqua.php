@@ -119,36 +119,32 @@ document.addEventListener("DOMContentLoaded", async () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
                         <!-- Mini Review -->
                         <div class="mt-5">
                             ${canSeeAnswers ? `
-                                <h5 class="fw-bold mb-4">Xem lại đáp án</h5>
+                                <h5 class="fw-bold mb-4">Xem lại bài làm</h5>
                                 ${questions.map((q, i) => {
-                                     let typeCls = q.status; // 'correct', 'wrong', 'empty'
-                                     
+                                     let typeCls = q.status; 
                                      let qContent = q.noidungcauhoi;
                                      let answersHtml = '';
 
                                      if (q.loai_cauhoi === 2) {
                                          const decoded = json_decode_safe(q.user_text_ans);
                                          const userAns = Array.isArray(decoded) ? decoded : [q.user_text_ans || ''];
-                                         const correctAnswers = q.answers.filter(a => a.dapandung);
+                                         const correctAnswers = q.answers; 
                                          let count = 0;
 
                                          qContent = qContent.replace(/\[\.\.\.\]/g, () => {
                                              const idx = count++;
                                              const sub = userAns[idx] || '';
                                              const cor = correctAnswers[idx]?.noidungdapan || '';
-                                             const isMatch = sub.trim().toLowerCase() === cor.trim().toLowerCase();
-                                             
+                                             let isMatch = sub.trim().toLowerCase() === cor.trim().toLowerCase();
+
                                              let style = 'border-bottom: 2px solid #cbd5e1; padding: 0 5px; font-weight: 600;';
                                              if (sub) {
                                                  style += isMatch ? 'color: #166534; border-color: #22c55e;' : 'color: #991b1b; border-color: #ef4444;';
                                              }
-
-                                             return `<span style="${style}">${escapeHtml(sub || '...')}</span> ${(!isMatch && sub) ? `<small class="text-success">[${escapeHtml(cor)}]</small>` : ''}`;
+                                             return `<span style="${style}">${escapeHtml(sub || '...')}</span> ${((!isMatch && sub)) ? `<small class="text-success">[${escapeHtml(cor)}]</small>` : ''}`;
                                          });
 
                                          if (typeCls === 'wrong' || typeCls === 'empty') {
@@ -175,10 +171,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                                      `;
                                  }).join('')}
                             ` : `
-                                <div class="alert alert-info text-center p-4">
-                                    <i class="fas fa-lock mb-3 d-block" style="font-size: 2rem;"></i>
-                                    <h6 class="fw-bold">Đáp án đã được ẩn</h6>
-                                    <p class="small mb-0">Giảng viên đã khóa tính năng xem đáp án cho đề thi này.</p>
+                                <div class="alert alert-light text-center p-5 border shadow-sm" style="border-radius: 15px; background: #fff;">
+                                    <div class="mb-3">
+                                        <i class="fas fa-lock text-muted opacity-50" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark">Tính năng xem lại đã bị khóa</h5>
+                                    <p class="text-muted small mx-auto" style="max-width: 300px;">Giảng viên không cho phép xem lại nội dung câu hỏi và đáp án cho đề thi này.</p>
                                 </div>
                             `}
                         </div>
@@ -187,16 +185,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             `;
             
             html += `
-                            <div class="d-flex gap-3 justify-content-center mt-5">
-                                <a href="index.php?act=dethi" class="btn btn-primary px-4 rounded-pill">
-                                    <i class="fas fa-list me-2"></i>Trang đề thi
-                                </a>
-                                <a href="index.php?act=lichsu" class="btn btn-outline-secondary px-4 rounded-pill">
-                                    <i class="fas fa-history me-2"></i>Lịch sử làm bài
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                <div class="d-flex gap-3 justify-content-center mt-5 mb-5">
+                    <a href="index.php?act=dethi" class="btn btn-primary px-4 rounded-pill">
+                        <i class="fas fa-list me-2"></i>Trang đề thi
+                    </a>
+                    <a href="index.php?act=lichsu" class="btn btn-outline-secondary px-4 rounded-pill">
+                        <i class="fas fa-history me-2"></i>Lịch sử làm bài
+                    </a>
                 </div>
             `;
             container.innerHTML = html;
