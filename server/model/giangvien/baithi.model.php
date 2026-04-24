@@ -108,21 +108,23 @@ function save_baithi($data)
     $tongcauhoi = abs((int) ($data['tongcauhoi'] ?? 0));
     $thoigianlam = abs((int) ($data['thoigianlam'] ?? 0));
     $trangthai = !empty($data['trangthai']) ? $data['trangthai'] : "Đang mở";
-    $mieuta = !empty($data['mieuta']) ? $data['mieuta'] : null;
+    $mota = !empty($data['mota']) ? $data['mota'] : (!empty($data['mieuta']) ? $data['mieuta'] : null);
+
+    $tg_ketthuc = !empty($data['thoigianketthuc']) ? $data['thoigianketthuc'] : null;
+    $tg_batdau = !empty($data['thoigianbatdau']) ? $data['thoigianbatdau'] : null;
 
     if ($id_baithi > 0 && isBaiThiLocked($id_baithi)) {
         // Nếu đã khóa, chỉ cho phép cập nhật các trường không ảnh hưởng đến nội dung bài thi
+        // Giả sử tên cột trong DB là mieuta (theo code gốc dòng 140)
         $sql = "UPDATE baithi 
                 SET ten_baithi = ?, mieuta = ?, thoigianlam = ?, thoigianbatdau = ?, thoigianketthuc = ?, trangthai = ?, xao_tron = ?, hien_dapan = ?
                 WHERE id_baithi = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssiisssii", $ten, $mieuta, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan, $id_baithi);
+        $stmt->bind_param("ssisssiii", $ten, $mota, $thoigianlam, $tg_batdau, $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan, $id_baithi);
         $res = $stmt->execute();
         $conn->close();
         return $res;
     }
-
-    $tg_ketthuc = !empty($data['thoigianketthuc']) ? $data['thoigianketthuc'] : null;
 
     $sql_check = "SELECT id_baithi FROM baithi WHERE REPLACE(ten_baithi, ' ', '') = REPLACE(?, ' ', '') AND id_baithi != ?";
     $stmt_check = $conn->prepare($sql_check);
@@ -138,13 +140,13 @@ function save_baithi($data)
         $sql = "INSERT INTO baithi (id_monhoc, ten_baithi, mieuta, tongcauhoi, thoigianlam, thoigianbatdau, thoigianketthuc, trangthai, xao_tron, hien_dapan, ngaytao)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("issiisssii", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan);
+        $stmt->bind_param("issiisssii", $id_monhoc, $ten, $mota, $tongcauhoi, $thoigianlam, $tg_batdau, $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan);
     } else {
         $sql = "UPDATE baithi
                 SET id_monhoc = ?, ten_baithi = ?, mieuta = ?, tongcauhoi = ?, thoigianlam = ?, thoigianbatdau = ?, thoigianketthuc = ?, trangthai = ?, xao_tron = ?, hien_dapan = ?
                 WHERE id_baithi = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("issiisssiii", $id_monhoc, $ten, $mieuta, $tongcauhoi, $thoigianlam, $data['thoigianbatdau'], $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan, $id_baithi);
+        $stmt->bind_param("issiisssiii", $id_monhoc, $ten, $mota, $tongcauhoi, $thoigianlam, $tg_batdau, $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan, $id_baithi);
     }
 
     $res = $stmt->execute();

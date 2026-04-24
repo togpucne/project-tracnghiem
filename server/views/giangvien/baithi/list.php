@@ -125,6 +125,7 @@ function showExamAlert(message, type = 'success') {
 }
 
 function getLocalDateTimeString(date) {
+    if (!date || isNaN(date.getTime())) return '';
     const tzOffset = date.getTimezoneOffset() * 60000;
     return (new Date(date - tzOffset)).toISOString().slice(0, 16);
 }
@@ -234,12 +235,15 @@ function openExamModal(data = null) {
         document.getElementById('m_cau').value = data.tongcauhoi;
         document.getElementById('m_time').value = data.thoigianlam;
         
-        if (data.thoigianbatdau) {
+        if (data.thoigianbatdau && data.thoigianbatdau !== '0000-00-00 00:00:00') {
             const startD = new Date(data.thoigianbatdau.replace(' ', 'T'));
             startInput.value = getLocalDateTimeString(startD);
             startInput.min = ''; 
+        } else {
+            startInput.value = '';
         }
-        if (data.thoigianketthuc) {
+        
+        if (data.thoigianketthuc && data.thoigianketthuc !== '0000-00-00 00:00:00') {
             const endD = new Date(data.thoigianketthuc.replace(' ', 'T'));
             endInput.value = getLocalDateTimeString(endD);
         } else {
