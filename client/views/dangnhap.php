@@ -40,6 +40,24 @@
                     Đăng nhập ngay
                 </button>
 
+                <div class="divider d-flex align-items-center my-4">
+                    <p class="text-center fw-bold mx-3 mb-0 text-muted">HOẶC</p>
+                </div>
+
+                <div id="g_id_onload"
+                    data-client_id="406738188655-6tbqad65pusvs16vf2ep4gli1jae2agt.apps.googleusercontent.com"
+                    data-login_uri="http://localhost/project-tracnghiem/client/api/auth/google_callback.php"
+                    data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin w-100"
+                    data-type="standard"
+                    data-size="large"
+                    data-theme="outline"
+                    data-text="sign_in_with"
+                    data-shape="rectangular"
+                    data-logo_alignment="left">
+                </div>
+
                 <!-- Link register -->
                 <div class="text-center mt-4">
                     <span class="text-muted">Chưa có tài khoản?</span>

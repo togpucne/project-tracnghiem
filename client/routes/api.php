@@ -9,6 +9,10 @@ return [
         "handler" => __DIR__ . "/../api/register.php",
         "methods" => ["POST"],
     ],
+    "auth/google_callback.php" => [
+        "handler" => __DIR__ . "/../api/auth/google_callback.php",
+        "methods" => ["POST"],
+    ],
     "exam/list" => [
         "handler" => __DIR__ . "/../api/get_exams.php",
         "methods" => ["GET"],
