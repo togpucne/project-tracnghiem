@@ -230,8 +230,10 @@ function showBankAlert(message, type = 'success') {
 }
 
 function difficultyLabel(value) {
-    if (value === 'kho') return 'Khó';
-    if (value === 'trungbinh') return 'Trung bình';
+    if (!value) return 'Dễ';
+    let v = String(value).toLowerCase();
+    if (v === 'kho' || v === '3' || v === 'khó') return 'Khó';
+    if (v === 'trungbinh' || v === '2' || v === 'trung bình') return 'Trung bình';
     return 'Dễ';
 }
 
@@ -602,7 +604,11 @@ function openQuestionModal(id = 0) {
         document.getElementById('bankQuestionModalTitle').textContent = 'Cập nhật câu hỏi ngân hàng';
         document.getElementById('bankQuestionId').value = question.id_cauhoi_nganhang;
         document.getElementById('bankQuestionContent').value = question.noidungcauhoi || '';
-        document.getElementById('bankQuestionDifficulty').value = question.dokho || 'de';
+        let diff = question.dokho || 'de';
+        if (diff == '1' || diff.toLowerCase() === 'dễ') diff = 'de';
+        if (diff == '2' || diff.toLowerCase() === 'trung bình') diff = 'trungbinh';
+        if (diff == '3' || diff.toLowerCase() === 'khó') diff = 'kho';
+        document.getElementById('bankQuestionDifficulty').value = diff;
         document.getElementById('bankQuestionStatus').value = question.trangthai || 'active';
         fillQuestionSubjectOptions(question.id_monhoc || '');
         document.getElementById('bankAnswerOptions').innerHTML = '';

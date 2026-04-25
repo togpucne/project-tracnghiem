@@ -265,7 +265,7 @@ function getQuestionBankQuestions($id_nganhang, $id_monhoc, $id_nguoidung, $vait
                    ch.noidungcauhoi, 
                    ch.dokho, 
                    ch.loai_cauhoi, 
-                   'active' AS trangthai,
+                   ch.trangthai,
                    ch.id_nhch AS id_nganhang
             FROM cauhoi ch
             JOIN nganhang_cauhoi nh ON ch.id_nhch = nh.id_nhch
@@ -319,7 +319,7 @@ function getQuestionBankQuestionById($id_cauhoi_nganhang, $id_nguoidung, $vaitro
                     ch.noidungcauhoi, 
                     ch.dokho, 
                     ch.loai_cauhoi, 
-                    'active' AS trangthai,
+                    ch.trangthai,
                     ch.id_nhch AS id_nganhang
             FROM cauhoi ch
             JOIN nganhang_cauhoi nh ON ch.id_nhch = nh.id_nhch
@@ -348,16 +348,16 @@ function getQuestionBankQuestionById($id_cauhoi_nganhang, $id_nguoidung, $vaitro
     return $question ?: null;
 }
 
-function createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $dokho, $loai_cauhoi, $answers)
+function createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $dokho, $loai_cauhoi, $trangthai, $answers)
 {
     $conn = Database::connect();
     $conn->begin_transaction();
 
     try {
         // id_baithi is NULL for bank questions
-        $stmt = $conn->prepare("INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, loai_cauhoi, ngaytao)
-                                VALUES (NULL, ?, ?, ?, ?, NOW())");
-        $stmt->bind_param("issi", $id_nganhang, $noidungcauhoi, $dokho, $loai_cauhoi);
+        $stmt = $conn->prepare("INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, loai_cauhoi, trangthai, ngaytao)
+                                VALUES (NULL, ?, ?, ?, ?, ?, NOW())");
+        $stmt->bind_param("issis", $id_nganhang, $noidungcauhoi, $dokho, $loai_cauhoi, $trangthai);
         $stmt->execute();
         $id_cauhoi = (int) $conn->insert_id;
         $stmt->close();
@@ -387,9 +387,9 @@ function updateQuestionBankQuestion($id_cauhoi_nganhang, $id_monhoc, $noidungcau
 
     try {
         $stmt = $conn->prepare("UPDATE cauhoi
-                                SET noidungcauhoi = ?, dokho = ?, loai_cauhoi = ?
+                                SET noidungcauhoi = ?, dokho = ?, loai_cauhoi = ?, trangthai = ?
                                 WHERE id_cauhoi = ?");
-        $stmt->bind_param("ssii", $noidungcauhoi, $dokho, $loai_cauhoi, $id_cauhoi_nganhang);
+        $stmt->bind_param("ssisi", $noidungcauhoi, $dokho, $loai_cauhoi, $trangthai, $id_cauhoi_nganhang);
         $stmt->execute();
         $stmt->close();
 

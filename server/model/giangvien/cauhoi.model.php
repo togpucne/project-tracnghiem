@@ -285,7 +285,7 @@ class CauHoiModel
 
                 // Fetch random questions from bank
                 // Table: cauhoi has id_nhch and id_baithi IS NULL for bank questions
-                $sql = "SELECT * FROM cauhoi WHERE id_nhch = ? AND id_baithi IS NULL AND dokho = ? ORDER BY RAND() LIMIT ?";
+                $sql = "SELECT * FROM cauhoi WHERE id_nhch = ? AND id_baithi IS NULL AND dokho = ? AND trangthai = 'active' ORDER BY RAND() LIMIT ?";
                 $stmt = $this->conn->prepare($sql);
                 $stmt->bind_param("isi", $id_nhch, $dokho, $count);
                 $stmt->execute();

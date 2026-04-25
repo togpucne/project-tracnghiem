@@ -71,6 +71,13 @@ if ($exists) {
     Api::json(["error" => "Email này đã được sử dụng bởi tài khoản khác"], 409);
 }
 
+// Lấy avatar cũ để xóa sau khi update thành công
+$stmtOld = $conn->prepare("SELECT avatar FROM nguoidung WHERE id_nguoidung = ?");
+$stmtOld->bind_param("i", $id_nguoidung);
+$stmtOld->execute();
+$oldAvatar = $stmtOld->get_result()->fetch_assoc()['avatar'] ?? 'default.jpg';
+$stmtOld->close();
+
 $updateFields = ["ten = ?", "email = ?"];
 $types = "ss";
 $params = [$ten, $email];
@@ -96,6 +103,15 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param($types, ...$params);
 
 $ok = $stmt->execute();
+
+// Nếu update thành công và có avatar mới, xóa avatar cũ (nếu không phải mặc định)
+if ($ok && $avatarPath !== null && $oldAvatar !== 'default.jpg' && $oldAvatar !== $avatarPath) {
+    $oldFilePath = __DIR__ . '/../public/imgs/avatars/' . $oldAvatar;
+    if (file_exists($oldFilePath)) {
+        unlink($oldFilePath);
+    }
+}
+
 $stmt->close();
 $conn->close();
 

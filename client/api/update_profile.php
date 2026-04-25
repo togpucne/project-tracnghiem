@@ -66,6 +66,13 @@ if ($matkhau !== "" && strlen($matkhau) < 6) {
     Response::json(["success" => false, "error" => "Mat khau moi phai co toi thieu 6 ky tu"], 400);
 }
 
+// Lấy avatar cũ để xóa sau khi update thành công
+$stmtOld = $conn->prepare("SELECT avatar FROM nguoidung WHERE id_nguoidung = ?");
+$stmtOld->bind_param("i", $user_id);
+$stmtOld->execute();
+$oldAvatar = $stmtOld->get_result()->fetch_assoc()['avatar'] ?? 'default.jpg';
+$stmtOld->close();
+
 $updateFields = ["ten = ?", "email = ?"];
 $types = "ss";
 $params = [$ten, $email];
@@ -91,6 +98,14 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param($types, ...$params);
 
 if ($stmt->execute()) {
+    // Nếu update thành công và có avatar mới, xóa avatar cũ (nếu không phải mặc định)
+    if ($avatarPath !== null && $oldAvatar !== 'default.jpg' && $oldAvatar !== $avatarPath) {
+        $oldFilePath = __DIR__ . '/../../server/public/imgs/avatars/' . $oldAvatar;
+        if (file_exists($oldFilePath)) {
+            unlink($oldFilePath);
+        }
+    }
+
     $_SESSION["user"]["name"] = $ten;
     if ($avatarPath !== null) {
         $_SESSION["user"]["avatar"] = $avatarPath;

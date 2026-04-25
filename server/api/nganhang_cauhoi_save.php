@@ -79,7 +79,7 @@ if ($id_cauhoi_nganhang > 0) {
     ]);
 }
 
-$newId = createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $dokho, $loai_cauhoi, $answers);
+$newId = createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $dokho, $loai_cauhoi, $trangthai, $answers);
 if ($newId <= 0) {
     Api::json(["error" => "Không thể tạo câu hỏi ngân hàng"], 500);
 }
