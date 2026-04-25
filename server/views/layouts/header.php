@@ -237,8 +237,8 @@
                     <li class="<?php echo ($act == 'quanly-nguoidung') ? 'active' : ''; ?>">
                         <a href="index.php?act=quanly-nguoidung"><i class="fas fa-user-cog"></i> Người dùng</a>
                     </li>
-                    <li class="<?php echo ($act == 'hethong-api') ? 'active' : ''; ?>">
-                        <a href="index.php?act=hethong-api"><i class="fas fa-terminal"></i> Nhật ký Logs</a>
+                    <li class="<?php echo ($act == 'quanly-logs') ? 'active' : ''; ?>">
+                        <a href="index.php?act=quanly-logs"><i class="fas fa-shield-halved"></i> Giám sát Bảo mật</a>
                     </li>
                 <?php endif; ?>
 

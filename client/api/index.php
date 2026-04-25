@@ -2,8 +2,12 @@
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../core/Response.php";
+require_once __DIR__ . "/../core/SecurityLogger.php";
 
 Api::boot();
+
+// Log the request
+SecurityLogger::logRequest($_SESSION['user']['id'] ?? null, http_response_code());
 
 $routes = require __DIR__ . "/../routes/api.php";
 $route = Api::detectRoute();

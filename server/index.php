@@ -3,7 +3,11 @@ ob_start();
 session_start();
 
 require_once "model/Database.php";
+require_once "core/SecurityLogger.php";
 require_once "model/giangvien/monhoc.model.php";
+
+// Log the request
+SecurityLogger::logRequest($_SESSION['user']['id_nguoidung'] ?? null, http_response_code());
 require_once "model/giangvien/baithi.model.php";
 require_once "model/giangvien/cauhoi.model.php"; // Thêm model câu hỏi
 require_once "model/giangvien/ketqua.model.php"; // Thêm model kết quả thi
@@ -147,6 +151,20 @@ switch ($act) {
         $data = $result['data'] ?? null;
         $baithi = $result['baithi'] ?? null;
         $id_baithi = $result['id_baithi'] ?? null;
+        break;
+
+    // --- GIÁM SÁT BẢO MẬT ---
+    case 'quanly-logs':
+        if ($user_role !== 'admin') {
+            $title = "404 - Không tìm thấy";
+            $view = "views/404.php";
+            break;
+        }
+        require_once "controller/admin/logs.controller.php";
+        $result = logs_index();
+        $title = $result['title'];
+        $view = $result['view'];
+        $data = $result['data'];
         break;
 
     default:

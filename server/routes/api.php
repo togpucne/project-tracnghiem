@@ -73,6 +73,12 @@ return [
         "auth" => true,
         "roles" => ["admin"],
     ],
+    "nguoidung/toggle-status" => [
+        "handler" => __DIR__ . "/../api/nguoidung_toggle_status.php",
+        "methods" => ["POST"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
     "monhoc/list" => [
         "handler" => __DIR__ . "/../api/monhoc_list.php",
         "methods" => ["GET"],

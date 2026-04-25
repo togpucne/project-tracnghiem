@@ -41,6 +41,19 @@ class Api
             Response::json(["error" => "Unauthorized"], 401);
         }
 
+        // Check if user is still active
+        $conn = Database::connect();
+        $stmt = $conn->prepare("SELECT trangthai FROM nguoidung WHERE id_nguoidung = ?");
+        $stmt->bind_param("i", $_SESSION["user"]["id"]);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+        $conn->close();
+
+        if (!$user || $user['trangthai'] !== 'active') {
+            session_destroy();
+            Response::json(["error" => "Account locked or not found"], 403);
+        }
+
         return $_SESSION["user"];
     }
 

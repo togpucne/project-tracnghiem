@@ -34,15 +34,25 @@ if ($trangthai !== "active") {
     Response::json(["error" => "Tai khoan da bi khoa"], 403);
 }
 
+require_once __DIR__ . "/../core/TokenManager.php";
+
 $_SESSION["user"] = [
     "id" => $id,
     "name" => $ten,
     "role" => $vaitro,
 ];
 
+// Generate API Token for Desktop App
+$token = TokenManager::generateToken([
+    "id" => $id,
+    "email" => $data["email"],
+    "role" => $vaitro
+]);
+
 Response::json([
     "success" => true,
     "message" => "Dang nhap thanh cong",
+    "token" => $token,
     "ten" => $ten,
     "email" => $data["email"],
     "ngaytao" => $ngaytao,
