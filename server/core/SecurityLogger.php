@@ -31,9 +31,30 @@ class SecurityLogger
     }
 
     /**
+     * Kiểm tra xem IP có đang bị khóa do thử sai quá nhiều không
+     */
+    public static function checkBruteForce($ip)
+    {
+        $conn = Database::connect();
+        // Đếm số lần login sai (401) trong 15 phút qua từ IP này
+        $stmt = $conn->prepare("SELECT COUNT(*) as attempts FROM api_logs 
+                                WHERE ip_address = ? 
+                                AND response_code = 401 
+                                AND endpoint LIKE '%login.php%'
+                                AND created_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
+        $stmt->bind_param("s", $ip);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        $conn->close();
+
+        return ($result['attempts'] ?? 0) >= 5; // Khóa nếu sai từ 5 lần trở lên
+    }
+
+    /**
      * Get the real IP address of the client
      */
-    private static function getIpAddress()
+    public static function getIpAddress()
     {
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             return $_SERVER['HTTP_CLIENT_IP'];

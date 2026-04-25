@@ -9,13 +9,28 @@ class Api
             @session_start();
         }
 
-        // Clear any previous output (warnings, notices) that might break JSON
+        // --- SECURITY HEADERS ---
+        header("X-Content-Type-Options: nosniff");
+        header("X-Frame-Options: DENY");
+        header("X-XSS-Protection: 1; mode=block");
+        header("Referrer-Policy: strict-origin-when-cross-origin");
+        
+        // --- CORS CONFIG ---
+        header("Access-Control-Allow-Origin: *"); // Cho phép mọi nguồn (phù hợp cho App Desktop)
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+        // Xử lý Preflight request của trình duyệt
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(204);
+            exit;
+        }
+
+        // Clear any previous output
         if (ob_get_level() > 0) ob_clean();
         else ob_start();
 
-        header("Content-Type: application/json");
-        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-        header("Pragma: no-cache");
+        header("Content-Type: application/json; charset=UTF-8");
     }
 
     public static function json($data, $status = 200)
@@ -48,12 +63,34 @@ class Api
 
     public static function requireLogin()
     {
-        if (!isset($_SESSION["user"])) {
-            self::json(["error" => "Unauthorized"], 401);
+        require_once __DIR__ . "/Jwt.php";
+        
+        $user = null;
+
+        // 1. Kiểm tra JWT Token trong Header Authorization
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+
+        if (str_starts_with($authHeader, 'Bearer ')) {
+            $token = substr($authHeader, 7);
+            $decoded = Jwt::decode($token);
+            if ($decoded) {
+                $user = $decoded;
+            } else {
+                self::json(["error" => "Token không hợp lệ hoặc đã hết hạn"], 401);
+            }
+        } 
+        // 2. Fallback về Session (cho Web Portal hiện tại)
+        elseif (isset($_SESSION["user"])) {
+            $user = $_SESSION["user"];
+        }
+
+        if (!$user) {
+            self::json(["error" => "Unauthorized - Cần đăng nhập hoặc Token"], 401);
         }
 
         // Check if user is still active
-        $id = $_SESSION["user"]["id_nguoidung"];
+        $id = $user["id_nguoidung"];
         $conn = Database::connect();
         $stmt = $conn->prepare("SELECT trangthai FROM nguoidung WHERE id_nguoidung = ?");
         $stmt->bind_param("i", $id);
@@ -63,11 +100,11 @@ class Api
         $conn->close();
 
         if (!$userStatus || $userStatus['trangthai'] !== 'active') {
-            session_destroy();
-            self::json(["error" => "Tài khoản của bạn đã bị khóa hoặc không tồn tại. Vui lòng liên hệ quản trị viên."], 403);
+            if (isset($_SESSION['user'])) session_destroy();
+            self::json(["error" => "Tài khoản của bạn đã bị khóa hoặc không tồn tại."], 403);
         }
 
-        return $_SESSION["user"];
+        return $user;
     }
 
     public static function requireRole(array $roles)

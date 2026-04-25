@@ -151,4 +151,40 @@ return [
         "auth" => true,
         "roles" => ["giangvien"],
     ],
+    "login" => [
+        "handler" => __DIR__ . "/../api/login.php",
+        "methods" => ["POST"],
+        "auth" => false,
+    ],
+    // --- THÍ SINH ROUTES ---
+    "thisinh/dethi/list" => [
+        "handler" => __DIR__ . "/../api/thisinh_dethi_list.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["thisinh"],
+    ],
+    "thisinh/baithi/get_questions" => [
+        "handler" => __DIR__ . "/../api/thisinh_baithi_questions.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["thisinh"],
+    ],
+    "thisinh/baithi/submit" => [
+        "handler" => __DIR__ . "/../api/thisinh_baithi_submit.php",
+        "methods" => ["POST"],
+        "auth" => true,
+        "roles" => ["thisinh"],
+    ],
+    "thisinh/ketqua/list" => [
+        "handler" => __DIR__ . "/../api/thisinh_ketqua_list.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["thisinh"],
+    ],
+    "thisinh/profile/update" => [
+        "handler" => __DIR__ . "/../api/profile_update.php",
+        "methods" => ["POST", "PATCH"],
+        "auth" => true,
+        "roles" => ["thisinh", "giangvien", "admin"],
+    ],
 ];
