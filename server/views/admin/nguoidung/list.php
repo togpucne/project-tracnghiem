@@ -2,47 +2,49 @@
 
 <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
     <div>
-        <h2 style="margin:0;color:#0f172a;">Quản lý người dùng</h2>
-        <p style="margin:6px 0 0;color:#64748b;">Admin có thể thêm, sửa, khóa mềm và mở lại tài khoản `thí sinh` và `giảng viên`.</p>
+        <h2 style="margin:0;color:#0f172a;font-weight:700;">Quản lý người dùng</h2>
+        <p style="margin:6px 0 0;color:#64748b;font-size:14px;">Quản lý và phân quyền tài khoản `thí sinh` và `giảng viên` qua API bảo mật.</p>
     </div>
-    <button type="button" class="btn btn-primary" onclick="openUserModal()">
+    <button type="button" class="btn btn-primary" onclick="openUserModal()" style="border-radius:10px; padding:10px 20px; font-weight:600;">
         <i class="fas fa-user-plus me-2"></i>Thêm người dùng
     </button>
 </div>
 
-<div class="card border-0 shadow-sm" style="border-radius:16px;">
-    <div class="card-body">
-        <form id="userFilterForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;align-items:end;">
-            <div>
-                <label class="form-label fw-semibold">Vai trò</label>
-                <select class="form-select" id="filterRole" name="vaitro">
-                    <option value="">Tất cả</option>
-                    <option value="thisinh">Thí sinh</option>
-                    <option value="giangvien">Giảng viên</option>
-                </select>
-            </div>
-            <div>
-                <label class="form-label fw-semibold">Trạng thái</label>
-                <select class="form-select" id="filterStatus" name="trangthai">
-                    <option value="">Tất cả</option>
-                    <option value="active">Đang hoạt động</option>
-                    <option value="inactive">Đã khóa</option>
-                </select>
-            </div>
-            <div>
-                <label class="form-label fw-semibold">Tìm kiếm</label>
-                <input class="form-control" type="text" id="filterKeyword" name="keyword" placeholder="Nhập tên hoặc email">
-            </div>
-            <div style="display:flex;gap:10px;">
-                <button type="submit" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-search me-2"></i>Lọc
-                </button>
-                <button type="button" class="btn btn-outline-secondary w-100" onclick="resetFilters()">
-                    Làm mới
-                </button>
-            </div>
-        </form>
-    </div>
+<!-- BỘ LỌC ĐỒNG NHẤT -->
+<div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #e2e8f0;">
+    <form id="userFilterForm" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+            <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Vai trò</label>
+            <select class="form-select" id="filterRole" name="vaitro" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; min-width: 150px;">
+                <option value="">Tất cả</option>
+                <option value="thisinh">Thí sinh</option>
+                <option value="giangvien">Giảng viên</option>
+            </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+            <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Trạng thái</label>
+            <select class="form-select" id="filterStatus" name="trangthai" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; min-width: 150px;">
+                <option value="">Tất cả</option>
+                <option value="active">Đang hoạt động</option>
+                <option value="inactive">Đã khóa</option>
+            </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px;">
+            <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Tìm kiếm</label>
+            <input class="form-control" type="text" id="filterKeyword" name="keyword" placeholder="Nhập tên hoặc email..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px;">
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn btn-primary" style="padding: 9px 20px; border-radius: 6px; font-weight: 600; font-size: 13px;">
+                <i class="fas fa-filter me-1"></i> Lọc
+            </button>
+            <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()" style="padding: 9px 20px; border-radius: 6px; font-weight: 600; font-size: 13px; background:white;">
+                Làm mới
+            </button>
+        </div>
+    </form>
 </div>
 
 <div class="card border-0 shadow-sm mt-4" style="border-radius:16px;">

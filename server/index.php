@@ -56,7 +56,14 @@ switch ($act) {
             ];
         }
         if ($user_role === 'admin') {
+            require_once "model/admin/dashboard.model.php";
             $view = "views/admin/dashboard.php";
+            $stats = get_admin_dashboard_stats();
+            $recentAlerts = get_recent_critical_logs();
+            $data = [
+                'stats' => $stats,
+                'alerts' => $recentAlerts
+            ];
         }
         break;
 
