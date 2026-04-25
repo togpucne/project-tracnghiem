@@ -32,9 +32,9 @@
                         <div style="width:52px;height:52px;border-radius:14px;background:#ecfeff;color:#0891b2;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">
                             <i class="fas fa-shield-halved"></i>
                         </div>
-                        <h4 style="margin:0 0 10px;color:#0f172a;">An toàn API</h4>
+                        <h4 style="margin:0 0 10px;color:#0f172a;">Giám sát Bảo mật API</h4>
                         <p style="margin:0 0 18px;color:#64748b;">Theo dõi log, kiểm tra quyền truy cập và chuẩn hóa các điểm gọi API quan trọng.</p>
-                        <a href="index.php?act=hethong-api" class="btn btn-outline-primary">Xem khu vực hệ thống</a>
+                        <a href="index.php?act=quanly-logs" class="btn btn-outline-primary">Xem khu vực hệ thống</a>
                     </div>
                 </div>
             </div>
