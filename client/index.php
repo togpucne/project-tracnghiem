@@ -2,6 +2,24 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 session_start();
+require_once "core/Database.php";
+
+// Check if logged in user is still active
+if (isset($_SESSION['user'])) {
+    $conn = Database::connect();
+    $stmt = $conn->prepare("SELECT trangthai FROM nguoidung WHERE id_nguoidung = ?");
+    $stmt->bind_param("i", $_SESSION['user']['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $userStatus = $result->fetch_assoc();
+    $conn->close();
+
+    if (!$userStatus || $userStatus['trangthai'] !== 'active') {
+        session_destroy();
+        header("Location: index.php?act=dangnhap&error=account_locked");
+        exit;
+    }
+}
 
 $act = $_GET['act'] ?? 'trangchu';
 

@@ -21,6 +21,23 @@ if (!isset($_SESSION['user']) && $act != 'login') {
     exit;
 }
 
+// Check if logged in user is still active
+if (isset($_SESSION['user'])) {
+    $conn = Database::connect();
+    $stmt = $conn->prepare("SELECT trangthai FROM nguoidung WHERE id_nguoidung = ?");
+    $stmt->bind_param("i", $_SESSION['user']['id_nguoidung']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $userStatus = $result->fetch_assoc();
+    $conn->close();
+
+    if (!$userStatus || $userStatus['trangthai'] !== 'active') {
+        session_destroy();
+        header("Location: index.php?act=login&error=account_locked");
+        exit;
+    }
+}
+
 switch ($act) {
     case 'login':
         $title = "Đăng nhập";

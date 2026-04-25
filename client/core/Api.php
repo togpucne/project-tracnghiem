@@ -1,14 +1,18 @@
 <?php
 
 require_once __DIR__ . "/Response.php";
+require_once __DIR__ . "/Database.php";
 
 class Api
 {
     public static function boot($useSession = true)
     {
         if ($useSession && session_status() === PHP_SESSION_NONE) {
-            session_start();
+            @session_start();
         }
+
+        if (ob_get_level() > 0) ob_clean();
+        else ob_start();
 
         header("Content-Type: application/json");
         header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");

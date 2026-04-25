@@ -1,12 +1,17 @@
 <?php
+require_once __DIR__ . "/../model/Database.php";
 
 class Api
 {
     public static function boot()
     {
         if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+            @session_start();
         }
+
+        // Clear any previous output (warnings, notices) that might break JSON
+        if (ob_get_level() > 0) ob_clean();
+        else ob_start();
 
         header("Content-Type: application/json");
         header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -15,6 +20,7 @@ class Api
 
     public static function json($data, $status = 200)
     {
+        if (ob_get_level() > 0) ob_clean();
         http_response_code($status);
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
         exit;
@@ -44,6 +50,21 @@ class Api
     {
         if (!isset($_SESSION["user"])) {
             self::json(["error" => "Unauthorized"], 401);
+        }
+
+        // Check if user is still active
+        $id = $_SESSION["user"]["id_nguoidung"];
+        $conn = Database::connect();
+        $stmt = $conn->prepare("SELECT trangthai FROM nguoidung WHERE id_nguoidung = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $userStatus = $result->fetch_assoc();
+        $conn->close();
+
+        if (!$userStatus || $userStatus['trangthai'] !== 'active') {
+            session_destroy();
+            self::json(["error" => "Tài khoản của bạn đã bị khóa hoặc không tồn tại. Vui lòng liên hệ quản trị viên."], 403);
         }
 
         return $_SESSION["user"];
