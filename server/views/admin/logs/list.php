@@ -49,7 +49,13 @@
                             </td>
                             <td style="padding:16px 20px;">
                                 <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="background: <?= $log['method'] == 'POST' ? '#eff6ff' : '#f0fdf4' ?>; color: <?= $log['method'] == 'POST' ? '#3b82f6' : '#15803d' ?>; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800;"><?= $log['method'] ?></span>
+                                    <?php 
+                                        $methodColor = '#15803d'; $methodBg = '#f0fdf4'; // Default GET (Green)
+                                        if ($log['method'] == 'POST') { $methodColor = '#1d4ed8'; $methodBg = '#eff6ff'; } // POST (Blue)
+                                        if (in_array($log['method'], ['PATCH', 'PUT'])) { $methodColor = '#b45309'; $methodBg = '#fffbeb'; } // UPDATE (Orange)
+                                        if ($log['method'] == 'DELETE') { $methodColor = '#b91c1c'; $methodBg = '#fef2f2'; } // DELETE (Red)
+                                    ?>
+                                    <span style="background: <?= $methodBg ?>; color: <?= $methodColor ?>; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; border: 1px solid <?= $methodColor ?>22;"><?= $log['method'] ?></span>
                                     <span style="font-size:13px; font-weight:600; color:#334155;"><?= $log['clean_action'] ?></span>
                                 </div>
                                 <div style="font-size:10px; color:#94a3b8; margin-top:4px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">

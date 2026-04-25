@@ -16,8 +16,12 @@ function logs_index()
     $list_logs = [];
     if ($result) {
         while ($row = $result->fetch_assoc()) {
-            // Clean up the endpoint to be more human-readable
-            $row['clean_action'] = formatActionName($row['endpoint']);
+            // Ưu tiên dùng tên hành động đã được SecurityLogger dịch sẵn
+            if (!empty($row['action_name']) && $row['action_name'] !== 'Truy cập hệ thống') {
+                $row['clean_action'] = $row['action_name'];
+            } else {
+                $row['clean_action'] = formatActionName($row['endpoint']);
+            }
             $list_logs[] = $row;
         }
     }

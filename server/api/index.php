@@ -1,11 +1,16 @@
 <?php
 
 require_once __DIR__ . "/../core/Api.php";
+require_once __DIR__ . "/../core/SecurityLogger.php";
 
 $routes = require __DIR__ . "/../routes/api.php";
 $route = Api::detectRoute();
 
 Api::boot();
+
+// Ghi log hành động API
+$user = $_SESSION['user'] ?? null;
+SecurityLogger::logRequest($user['id_nguoidung'] ?? null, http_response_code());
 
 if ($route === "") {
     Api::json([
