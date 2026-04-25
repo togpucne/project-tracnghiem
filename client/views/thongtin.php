@@ -97,9 +97,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (json.success) {
             const user = json.data;
-            if (user.avatar) {
-                document.getElementById('avatarPreview').src = `/project-tracnghiem/server/public/imgs/avatars/${user.avatar}`;
-            }
+            const avatarFile = user.avatar || 'default.jpg';
+            document.getElementById('avatarPreview').src = `/project-tracnghiem/server/public/imgs/avatars/${avatarFile}`;
             displayName.innerText = user.ten;
             inputTen.value = user.ten;
             inputEmail.value = user.email;

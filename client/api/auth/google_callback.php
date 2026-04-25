@@ -33,10 +33,10 @@ $google_id = $payload['sub'];
 $conn = Database::connect();
 
 // Kiểm tra người dùng đã tồn tại chưa
-$stmt = $conn->prepare("SELECT id_nguoidung, ten, vaitro, trangthai FROM nguoidung WHERE email = ?");
+$stmt = $conn->prepare("SELECT id_nguoidung, ten, vaitro, trangthai, avatar FROM nguoidung WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
-$stmt->bind_result($id, $existingName, $role, $status);
+$stmt->bind_result($id, $existingName, $role, $status, $avatar);
 
 if ($stmt->fetch()) {
     // Người dùng đã tồn tại
@@ -45,26 +45,28 @@ if ($stmt->fetch()) {
     }
     
     $_SESSION["user"] = [
-        "id" => $id,
-        "name" => $existingName,
-        "role" => $role,
+        "id"     => $id,
+        "name"   => $existingName,
+        "role"   => $role,
+        "avatar" => $avatar ?? 'default.jpg',
     ];
 } else {
     // Tạo người dùng mới (vai trò thí sinh)
     $stmt->close();
     
-    $vaitro = 'thisinh';
+    $vaitro    = 'thisinh';
     $trangthai = 'active';
-    $matkhau = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT); // Mật khẩu ngẫu nhiên cho Google login
+    $matkhau   = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT); // Mật khẩu ngẫu nhiên cho Google login
     
-    $stmt = $conn->prepare("INSERT INTO nguoidung (email, ten, matkhau, vaitro, trangthai, ngaytao) VALUES (?, ?, ?, ?, ?, NOW())");
+    $stmt = $conn->prepare("INSERT INTO nguoidung (email, ten, matkhau, vaitro, trangthai, avatar, ngaytao) VALUES (?, ?, ?, ?, ?, 'default.jpg', NOW())");
     $stmt->bind_param("sssss", $email, $name, $matkhau, $vaitro, $trangthai);
     
     if ($stmt->execute()) {
         $_SESSION["user"] = [
-            "id" => $conn->insert_id,
-            "name" => $name,
-            "role" => $vaitro,
+            "id"     => $conn->insert_id,
+            "name"   => $name,
+            "role"   => $vaitro,
+            "avatar" => 'default.jpg',
         ];
     } else {
         die("Không thể tạo tài khoản mới");
