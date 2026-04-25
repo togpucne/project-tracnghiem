@@ -13,14 +13,14 @@ if (empty($data["email"]) || empty($data["password"])) {
 $conn = Database::connect();
 
 $stmt = $conn->prepare("
-    SELECT id_nguoidung, ten, matkhau, ngaytao, vaitro, trangthai
+    SELECT id_nguoidung, ten, matkhau, ngaytao, vaitro, trangthai, avatar
     FROM nguoidung
     WHERE email = ?
 ");
 
 $stmt->bind_param("s", $data["email"]);
 $stmt->execute();
-$stmt->bind_result($id, $ten, $hashedPassword, $ngaytao, $vaitro, $trangthai);
+$stmt->bind_result($id, $ten, $hashedPassword, $ngaytao, $vaitro, $trangthai, $avatar);
 
 if (!$stmt->fetch()) {
     Response::json(["error" => "Sai tai khoan hoac mat khau"], 401);
@@ -40,6 +40,7 @@ $_SESSION["user"] = [
     "id" => $id,
     "name" => $ten,
     "role" => $vaitro,
+    "avatar" => $avatar ?? 'default.jpg'
 ];
 
 // Generate API Token for Desktop App

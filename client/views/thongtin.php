@@ -21,9 +21,14 @@ if (!isset($_SESSION['user'])) {
                 </a>
 
                 <div class="text-center mb-5 mt-3">
-                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px;">
-                        <i class="fa-solid fa-user fs-1"></i>
+                    <div class="position-relative d-inline-block mx-auto mb-2">
+                        <img id="avatarPreview" src="/project-tracnghiem/server/public/imgs/avatars/default.jpg" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                        <label for="profileAvatar" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle shadow" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid white;">
+                            <i class="fa-solid fa-camera"></i>
+                        </label>
+                        <input type="file" id="profileAvatar" name="avatar" class="d-none" accept="image/png, image/jpeg, image/gif, image/jpg" form="profileForm">
                     </div>
+                    <div class="mt-1 mb-3 small text-muted">Định dạng hỗ trợ: JPG, PNG, GIF. Tối đa 2MB.</div>
                     <h3 class="fw-bold text-dark mb-1" id="displayName"></h3>
                     <p class="text-muted mb-0">Hồ sơ cá nhân</p>
                 </div>
@@ -92,6 +97,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (json.success) {
             const user = json.data;
+            if (user.avatar) {
+                document.getElementById('avatarPreview').src = `/project-tracnghiem/server/public/imgs/avatars/${user.avatar}`;
+            }
             displayName.innerText = user.ten;
             inputTen.value = user.ten;
             inputEmail.value = user.email;
@@ -111,19 +119,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
+document.getElementById('profileAvatar').addEventListener('change', function(e) {
+    if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatarPreview').src = e.target.result;
+        }
+        reader.readAsDataURL(this.files[0]);
+    }
+});
+
 document.getElementById('profileForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
-    const data = Object.fromEntries(formData.entries());
+    
+    const fileInput = document.getElementById('profileAvatar');
+    if (fileInput.files.length > 0) {
+        formData.append('avatar', fileInput.files[0]);
+    }
 
     try {
         const res = await fetch(apiUrl("profile/update"), {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
+            method: 'POST',
+            body: formData
         });
 
         const result = await res.json();

@@ -108,8 +108,8 @@ function createManagedUser($email, $matkhau, $ten, $vaitro, $trangthai = "active
 {
     $conn = Database::connect();
     $hashedPassword = password_hash($matkhau, PASSWORD_DEFAULT);
-    $sql = "INSERT INTO nguoidung (email, matkhau, ten, vaitro, trangthai, ngaytao)
-            VALUES (?, ?, ?, ?, ?, NOW())";
+    $sql = "INSERT INTO nguoidung (email, matkhau, ten, vaitro, trangthai, ngaytao, avatar)
+            VALUES (?, ?, ?, ?, ?, NOW(), 'default.jpg')";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssss", $email, $hashedPassword, $ten, $vaitro, $trangthai);
     $ok = $stmt->execute();

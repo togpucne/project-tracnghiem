@@ -24,7 +24,7 @@ if ($email === "" || $password === "") {
 }
 
 $conn = Database::connect();
-$stmt = $conn->prepare("SELECT id_nguoidung, ten, vaitro, matkhau, trangthai FROM nguoidung WHERE email = ? LIMIT 1");
+$stmt = $conn->prepare("SELECT id_nguoidung, ten, vaitro, matkhau, trangthai, avatar FROM nguoidung WHERE email = ? LIMIT 1");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
@@ -50,6 +50,13 @@ if ($user && password_verify($password, $user['matkhau'])) {
 
     SecurityLogger::logRequest($user['id_nguoidung'], 200);
 
+    $_SESSION["user"] = [
+        "id_nguoidung" => $user['id_nguoidung'],
+        "ten" => $user['ten'],
+        "vaitro" => $user['vaitro'],
+        "avatar" => $user['avatar'] ?? 'default.jpg'
+    ];
+
     Api::json([
         "success" => true,
         "message" => "Đăng nhập thành công",
@@ -57,7 +64,8 @@ if ($user && password_verify($password, $user['matkhau'])) {
         "user" => [
             "id" => $user['id_nguoidung'],
             "ten" => $user['ten'],
-            "vaitro" => $user['vaitro']
+            "vaitro" => $user['vaitro'],
+            "avatar" => $user['avatar'] ?? 'default.jpg'
         ]
     ]);
 } else {

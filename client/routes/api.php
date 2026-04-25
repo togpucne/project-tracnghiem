@@ -71,7 +71,7 @@ return [
     ],
     "profile/update" => [
         "handler" => __DIR__ . "/../api/update_profile.php",
-        "methods" => ["PATCH"],
+        "methods" => ["POST", "PATCH"],
         "auth" => true,
         "roles" => ["thisinh"],
     ],

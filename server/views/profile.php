@@ -21,7 +21,18 @@
                         <div class="spinner-border text-primary" role="status"></div>
                     </div>
 
-                    <form id="profileForm" style="display:none;">
+                    <form id="profileForm" style="display:none;" enctype="multipart/form-data">
+                        <div class="text-center mb-4">
+                            <div class="position-relative d-inline-block">
+                                <img id="avatarPreview" src="/project-tracnghiem/server/public/imgs/avatars/default.jpg" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                                <label for="profileAvatar" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle shadow" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid white; transition: all 0.2s;">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                                <input type="file" id="profileAvatar" name="avatar" class="d-none" accept="image/png, image/jpeg, image/gif, image/jpg">
+                            </div>
+                            <div class="mt-2 small text-muted">Định dạng hỗ trợ: JPG, PNG, GIF. Tối đa 2MB.</div>
+                        </div>
+
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Họ tên</label>
@@ -97,6 +108,11 @@ async function loadProfile() {
         }
 
         const user = json.data || {};
+        
+        if (user.avatar) {
+            document.getElementById('avatarPreview').src = `/project-tracnghiem/server/public/imgs/avatars/${user.avatar}`;
+        }
+        
         document.getElementById('profileName').value = user.ten || '';
         document.getElementById('profileEmail').value = user.email || '';
         document.getElementById('profileRole').value = profileRoleLabel(user.vaitro || '');
@@ -110,20 +126,33 @@ async function loadProfile() {
     }
 }
 
+document.getElementById('profileAvatar').addEventListener('change', function(e) {
+    if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatarPreview').src = e.target.result;
+        }
+        reader.readAsDataURL(this.files[0]);
+    }
+});
+
 document.getElementById('profileForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    const payload = {
-        ten: document.getElementById('profileName').value.trim(),
-        email: document.getElementById('profileEmail').value.trim(),
-        matkhau: document.getElementById('profilePassword').value
-    };
+    const formData = new FormData();
+    formData.append('ten', document.getElementById('profileName').value.trim());
+    formData.append('email', document.getElementById('profileEmail').value.trim());
+    formData.append('matkhau', document.getElementById('profilePassword').value);
+    
+    const fileInput = document.getElementById('profileAvatar');
+    if (fileInput.files.length > 0) {
+        formData.append('avatar', fileInput.files[0]);
+    }
 
     try {
         const res = await fetch(serverApiUrl('profile/update'), {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            method: 'POST',
+            body: formData
         });
         const json = await res.json();
 

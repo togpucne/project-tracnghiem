@@ -186,8 +186,8 @@
                     <span class="user-name">Chào, <?php echo $_SESSION['user']['ten']; ?></span>
                     <span class="user-role"><?php echo ($_SESSION['user']['vaitro'] == 'admin') ? 'Quản trị viên' : 'Giảng viên'; ?></span>
                 </div>
-                <div style="width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
-                    <i class="fas fa-user-tie" style="color: #475569; font-size: 20px;"></i>
+                <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1); overflow: hidden;">
+                    <img src="/project-tracnghiem/server/public/imgs/avatars/<?= htmlspecialchars($_SESSION['user']['avatar'] ?? 'default.jpg') ?>" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
             </button>
 

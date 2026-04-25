@@ -33,8 +33,8 @@ if ($stmt->num_rows > 0) {
 $passwordHash = password_hash($data["password"], PASSWORD_BCRYPT);
 
 $stmt = $conn->prepare("
-    INSERT INTO nguoidung(email, matkhau, ten, vaitro, trangthai, ngaytao)
-    VALUES (?, ?, ?, 'thisinh', 'active', NOW())
+    INSERT INTO nguoidung(email, matkhau, ten, vaitro, trangthai, ngaytao, avatar)
+    VALUES (?, ?, ?, 'thisinh', 'active', NOW(), 'default.jpg')
 ");
 
 $stmt->bind_param("sss", $data["email"], $passwordHash, $data["fullname"]);
