@@ -11,6 +11,45 @@
         </div>
     </div>
 
+    <!-- BỘ LỌC HÀNH ĐỘNG -->
+    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+        <form method="GET" action="index.php" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            <input type="hidden" name="act" value="quanly-logs">
+            
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Theo Ngày</label>
+                <input type="date" name="date" value="<?= $_GET['date'] ?? '' ?>" 
+                    style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; color: #334155;">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Phương thức</label>
+                <select name="method" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; color: #334155; min-width: 120px;">
+                    <option value="">Tất cả</option>
+                    <option value="GET" <?= ($_GET['method'] ?? '') === 'GET' ? 'selected' : '' ?>>GET (Xem)</option>
+                    <option value="POST" <?= ($_GET['method'] ?? '') === 'POST' ? 'selected' : '' ?>>POST (Thêm)</option>
+                    <option value="PATCH" <?= ($_GET['method'] ?? '') === 'PATCH' ? 'selected' : '' ?>>PATCH (Sửa)</option>
+                    <option value="DELETE" <?= ($_GET['method'] ?? '') === 'DELETE' ? 'selected' : '' ?>>DELETE (Xóa)</option>
+                </select>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px;">
+                <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Tìm kiếm</label>
+                <input type="text" name="keyword" value="<?= $_GET['keyword'] ?? '' ?>" placeholder="Tên, Email hoặc Hành động..." 
+                    style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; color: #334155;">
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" style="background: #3b82f6; color: white; border: none; padding: 9px 20px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                    <i class="fas fa-filter me-1"></i> Lọc
+                </button>
+                <a href="index.php?act=quanly-logs" style="background: #fff; color: #64748b; border: 1px solid #cbd5e1; padding: 9px 20px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; text-align: center;">
+                    Xóa lọc
+                </a>
+            </div>
+        </form>
+    </div>
+
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse;">
             <thead>

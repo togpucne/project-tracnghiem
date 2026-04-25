@@ -5,14 +5,51 @@ function logs_index()
 {
     $conn = Database::connect();
     
-    // Pagination or filtering can be added here
+    // Tiếp nhận bộ lọc
+    $date = $_GET['date'] ?? '';
+    $method = $_GET['method'] ?? '';
+    $keyword = $_GET['keyword'] ?? '';
+
+    $where = ["1=1"];
+    $params = [];
+    $types = "";
+
+    if ($date !== '') {
+        $where[] = "DATE(l.created_at) = ?";
+        $params[] = $date;
+        $types .= "s";
+    }
+
+    if ($method !== '') {
+        $where[] = "l.method = ?";
+        $params[] = $method;
+        $types .= "s";
+    }
+
+    if ($keyword !== '') {
+        $where[] = "(n.ten LIKE ? OR n.email LIKE ? OR l.action_name LIKE ?)";
+        $like = "%$keyword%";
+        $params[] = $like;
+        $params[] = $like;
+        $params[] = $like;
+        $types .= "sss";
+    }
+
+    $where_sql = implode(" AND ", $where);
+
     $sql = "SELECT l.*, n.ten, n.email, n.trangthai, n.vaitro 
             FROM api_logs l 
             LEFT JOIN nguoidung n ON l.id_nguoidung = n.id_nguoidung 
+            WHERE $where_sql
             ORDER BY l.created_at DESC 
-            LIMIT 100";
+            LIMIT 500"; // Tăng giới hạn lên 500
             
-    $result = $conn->query($sql);
+    $stmt = $conn->prepare($sql);
+    if ($types !== "") {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
     $list_logs = [];
     if ($result) {
         while ($row = $result->fetch_assoc()) {
