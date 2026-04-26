@@ -54,8 +54,10 @@ Response::json([
     "success" => true,
     "message" => "Dang nhap thanh cong",
     "token" => $token,
+    "id" => $id,
     "ten" => $ten,
     "email" => $data["email"],
     "ngaytao" => $ngaytao,
     "role" => $vaitro,
+    "avatar" => $avatar ?? 'default.jpg'
 ]);

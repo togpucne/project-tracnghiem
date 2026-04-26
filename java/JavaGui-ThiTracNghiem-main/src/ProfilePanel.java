@@ -9,6 +9,8 @@ public class ProfilePanel extends JPanel {
     private JPasswordField passField;
     private JTextField dateField;
     private JLabel avatarLabel;
+    private JLabel imgLabel;
+    private java.io.File selectedAvatarFile;
 
     public ProfilePanel() {
         setLayout(new BorderLayout());
@@ -44,12 +46,56 @@ public class ProfilePanel extends JPanel {
         formPanel.setBorder(new EmptyBorder(0, 50, 40, 50)); 
         
         // Avatar info / User Title
-        avatarLabel = new JLabel(UserSession.ten);
-        avatarLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        avatarLabel.setForeground(new Color(31, 41, 55));
-        avatarLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        avatarLabel.setBorder(new EmptyBorder(40, 0, 30, 0));
-        formPanel.add(avatarLabel);
+        JPanel avatarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        avatarPanel.setBackground(Color.WHITE);
+        avatarPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        avatarPanel.setBorder(new EmptyBorder(40, 0, 30, 0));
+
+        imgLabel = new JLabel();
+        imgLabel.setPreferredSize(new Dimension(80, 80));
+        try {
+            String avatarUrl = "http://localhost/project-tracnghiem/server/public/imgs/avatars/" + UserSession.avatar;
+            java.net.URL url = new java.net.URI(avatarUrl).toURL();
+            ImageIcon icon = new ImageIcon(url);
+            Image img = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+            imgLabel.setIcon(new ImageIcon(img));
+        } catch (Exception e) {
+            imgLabel.setText("N/A");
+        }
+        avatarPanel.add(imgLabel);
+        avatarPanel.add(Box.createHorizontalStrut(20));
+
+        JLabel welcomeLabel = new JLabel(UserSession.ten);
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        welcomeLabel.setForeground(new Color(31, 41, 55));
+        avatarPanel.add(welcomeLabel);
+
+        avatarLabel = welcomeLabel;
+
+        JButton changeAvatarBtn = new JButton("Chọn ảnh");
+        changeAvatarBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        changeAvatarBtn.setMargin(new Insets(2, 5, 2, 5));
+        changeAvatarBtn.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                selectedAvatarFile = chooser.getSelectedFile();
+                try {
+                    ImageIcon icon = new ImageIcon(selectedAvatarFile.getAbsolutePath());
+                    Image img = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+                    imgLabel.setIcon(new ImageIcon(img));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        
+        JPanel avatarFull = new JPanel(new BorderLayout(0, 10));
+        avatarFull.setBackground(Color.WHITE);
+        avatarFull.add(avatarPanel, BorderLayout.CENTER);
+        avatarFull.add(changeAvatarBtn, BorderLayout.SOUTH);
+        avatarFull.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        formPanel.add(avatarFull);
 
         nameField = createInput("Họ và tên", UserSession.ten, formPanel);
         emailField = createInput("Email", UserSession.email, formPanel);
@@ -153,20 +199,36 @@ public class ProfilePanel extends JPanel {
             return;
         }
         
-        String jsonInput = String.format("{\"ten\":\"%s\", \"email\":\"%s\", \"matkhau\":\"%s\"}", 
-            APIHelper.escapeJSON(name), APIHelper.escapeJSON(email), APIHelper.escapeJSON(pass));
-            
-        APIHelper.APIResponse res = APIHelper.sendPost("update_profile.php", jsonInput);
-        if(res.success) {
-            UserSession.ten = name;
-            UserSession.email = email;
-            if (!pass.isEmpty()) {
-                UserSession.matkhau = pass;
-            }
-            avatarLabel.setText(UserSession.ten);
-            JOptionPane.showMessageDialog(this, res.message, "Thành công", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, res.message, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        java.util.Map<String, String> fields = new java.util.HashMap<>();
+        fields.put("ten", name);
+        fields.put("email", email);
+        if (!pass.isEmpty()) {
+            fields.put("matkhau", pass);
         }
+
+        new Thread(() -> {
+            APIHelper.APIResponse res = APIHelper.sendMultipartPost("profile/update", fields, "avatar", selectedAvatarFile);
+            
+            SwingUtilities.invokeLater(() -> {
+                if(res.success) {
+                    UserSession.ten = name;
+                    UserSession.email = email;
+                    if (!pass.isEmpty()) {
+                        UserSession.matkhau = pass;
+                    }
+                    avatarLabel.setText(UserSession.ten);
+                    
+                    // Update global session with new avatar if returned
+                    String newAvatar = APIHelper.extractJsonValue(res.rawData, "avatar");
+                    if (!newAvatar.isEmpty()) {
+                        UserSession.avatar = newAvatar;
+                    }
+
+                    JOptionPane.showMessageDialog(this, res.message, "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, res.message, "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+        }).start();
     }
 }

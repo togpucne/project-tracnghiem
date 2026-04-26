@@ -136,19 +136,20 @@ public class Login extends JFrame {
                     APIHelper.escapeJSON(email),
                     APIHelper.escapeJSON(password));
 
-            APIHelper.APIResponse response = APIHelper.sendPost("login.php", jsonRequest);
+            APIHelper.APIResponse response = APIHelper.sendPost("auth/login", jsonRequest);
 
             if (response.success) {
                 // Parse returned info and save it globally in UserSession
                 if (response.rawData != null) {
+                    UserSession.userId = Integer.parseInt(APIHelper.extractJsonValue(response.rawData, "id"));
                     UserSession.ten = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(response.rawData, "ten"));
-                    UserSession.email = APIHelper
-                            .unescapeUnicode(APIHelper.extractJsonValue(response.rawData, "email"));
-                    UserSession.ngaythamgia = APIHelper
-                            .unescapeUnicode(APIHelper.extractJsonValue(response.rawData, "ngaytao"));
+                    UserSession.email = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(response.rawData, "email"));
+                    UserSession.ngaythamgia = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(response.rawData, "ngaytao"));
+                    UserSession.role = APIHelper.extractJsonValue(response.rawData, "role");
+                    UserSession.avatar = APIHelper.extractJsonValue(response.rawData, "avatar");
+                    UserSession.token = APIHelper.extractJsonValue(response.rawData, "token");
                     UserSession.matkhau = password;
-                    // Shorten datetime to Date if needed: "2026-03-20 14:39:00" -> "2026-03-20", or
-                    // split at T
+                    
                     if (UserSession.ngaythamgia.contains(" ")) {
                         UserSession.ngaythamgia = UserSession.ngaythamgia.split(" ")[0];
                     }

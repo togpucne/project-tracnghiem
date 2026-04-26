@@ -9,6 +9,7 @@ public class Home extends JFrame {
     private JPanel cards;
     private CardLayout cardLayout;
     private JPanel gridPanel;
+    private java.util.Map<String, JButton> menuButtons = new java.util.HashMap<>();
 
     public Home() {
         setTitle("Trang chủ - Trắc Nghiệm");
@@ -34,6 +35,14 @@ public class Home extends JFrame {
         // ------------- HOME CARD -------------
         cards.add(createHomePanel(), "HOME");
 
+        // ------------- EXAM LIBRARY CARD -------------
+        cards.add(new ExamLibraryPanel(), "LIBRARY");
+
+        // ------------- LECTURER DASHBOARD CARD -------------
+        if ("giangvien".equals(UserSession.role)) {
+            cards.add(new LecturerDashboard(), "LECTURER_DASHBOARD");
+        }
+
         // ------------- PROFILE CARD -------------
         cards.add(new ProfilePanel(), "PROFILE");
 
@@ -43,11 +52,27 @@ public class Home extends JFrame {
 
         wrapper.add(cards, BorderLayout.CENTER);
 
+        // Set default view based on role
+        if ("giangvien".equals(UserSession.role)) {
+            switchView("LECTURER_DASHBOARD");
+        } else {
+            switchView("HOME");
+        }
+
         add(wrapper);
     }
 
     public void switchView(String viewName) {
         cardLayout.show(cards, viewName);
+        
+        // Update sidebar highlights
+        for (java.util.Map.Entry<String, JButton> entry : menuButtons.entrySet()) {
+            boolean active = entry.getKey().equals(viewName);
+            JButton btn = entry.getValue();
+            btn.setForeground(active ? Color.WHITE : new Color(209, 213, 219));
+            btn.setBackground(active ? new Color(239, 68, 68) : new Color(31, 41, 55));
+        }
+
         if ("HISTORY".equals(viewName)) {
             // Find and refresh history panel
             for (Component c : cards.getComponents()) {
@@ -61,96 +86,161 @@ public class Home extends JFrame {
     public void refreshExams() {
         if (gridPanel != null) {
             gridPanel.removeAll();
-            loadExamsFromAPI(gridPanel);
+            loadLatest8Exams(gridPanel);
             gridPanel.revalidate();
             gridPanel.repaint();
         }
     }
 
     private JPanel createHomePanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
+        JPanel homePanel = new JPanel(new BorderLayout());
+        homePanel.setBackground(Color.WHITE);
 
-        class ScrollablePanel extends JPanel implements javax.swing.Scrollable {
-            public ScrollablePanel() {
-                super();
-            }
+        JPanel content = new JPanel();
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setBackground(Color.WHITE);
 
-            @Override
-            public Dimension getPreferredScrollableViewportSize() {
-                return getPreferredSize();
-            }
+        // --- 1. HERO SECTION ---
+        JPanel hero = new JPanel(new BorderLayout());
+        hero.setBackground(new Color(37, 99, 235));
+        hero.setPreferredSize(new Dimension(0, 180));
+        hero.setMaximumSize(new Dimension(Integer.MAX_VALUE, 180));
 
-            @Override
-            public int getScrollableUnitIncrement(java.awt.Rectangle r, int o, int d) {
-                return 16;
-            }
+        JLabel heroText = new JLabel("KIỂM TRA NĂNG LỰC - LUYỆN ĐỀ ĐỈNH CAO", SwingConstants.CENTER);
+        heroText.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        heroText.setForeground(Color.WHITE);
+        hero.add(heroText, BorderLayout.CENTER);
+        content.add(hero);
 
-            @Override
-            public int getScrollableBlockIncrement(java.awt.Rectangle r, int o, int d) {
-                return 50;
-            }
+        // --- 2. LATEST EXAMS SECTION ---
+        JPanel examsSection = new JPanel(new BorderLayout());
+        examsSection.setBackground(Color.WHITE);
+        examsSection.setBorder(new EmptyBorder(40, 40, 40, 40));
 
-            @Override
-            public boolean getScrollableTracksViewportWidth() {
-                return true;
-            }
+        JLabel sectionTitle = new JLabel("8 bài thi mới nhất");
+        sectionTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        sectionTitle.setBorder(new EmptyBorder(0, 0, 30, 0));
+        examsSection.add(sectionTitle, BorderLayout.NORTH);
 
-            @Override
-            public boolean getScrollableTracksViewportHeight() {
-                return false;
-            }
-        }
-
-        // Content Area
-        ScrollablePanel homeContent = new ScrollablePanel();
-        homeContent.setLayout(new BoxLayout(homeContent, BoxLayout.Y_AXIS));
-        homeContent.setBackground(new Color(249, 250, 251));
-
-        // 1. TOP BANNER
-        homeContent.add(createBannerSection());
-
-        // 2. EXAM SECTION
-        JPanel examWrapper = new JPanel(new BorderLayout());
-        examWrapper.setBackground(new Color(249, 250, 251));
-
-        JLabel titleLabel = new JLabel("Danh sách toàn bộ đề thi", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        titleLabel.setForeground(new Color(31, 41, 55));
-        titleLabel.setBorder(new EmptyBorder(40, 0, 30, 0));
-        examWrapper.add(titleLabel, BorderLayout.NORTH);
-        // Cards Grid with Dynamic Auto-Fit Layout
-        GridLayout gridLayout = new GridLayout(0, 4, 25, 25);
-        gridPanel = new JPanel(gridLayout);
+        gridPanel = new JPanel(new GridLayout(0, 4, 20, 20));
         gridPanel.setBackground(Color.WHITE);
-        gridPanel.setBorder(new EmptyBorder(0, 40, 40, 40));
+        examsSection.add(gridPanel, BorderLayout.CENTER);
+        
+        loadLatest8Exams(gridPanel);
+        content.add(examsSection);
 
-        gridPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
-            @Override
-            public void componentResized(java.awt.event.ComponentEvent e) {
-                int availableWidth = gridPanel.getWidth() - 80; // Minus L/R borders
-                if (availableWidth <= 0)
-                    return;
-                int cols = Math.max(1, availableWidth / 280);
-                if (gridLayout.getColumns() != cols) {
-                    gridLayout.setColumns(cols);
-                    gridPanel.revalidate();
+        // --- 3. MARKETING SECTION ---
+        JPanel marketPanel = new JPanel();
+        marketPanel.setLayout(new BoxLayout(marketPanel, BoxLayout.Y_AXIS));
+        marketPanel.setBackground(new Color(248, 250, 252));
+        marketPanel.setBorder(new EmptyBorder(60, 100, 60, 100));
+
+        JLabel mTitle = new JLabel("Phần mềm luyện thi online — PT QUIZ");
+        mTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        mTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JTextArea mDesc = new JTextArea(
+            "PT QUIZ là nền tảng luyện thi trắc nghiệm online giúp người học ôn tập hiệu quả với nhiều chủ đề như TOEIC, IELTS, Lập trình, Toán học và nhiều lĩnh vực khác.\n\n" +
+            "Hệ thống mô phỏng đề thi thật, cung cấp ngân hàng câu hỏi đa dạng, luyện tập theo chủ đề hoặc làm đề full test.\n\n" +
+            "Theo dõi tiến độ học tập, thống kê kết quả chi tiết và gợi ý lộ trình phù hợp.\n\n" +
+            "Luyện tập miễn phí ngay hôm nay cùng PT QUIZ!"
+        );
+        mDesc.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        mDesc.setLineWrap(true);
+        mDesc.setWrapStyleWord(true);
+        mDesc.setEditable(false);
+        mDesc.setBackground(new Color(248, 250, 252));
+        mDesc.setBorder(new EmptyBorder(30, 0, 40, 0));
+        mDesc.setMaximumSize(new Dimension(900, 300));
+
+        marketPanel.add(mTitle);
+        marketPanel.add(mDesc);
+        content.add(marketPanel);
+
+        // --- 4. CONSULTATION FORM ---
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setBackground(Color.WHITE);
+        formPanel.setBorder(new EmptyBorder(60, 100, 80, 100));
+        formPanel.setMaximumSize(new Dimension(1000, 700));
+
+        JLabel fTitle = new JLabel("Tư vấn lộ trình học");
+        fTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        fTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        formPanel.add(fTitle);
+        formPanel.add(Box.createVerticalStrut(30));
+
+        addFormField("Họ tên *", formPanel);
+        addFormField("Số điện thoại *", formPanel);
+        addFormField("Khu vực học *", formPanel);
+        addFormField("Môn học bạn quan tâm", formPanel);
+
+        JButton submitForm = new JButton("Gửi yêu cầu tư vấn");
+        submitForm.setBackground(new Color(16, 185, 129));
+        submitForm.setForeground(Color.BLACK); // Changed to BLACK for visibility
+        submitForm.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        submitForm.setFocusPainted(false);
+        submitForm.setPreferredSize(new Dimension(300, 50));
+        submitForm.setMaximumSize(new Dimension(300, 50));
+        submitForm.setAlignmentX(Component.CENTER_ALIGNMENT);
+        submitForm.setOpaque(true);
+        submitForm.setContentAreaFilled(true); // Ensure background is painted
+        submitForm.setBorderPainted(false);
+        submitForm.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        formPanel.add(Box.createVerticalStrut(20));
+        formPanel.add(submitForm);
+
+        content.add(formPanel);
+
+        JScrollPane scroll = new JScrollPane(content);
+        scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(20);
+        homePanel.add(scroll, BorderLayout.CENTER);
+
+        return homePanel;
+    }
+
+    private void addFormField(String label, JPanel parent) {
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+        parent.add(lbl);
+        parent.add(Box.createVerticalStrut(8));
+        
+        JTextField tf = new JTextField();
+        tf.setMaximumSize(new Dimension(500, 40));
+        tf.setPreferredSize(new Dimension(500, 40));
+        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tf.setAlignmentX(Component.CENTER_ALIGNMENT);
+        parent.add(tf);
+        parent.add(Box.createVerticalStrut(20));
+    }
+
+    private void loadLatest8Exams(JPanel gridPanel) {
+        new Thread(() -> {
+            String jsonResponse = APIHelper.sendGet("exam/list");
+            if (jsonResponse == null || jsonResponse.isEmpty()) return;
+
+            SwingUtilities.invokeLater(() -> {
+                gridPanel.removeAll();
+                int dataStart = jsonResponse.indexOf("\"data\":[");
+                if (dataStart != -1) {
+                    String dataPart = jsonResponse.substring(dataStart);
+                    String[] items = dataPart.split("\\{");
+                    for (int i = 1; i < Math.min(items.length, 9); i++) {
+                        String raw = "{" + items[i];
+                        String id = APIHelper.extractJsonValue(raw, "id_baithi");
+                        String title = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
+                        String sub = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "tenmonhoc"));
+                        boolean ongoing = "1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"));
+                        gridPanel.add(createExamCard(id, title, sub, "60 phút", "10 câu", ongoing));
+                    }
                 }
-            }
-        });
-
-        loadExamsFromAPI(gridPanel);
-
-        examWrapper.add(gridPanel, BorderLayout.CENTER);
-        homeContent.add(examWrapper);
-
-        JScrollPane scrollPane = new JScrollPane(homeContent);
-        scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        panel.add(scrollPane, BorderLayout.CENTER);
-        return panel;
+                gridPanel.revalidate();
+                gridPanel.repaint();
+            });
+        }).start();
     }
 
     private JPanel createSidebar() {
@@ -169,13 +259,30 @@ public class Home extends JFrame {
         sidebar.add(logo);
 
         // Menu Buttons
-        sidebar.add(createMenuButton("Trang chủ", true, "HOME"));
+        if ("giangvien".equals(UserSession.role)) {
+            sidebar.add(createMenuButton("Bảng điều khiển", true, "LECTURER_DASHBOARD"));
+            
+            JButton refreshBtn = createMenuButton("Làm mới dữ liệu", false, null);
+            refreshBtn.addActionListener(e -> {
+                for (Component c : cards.getComponents()) {
+                    if (c instanceof LecturerDashboard) {
+                        ((LecturerDashboard) c).loadStats();
+                    }
+                }
+            });
+            sidebar.add(refreshBtn);
+        } else {
+            sidebar.add(createMenuButton("Trang chủ", true, "HOME"));
+            sidebar.add(createMenuButton("Đề bài", false, "LIBRARY"));
+        }
+        
         sidebar.add(createMenuButton("Thông tin cá nhân", false, "PROFILE"));
-        sidebar.add(createMenuButton("Lịch sử làm bài", false, "HISTORY"));
+        
+        if (!"giangvien".equals(UserSession.role)) {
+            sidebar.add(createMenuButton("Lịch sử làm bài", false, "HISTORY"));
+        }
 
-        JButton refreshBtn = createMenuButton("Làm mới dữ liệu", false, null);
-        refreshBtn.addActionListener(e -> refreshExams());
-        sidebar.add(refreshBtn);
+
 
         sidebar.add(Box.createVerticalGlue()); // Push logout to bottom
 
@@ -194,12 +301,13 @@ public class Home extends JFrame {
 
     private JButton createMenuButton(String text, boolean active, String viewName) {
         JButton btn = new JButton(text);
+        if (viewName != null) menuButtons.put(viewName, btn);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         if (viewName != null && !viewName.isEmpty()) {
             btn.addActionListener(e -> switchView(viewName));
         }
         btn.setForeground(active ? Color.WHITE : new Color(209, 213, 219));
-        btn.setBackground(active ? new Color(55, 65, 81) : new Color(31, 41, 55));
+        btn.setBackground(active ? new Color(239, 68, 68) : new Color(31, 41, 55));
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setContentAreaFilled(false);
@@ -210,89 +318,25 @@ public class Home extends JFrame {
         btn.setBorder(new EmptyBorder(0, 40, 0, 0)); // Indent the text beautifully
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        if (!active) {
-            btn.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                // Only hover if not already active
+                if (btn.getBackground().equals(new Color(31, 41, 55))) {
                     btn.setBackground(new Color(55, 65, 81));
-                    btn.setForeground(Color.WHITE);
                 }
+            }
 
-                public void mouseExited(MouseEvent e) {
+            public void mouseExited(MouseEvent e) {
+                // If it's not the active red, return to normal gray
+                if (!btn.getBackground().equals(new Color(239, 68, 68))) {
                     btn.setBackground(new Color(31, 41, 55));
-                    btn.setForeground(new Color(209, 213, 219));
                 }
-            });
-        }
+            }
+        });
         return btn;
     }
 
-    private JPanel createBannerSection() {
-        JPanel bannerPanel = new JPanel(new BorderLayout());
-        bannerPanel.setPreferredSize(new Dimension(10, 150));
-        bannerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
-        bannerPanel.setBackground(new Color(37, 99, 235)); // Blue-600
-
-        JLabel bannerText = new JLabel("KIỂM TRA NĂNG LỰC - LUYỆN ĐỀ ĐỈNH CAO", SwingConstants.CENTER);
-        bannerText.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        bannerText.setForeground(Color.WHITE);
-
-        bannerPanel.add(bannerText, BorderLayout.CENTER);
-        return bannerPanel;
-    }
-
-    private void loadExamsFromAPI(JPanel gridPanel) {
-        String jsonResponse = APIHelper.sendGet("get_exams.php");
-        if (jsonResponse == null || jsonResponse.isEmpty()) {
-            gridPanel.add(new JLabel("Không thể lấy dữ liệu từ máy chủ."));
-            return;
-        }
-
-        try {
-            int dataIndex = jsonResponse.indexOf("\"data\":[");
-            if (dataIndex != -1) {
-                int startArr = jsonResponse.indexOf("[", dataIndex);
-                int endArr = jsonResponse.lastIndexOf("]");
-                if (startArr != -1 && endArr != -1 && endArr > startArr) {
-                    String arrStr = jsonResponse.substring(startArr + 1, endArr);
-                    if (arrStr.trim().isEmpty()) {
-                        gridPanel.add(new JLabel("Chưa có đề thi nào."));
-                        return;
-                    }
-                    String[] objects = arrStr.split("\\}\\s*,\\s*\\{");
-                    for (String obj : objects) {
-                        String idBaithi = extractBasic(obj, "id_baithi");
-                        String ten = APIHelper.unescapeUnicode(extractBasic(obj, "ten_baithi"));
-                        String thoiGian = extractBasic(obj, "thoigianlam");
-                        String cauHoi = extractBasic(obj, "tongcauhoi");
-                        String monHoc = APIHelper.unescapeUnicode(extractBasic(obj, "tenmonhoc"));
-                        String isOngoing = extractBasic(obj, "is_ongoing");
-                        String conLai = extractBasic(obj, "thoigianconlai");
-
-                        gridPanel.add(createExamCard(idBaithi, ten, thoiGian + " phút", cauHoi + " câu hỏi", monHoc,
-                                "1".equals(isOngoing), conLai));
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            gridPanel.add(new JLabel("Lỗi phân tích dữ liệu."));
-        }
-    }
-
-    private String extractBasic(String json, String key) {
-        String val = APIHelper.extractJsonValue(json, key);
-        if (val.isEmpty() && json.contains("\"" + key + "\"")) {
-            // Fallback for non-string values (numbers/null)
-            java.util.regex.Matcher mn = java.util.regex.Pattern.compile("\"" + key + "\"\\s*:\\s*([^,}]+)")
-                    .matcher(json);
-            if (mn.find())
-                return mn.group(1).replaceAll("[\\]\\}]", "").trim();
-        }
-        return val.isEmpty() ? "N/A" : val;
-    }
-
-    private JPanel createExamCard(String idBaithi, String title, String time, String questions, String category,
-            boolean isOngoing, String conLai) {
+    private JPanel createExamCard(String idBaithi, String title, String category, String time, String questions, boolean isOngoing) {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Color.WHITE);
@@ -300,68 +344,52 @@ public class Home extends JFrame {
                 new LineBorder(new Color(229, 231, 235), 1, true),
                 new EmptyBorder(25, 20, 25, 20)));
 
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 17));
+        JLabel titleLabel = new JLabel("<html><div style='width: 150px;'><b>" + title + "</b></div></html>");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titleLabel.setForeground(new Color(31, 41, 55));
-        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel timeLabel = new JLabel("Thời gian: " + time);
-        timeLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        timeLabel.setForeground(new Color(107, 114, 128));
-        timeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JLabel questionLabel = new JLabel("Số câu: " + questions);
-        questionLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        questionLabel.setForeground(new Color(107, 114, 128));
-        questionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel infoLabel = new JLabel("<html>" + time + " | " + questions + "</html>");
+        infoLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        infoLabel.setForeground(new Color(107, 114, 128));
 
         JLabel categoryLabel = new JLabel(category);
-        categoryLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        categoryLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         categoryLabel.setForeground(new Color(37, 99, 235));
         categoryLabel.setBackground(new Color(239, 246, 255));
         categoryLabel.setOpaque(true);
         categoryLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
-        categoryLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        String btnText = "Làm bài";
+        JButton button = new JButton(isOngoing ? "Làm tiếp" : "Làm bài");
         if (isOngoing) {
-            if (!conLai.isEmpty() && !conLai.equals("null")) {
-                int sec = Integer.parseInt(conLai);
-                btnText = "Làm tiếp (" + (sec / 60) + ":" + String.format("%02d", sec % 60) + ")";
-            } else {
-                btnText = "Làm tiếp";
-            }
+            button.setBackground(new Color(255, 235, 59)); // Vibrant Yellow
+            button.setForeground(new Color(31, 41, 55)); // Dark text for contrast
+            button.setBorder(new LineBorder(new Color(234, 179, 8), 1, true)); // Subtle darker yellow border
+        } else {
+            button.setBackground(Color.WHITE);
+            button.setForeground(Color.BLACK);
+            button.setBorder(new LineBorder(Color.BLACK, 1, true));
         }
-        JButton button = new JButton(btnText);
-        Color mainColor = isOngoing ? new Color(245, 158, 11) : new Color(59, 130, 246); // Amber for ongoing, Blue for
-                                                                                         // new
-        button.setBackground(isOngoing ? mainColor : Color.WHITE);
-        button.setForeground(isOngoing ? Color.WHITE : mainColor);
         button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setFocusPainted(false);
-        button.setContentAreaFilled(false);
         button.setOpaque(true);
-        button.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(mainColor, 1, true),
-                new EmptyBorder(10, 0, 10, 0)));
+        button.setContentAreaFilled(true);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        button.setPreferredSize(new Dimension(150, 40));
 
         button.addActionListener(e -> {
-            new ExamScreen(idBaithi, this);
-            this.setVisible(false);
+            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            new ExamScreen(topFrame, idBaithi, title).setVisible(true);
         });
 
         card.add(titleLabel);
-        card.add(Box.createVerticalStrut(12));
-        card.add(timeLabel);
-        card.add(Box.createVerticalStrut(4));
-        card.add(questionLabel);
-        card.add(Box.createVerticalStrut(15));
+        card.add(Box.createVerticalStrut(10));
+        card.add(infoLabel);
+        card.add(Box.createVerticalStrut(10));
         card.add(categoryLabel);
-        card.add(Box.createVerticalStrut(25));
         card.add(Box.createVerticalGlue());
+        card.add(Box.createVerticalStrut(20));
         card.add(button);
 
         return card;

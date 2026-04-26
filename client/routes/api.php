@@ -73,6 +73,12 @@ return [
         "handler" => __DIR__ . "/../api/update_profile.php",
         "methods" => ["POST", "PATCH"],
         "auth" => true,
-        "roles" => ["thisinh"],
+        "roles" => ["thisinh", "giangvien"],
+    ],
+    "lecturer/stats" => [
+        "handler" => __DIR__ . "/../api/get_lecturer_stats.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["giangvien"],
     ],
 ];

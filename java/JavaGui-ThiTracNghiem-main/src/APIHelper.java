@@ -4,7 +4,7 @@ import java.net.URL;
 import java.util.Scanner;
 
 public class APIHelper {
-    public static final String BASE_URL = "http://localhost/tracnghiem-project/client/api/";
+    public static final String BASE_URL = "http://localhost/project-tracnghiem/client/api/";
 
     static {
         java.net.CookieManager cookieManager = new java.net.CookieManager(null, java.net.CookiePolicy.ACCEPT_ALL);
@@ -12,6 +12,7 @@ public class APIHelper {
     }
 
     public static APIResponse sendPost(String endpoint, String jsonInputString) {
+        // ... (existing code preserved)
         try {
             URL url = new java.net.URI(BASE_URL + endpoint).toURL();
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -25,38 +26,87 @@ public class APIHelper {
                 os.write(input, 0, input.length);
             }
 
-            int code = conn.getResponseCode();
-            Scanner scanner;
-            if (code >= 200 && code < 300) {
-                scanner = new Scanner(conn.getInputStream(), "UTF-8");
-            } else {
-                if (conn.getErrorStream() != null) {
-                    scanner = new Scanner(conn.getErrorStream(), "UTF-8");
-                } else {
-                    return new APIResponse(false, "Lỗi HTTP: " + code, "");
-                }
-            }
-
-            String responseStr = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
-            scanner.close();
-
-            // Cơ bản parse JSON thủ công cho response {"message": "..."} hoặc {"error":
-            // "..."}
-            if (code >= 200 && code < 300) {
-                String message = extractJsonValue(responseStr, "message");
-                if (message.isEmpty() && responseStr.contains("thành công"))
-                    message = "Thành công!";
-                return new APIResponse(true, message, responseStr);
-            } else {
-                String error = extractJsonValue(responseStr, "error");
-                if (error.isEmpty())
-                    error = "Có lỗi xảy ra, mã HTTP: " + code;
-                return new APIResponse(false, error, responseStr);
-            }
-
+            return getResponse(conn);
         } catch (Exception e) {
             e.printStackTrace();
             return new APIResponse(false, "Lỗi kết nối: " + e.getMessage(), "");
+        }
+    }
+
+    public static APIResponse sendMultipartPost(String endpoint, java.util.Map<String, String> fields, String fileKey, java.io.File file) {
+        String boundary = "---" + System.currentTimeMillis() + "---";
+        String LINE_FEED = "\r\n";
+        try {
+            URL url = new java.net.URI(BASE_URL + endpoint).toURL();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            conn.setDoOutput(true);
+
+            try (OutputStream os = conn.getOutputStream();
+                 java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.OutputStreamWriter(os, "UTF-8"), true)) {
+                
+                for (java.util.Map.Entry<String, String> entry : fields.entrySet()) {
+                    writer.append("--" + boundary).append(LINE_FEED);
+                    writer.append("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"").append(LINE_FEED);
+                    writer.append(LINE_FEED);
+                    writer.append(entry.getValue()).append(LINE_FEED);
+                }
+
+                if (file != null && file.exists()) {
+                    writer.append("--" + boundary).append(LINE_FEED);
+                    writer.append("Content-Disposition: form-data; name=\"" + fileKey + "\"; filename=\"" + file.getName() + "\"").append(LINE_FEED);
+                    writer.append("Content-Type: " + java.net.URLConnection.guessContentTypeFromName(file.getName())).append(LINE_FEED);
+                    writer.append(LINE_FEED);
+                    writer.flush();
+
+                    java.io.FileInputStream fis = new java.io.FileInputStream(file);
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = fis.read(buffer)) != -1) {
+                        os.write(buffer, 0, bytesRead);
+                    }
+                    os.flush();
+                    fis.close();
+                    writer.append(LINE_FEED);
+                }
+
+                writer.append("--" + boundary + "--").append(LINE_FEED);
+            }
+
+            return getResponse(conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new APIResponse(false, "Lỗi kết nối: " + e.getMessage(), "");
+        }
+    }
+
+    private static APIResponse getResponse(HttpURLConnection conn) throws java.io.IOException {
+        int code = conn.getResponseCode();
+        Scanner scanner;
+        if (code >= 200 && code < 300) {
+            scanner = new Scanner(conn.getInputStream(), "UTF-8");
+        } else {
+            if (conn.getErrorStream() != null) {
+                scanner = new Scanner(conn.getErrorStream(), "UTF-8");
+            } else {
+                return new APIResponse(false, "Lỗi HTTP: " + code, "");
+            }
+        }
+
+        String responseStr = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
+        scanner.close();
+
+        if (code >= 200 && code < 300) {
+            String message = extractJsonValue(responseStr, "message");
+            if (message.isEmpty() && responseStr.contains("thành công"))
+                message = "Thành công!";
+            return new APIResponse(true, message, responseStr);
+        } else {
+            String error = extractJsonValue(responseStr, "error");
+            if (error.isEmpty())
+                error = "Có lỗi xảy ra, mã HTTP: " + code;
+            return new APIResponse(false, error, responseStr);
         }
     }
 

@@ -146,7 +146,7 @@ public class Register extends JFrame {
                     APIHelper.escapeJSON(email),
                     APIHelper.escapeJSON(password));
 
-            APIHelper.APIResponse response = APIHelper.sendPost("register.php", jsonRequest);
+            APIHelper.APIResponse response = APIHelper.sendPost("auth/register", jsonRequest);
 
             if (response.success) {
                 JOptionPane.showMessageDialog(this, response.message, "Thành công", JOptionPane.INFORMATION_MESSAGE);

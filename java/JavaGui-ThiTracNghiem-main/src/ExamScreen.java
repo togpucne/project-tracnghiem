@@ -22,9 +22,12 @@ public class ExamScreen extends JFrame {
     private Map<String, String> selectedAnswers = new HashMap<>();
     private Preferences prefs = Preferences.userNodeForPackage(ExamScreen.class);
 
-    public ExamScreen(String idBaithi, JFrame parentFrame) {
-        this.idBaithi = idBaithi;
+    private String titleBaithi;
+
+    public ExamScreen(JFrame parentFrame, String idBaithi, String titleBaithi) {
         this.parentFrame = parentFrame;
+        this.idBaithi = idBaithi;
+        this.titleBaithi = titleBaithi;
 
         setTitle("Làm bài thi");
         setSize(1300, 800);
@@ -135,7 +138,7 @@ public class ExamScreen extends JFrame {
 
     private void loadData() {
         new Thread(() -> {
-            String jsonResponse = APIHelper.sendGet("get_exam_questions.php?id=" + idBaithi);
+            String jsonResponse = APIHelper.sendGet("exam/questions?id=" + idBaithi);
             if (jsonResponse == null || jsonResponse.isEmpty() || jsonResponse.contains("\"error\"")) {
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(this, "Không thể tải đề thi hoặc đề thi đã bị thao tác lỗi!");
@@ -417,10 +420,10 @@ public class ExamScreen extends JFrame {
         payload.append("}");
         
         if (blocking) {
-            APIHelper.sendPost("sync_draft.php", payload.toString());
+            APIHelper.sendPost("exam/sync-draft", payload.toString());
         } else {
             new Thread(() -> {
-                APIHelper.sendPost("sync_draft.php", payload.toString());
+                APIHelper.sendPost("exam/sync-draft", payload.toString());
             }).start();
         }
     }
@@ -451,7 +454,7 @@ public class ExamScreen extends JFrame {
         payload.append("}");
 
         new Thread(() -> {
-            APIHelper.APIResponse res = APIHelper.sendPost("submit.php", payload.toString());
+            APIHelper.APIResponse res = APIHelper.sendPost("exam/submit", payload.toString());
             SwingUtilities.invokeLater(() -> {
                 if (res.success) {
                     String diem = extractBasic(res.rawData, "diem");

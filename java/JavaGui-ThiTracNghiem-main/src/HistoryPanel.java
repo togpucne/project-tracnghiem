@@ -13,7 +13,7 @@ public class HistoryPanel extends JPanel {
     private JPanel paginationPanel;
     private List<Object[]> allHistoryData = new ArrayList<>();
     private int currentPage = 1;
-    private final int ROWS_PER_PAGE = 10;
+    private final int ROWS_PER_PAGE = 20;
 
     public void refresh() {
         currentPage = 1;
@@ -31,7 +31,7 @@ public class HistoryPanel extends JPanel {
         title.setBorder(new EmptyBorder(0, 0, 30, 0));
         add(title, BorderLayout.NORTH);
 
-        String[] columns = { "#", "Đề thi", "Thời gian bắt đầu", "Trạng thái", "Điểm số" };
+        String[] columns = { "STT", "Đề thi", "Thời gian bắt đầu", "Trạng thái", "Điểm số", "Hành động", "ID_LANTHI" };
 
         model = new DefaultTableModel(null, columns) {
             @Override
@@ -89,11 +89,38 @@ public class HistoryPanel extends JPanel {
             }
         });
 
+        // Action Column
+        table.getColumnModel().getColumn(5).setCellRenderer(new ActionButtonRenderer());
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int row = table.rowAtPoint(e.getPoint());
+                int col = table.columnAtPoint(e.getPoint());
+                if (col == 5) {
+                    String idLanthi = (String) table.getModel().getValueAt(row, 6);
+                    String tenBaithi = (String) table.getModel().getValueAt(row, 1);
+                    String trangThai = (String) table.getModel().getValueAt(row, 3);
+                    if ("Đã nộp bài".equals(trangThai)) {
+                        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(HistoryPanel.this);
+                        new ResultDetailDialog(topFrame, idLanthi, tenBaithi).setVisible(true);
+                    } else {
+                        JOptionPane.showMessageDialog(HistoryPanel.this, "Bài thi này chưa nộp, không thể xem chi tiết.");
+                    }
+                }
+            }
+        });
+
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
-        table.getColumnModel().getColumn(1).setPreferredWidth(350);
-        table.getColumnModel().getColumn(2).setPreferredWidth(250);
-        table.getColumnModel().getColumn(3).setPreferredWidth(180);
-        table.getColumnModel().getColumn(4).setPreferredWidth(150);
+        table.getColumnModel().getColumn(1).setPreferredWidth(300);
+        table.getColumnModel().getColumn(2).setPreferredWidth(200);
+        table.getColumnModel().getColumn(3).setPreferredWidth(150);
+        table.getColumnModel().getColumn(4).setPreferredWidth(120);
+        table.getColumnModel().getColumn(5).setPreferredWidth(120);
+        
+        // Hide ID_LANTHI column
+        table.getColumnModel().getColumn(6).setMinWidth(0);
+        table.getColumnModel().getColumn(6).setMaxWidth(0);
+        table.getColumnModel().getColumn(6).setPreferredWidth(0);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(229, 231, 235)));
@@ -111,11 +138,15 @@ public class HistoryPanel extends JPanel {
 
     private void loadHistoryData() {
         new Thread(() -> {
-            String jsonResponse = APIHelper.sendGet("get_history.php");
+            String jsonResponse = APIHelper.sendGet("history/list");
             if (jsonResponse == null || jsonResponse.isEmpty())
                 return;
 
-            allHistoryData.clear(); // Fix duplication bug
+            allHistoryData.clear();
+            SwingUtilities.invokeLater(() -> {
+                model.setRowCount(0);
+                model.addRow(new Object[] { "", "Đang tải dữ liệu...", "", "", "", "", "" });
+            });
             try {
                 int dataIndex = jsonResponse.indexOf("\"data\":[");
                 if (dataIndex != -1) {
@@ -136,8 +167,7 @@ public class HistoryPanel extends JPanel {
                              String diem = extractBasic(obj, "diem");
  
                              if (trangThai.equalsIgnoreCase("ongoing") || "null".equals(diem) || diem.isEmpty()) {
-                                 trangThai = "Đang làm dở";
-                                 diem = "-";
+                                 continue; // Hide ongoing from history
                              } else {
                                  trangThai = "Đã nộp bài";
                                  if (!diem.equals("N/A") && !diem.equals("null")) {
@@ -152,7 +182,7 @@ public class HistoryPanel extends JPanel {
                                  }
                              }
  
-                             allHistoryData.add(new Object[] { String.valueOf(stt++), ten, thoiGian, trangThai, diem });
+                             allHistoryData.add(new Object[] { String.valueOf(stt++), ten, thoiGian, trangThai, diem, "Xem chi tiết", idLanthi });
                         }
 
                         SwingUtilities.invokeLater(() -> refreshPage());
@@ -287,6 +317,30 @@ public class HistoryPanel extends JPanel {
             }
             
             p.add(label);
+            return p;
+        }
+    }
+
+    class ActionButtonRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));
+            p.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+            
+            JButton btn = new JButton("Xem chi tiết");
+            btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            btn.setBackground(new Color(229, 231, 235)); // Light gray background
+            btn.setForeground(Color.BLACK); // Black text
+            btn.setFocusPainted(false);
+            btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(156, 163, 175)),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+            ));
+            btn.setOpaque(true);
+            btn.setContentAreaFilled(true);
+            btn.setBorderPainted(true);
+            
+            p.add(btn);
             return p;
         }
     }
