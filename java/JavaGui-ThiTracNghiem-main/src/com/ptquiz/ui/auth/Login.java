@@ -1,19 +1,23 @@
+package com.ptquiz.ui.auth;
+
+import com.ptquiz.core.*;
+import com.ptquiz.ui.main.Home;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class Register extends JFrame {
-    private JTextField textfieldFullname;
+public class Login extends JFrame {
     private JTextField textfieldEmail;
     private JPasswordField passwordfieldPassword;
     private JCheckBox checkboxShowPassword;
-    private JButton buttonRegister;
     private JButton buttonLogin;
+    private JButton buttonQuit;
+    private JButton buttonRegister;
 
-    public Register() {
+    public Login() {
         initComponents();
-        setTitle("Đăng ký Tài khoản");
-        setSize(420, 440);
+        setTitle("Đăng nhập Hệ thống");
+        setSize(420, 380);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
@@ -24,9 +28,9 @@ public class Register extends JFrame {
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
         // Header
-        JLabel labelTitle = new JLabel("ĐĂNG KÝ", SwingConstants.CENTER);
+        JLabel labelTitle = new JLabel("ĐĂNG NHẬP", SwingConstants.CENTER);
         labelTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        labelTitle.setForeground(new Color(31, 41, 55));
+        labelTitle.setForeground(new Color(31, 41, 55)); // Dark gray
         labelTitle.setBorder(new EmptyBorder(0, 0, 25, 0));
         mainPanel.add(labelTitle, BorderLayout.NORTH);
 
@@ -37,39 +41,24 @@ public class Register extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        JLabel labelFullname = new JLabel("Họ tên:");
-        labelFullname.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        formPanel.add(labelFullname, gbc);
-
-        textfieldFullname = new JTextField(18);
-        textfieldFullname.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        textfieldFullname.setPreferredSize(new Dimension(200, 30));
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.insets = new Insets(8, 0, 8, 0);
-        formPanel.add(textfieldFullname, gbc);
-
         JLabel labelEmail = new JLabel("Email:");
         labelEmail.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.insets = new Insets(8, 0, 8, 15);
+        gbc.gridy = 0;
         formPanel.add(labelEmail, gbc);
 
         textfieldEmail = new JTextField(18);
         textfieldEmail.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         textfieldEmail.setPreferredSize(new Dimension(200, 30));
         gbc.gridx = 1;
-        gbc.gridy = 1;
+        gbc.gridy = 0;
         gbc.insets = new Insets(8, 0, 8, 0);
         formPanel.add(textfieldEmail, gbc);
 
         JLabel labelPassword = new JLabel("Mật khẩu:");
         labelPassword.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 1;
         gbc.insets = new Insets(8, 0, 8, 15);
         formPanel.add(labelPassword, gbc);
 
@@ -77,14 +66,14 @@ public class Register extends JFrame {
         passwordfieldPassword.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         passwordfieldPassword.setPreferredSize(new Dimension(200, 30));
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 1;
         gbc.insets = new Insets(8, 0, 8, 0);
         formPanel.add(passwordfieldPassword, gbc);
 
         checkboxShowPassword = new JCheckBox("Hiện mật khẩu");
         checkboxShowPassword.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 2;
         gbc.insets = new Insets(0, 0, 10, 0);
         formPanel.add(checkboxShowPassword, gbc);
 
@@ -94,23 +83,27 @@ public class Register extends JFrame {
         JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 0, 10));
         buttonPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
 
-        JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
 
-        buttonRegister = new JButton("Đăng ký");
-        stylePrimaryButton(buttonRegister);
-        buttonRegister.setPreferredSize(new Dimension(200, 36));
-        topButtons.add(buttonRegister);
+        buttonLogin = new JButton("Đăng nhập");
+        stylePrimaryButton(buttonLogin);
+
+        buttonQuit = new JButton("Thoát");
+        styleSecondaryButton(buttonQuit);
+
+        topButtons.add(buttonLogin);
+        topButtons.add(buttonQuit);
 
         JPanel bottomButtons = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-        JLabel labelLogin = new JLabel("Đã có tài khoản? ");
-        labelLogin.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        JLabel labelRegister = new JLabel("Chưa có tài khoản? ");
+        labelRegister.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
-        buttonLogin = new JButton("Đăng nhập");
-        styleTextButton(buttonLogin);
+        buttonRegister = new JButton("Đăng ký ngay");
+        styleTextButton(buttonRegister);
 
-        bottomButtons.add(labelLogin);
-        bottomButtons.add(buttonLogin);
+        bottomButtons.add(labelRegister);
+        bottomButtons.add(buttonRegister);
 
         buttonPanel.add(topButtons);
         buttonPanel.add(bottomButtons);
@@ -126,31 +119,55 @@ public class Register extends JFrame {
             }
         });
 
-        buttonLogin.addActionListener(e -> {
-            new Login();
+        buttonQuit.addActionListener(e -> System.exit(0));
+
+        buttonRegister.addActionListener(e -> {
+            new Register();
             dispose();
         });
 
-        buttonRegister.addActionListener(e -> {
-            String fullname = textfieldFullname.getText().trim();
+        buttonLogin.addActionListener(e -> {
             String email = textfieldEmail.getText().trim();
             String password = new String(passwordfieldPassword.getPassword());
 
-            if (fullname.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            if (email.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            String jsonRequest = String.format("{\"fullname\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
-                    APIHelper.escapeJSON(fullname),
+            String jsonRequest = String.format("{\"email\":\"%s\",\"password\":\"%s\"}",
                     APIHelper.escapeJSON(email),
                     APIHelper.escapeJSON(password));
 
-            APIHelper.APIResponse response = APIHelper.sendPost("auth/register", jsonRequest);
+            APIHelper.APIResponse response = APIHelper.sendPost("auth/login", jsonRequest);
 
             if (response.success) {
+                // Parse returned info and save it globally in UserSession
+                if (response.rawData != null) {
+                    // Smart ID extraction
+                    String idStr = APIHelper.extractJsonValue(response.rawData, "id");
+                    if (idStr.isEmpty()) idStr = APIHelper.extractJsonValue(response.rawData, "id_nguoidung");
+                    if (idStr.isEmpty()) idStr = APIHelper.extractJsonValue(response.rawData, "userId");
+                    
+                    if (!idStr.isEmpty()) {
+                        UserSession.userId = Integer.parseInt(idStr);
+                    }
+                    
+                    UserSession.ten = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(response.rawData, "ten"));
+                    UserSession.email = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(response.rawData, "email"));
+                    UserSession.ngaythamgia = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(response.rawData, "ngaytao"));
+                    UserSession.role = APIHelper.extractJsonValue(response.rawData, "role");
+                    UserSession.avatar = APIHelper.extractJsonValue(response.rawData, "avatar");
+                    UserSession.token = APIHelper.extractJsonValue(response.rawData, "token");
+                    UserSession.matkhau = password;
+                    
+                    if (UserSession.ngaythamgia.contains(" ")) {
+                        UserSession.ngaythamgia = UserSession.ngaythamgia.split(" ")[0];
+                    }
+                }
                 JOptionPane.showMessageDialog(this, response.message, "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                new Login();
+                new Home();
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(this, response.message, "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -158,7 +175,7 @@ public class Register extends JFrame {
         });
 
         add(mainPanel);
-        getRootPane().setDefaultButton(buttonRegister);
+        getRootPane().setDefaultButton(buttonLogin);
     }
 
     private void stylePrimaryButton(JButton button) {
@@ -169,6 +186,19 @@ public class Register extends JFrame {
         button.setBorderPainted(false);
         button.setContentAreaFilled(false);
         button.setOpaque(true);
+        button.setPreferredSize(new Dimension(130, 36));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    private void styleSecondaryButton(JButton button) {
+        button.setBackground(new Color(229, 231, 235)); // Gray-200
+        button.setForeground(new Color(31, 41, 55)); // Gray-800
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setOpaque(true);
+        button.setPreferredSize(new Dimension(130, 36));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
@@ -181,5 +211,15 @@ public class Register extends JFrame {
         button.setContentAreaFilled(false);
         button.setMargin(new Insets(0, 0, 0, 0));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    public static void main(String[] args) {
+        // Cài đặt Look and Feel hệ thống để giao diện đẹp và mượt mà hơn
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        SwingUtilities.invokeLater(() -> new Login());
     }
 }

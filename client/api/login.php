@@ -55,6 +55,7 @@ Response::json([
     "message" => "Dang nhap thanh cong",
     "token" => $token,
     "id" => $id,
+    "id_nguoidung" => $id,
     "ten" => $ten,
     "email" => $data["email"],
     "ngaytao" => $ngaytao,

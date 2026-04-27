@@ -1,3 +1,7 @@
+package com.ptquiz.ui.student;
+
+import com.ptquiz.core.*;
+import com.ptquiz.ui.main.Home;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -175,8 +179,8 @@ public class ExamScreen extends JFrame {
                 
                 if (remainingSeconds <= 0) {
                     SwingUtilities.invokeLater(() -> {
-                        JOptionPane.showMessageDialog(this, "Bài thi này đã quá giờ nộp hoặc đã kết thúc!");
-                        closeNormally();
+                        JOptionPane.showMessageDialog(this, "Thời gian làm bài đã hết! Hệ thống sẽ tự động nộp bài.");
+                        doSubmit();
                     });
                     return;
                 }
@@ -396,10 +400,12 @@ public class ExamScreen extends JFrame {
     private void closeNormally() {
         if (timer != null) timer.cancel();
         dispose();
-        if (parentFrame instanceof Home) {
-            ((Home) parentFrame).refreshExams();
+        if (parentFrame != null) {
+            if (parentFrame instanceof Home) {
+                ((Home) parentFrame).refreshExams();
+            }
+            parentFrame.setVisible(true);
         }
-        parentFrame.setVisible(true);
     }
 
     private void syncDraftToServer(boolean blocking) {

@@ -1,3 +1,6 @@
+package com.ptquiz.ui.profile;
+
+import com.ptquiz.core.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;

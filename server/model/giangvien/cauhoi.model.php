@@ -173,20 +173,23 @@ class CauHoiModel
         }
 
         $normalizedIncoming = [];
+        $validQuestions = [];
         foreach ($questions as $item) {
             $normalized = mb_strtolower(trim((string) ($item['noidungcauhoi'] ?? '')), 'UTF-8');
             if ($normalized === '') {
-                return ['success' => false, 'message' => 'Có câu hỏi rỗng trong file Word.'];
+                continue; // Skip empty questions
             }
+            // If duplicate found in database or in the same word file, just skip it
             if (in_array($normalized, $normalizedExisting, true) || in_array($normalized, $normalizedIncoming, true)) {
-                return ['success' => false, 'message' => "Câu hỏi bị trùng: " . ($item['noidungcauhoi'] ?? '')];
+                continue;
             }
             $normalizedIncoming[] = $normalized;
+            $validQuestions[] = $item;
         }
 
         $this->conn->begin_transaction();
         try {
-            foreach ($questions as $question) {
+            foreach ($validQuestions as $question) {
                 $stmt = $this->conn->prepare("INSERT INTO cauhoi (id_baithi, noidungcauhoi, dokho, ngaytao) VALUES (?, ?, ?, NOW())");
                 $stmt->bind_param("iss", $id_baithi, $question['noidungcauhoi'], $question['dokho']);
                 $stmt->execute();
@@ -200,7 +203,7 @@ class CauHoiModel
             }
 
             $this->conn->commit();
-            return ['success' => true, 'count' => count($questions)];
+            return ['success' => true, 'count' => count($validQuestions)];
         } catch (Exception $e) {
             $this->conn->rollback();
             return ['success' => false, 'message' => 'Lỗi import: ' . $e->getMessage()];
@@ -282,16 +285,26 @@ class CauHoiModel
             $importedCount = 0;
             foreach ($counts as $dokho => $count) {
                 if ($count <= 0) continue;
+                
+                // Map friendly names to DB keys to search BOTH formats (e.g. 'Dễ' and 'de')
+                $searchKey1 = $dokho;
+                $searchKey2 = $dokho;
+                if ($dokho === 'de' || $dokho === 'Dễ') { $searchKey1 = 'Dễ'; $searchKey2 = 'de'; }
+                else if ($dokho === 'trungbinh' || $dokho === 'Trung bình') { $searchKey1 = 'Trung bình'; $searchKey2 = 'trungbinh'; }
+                else if ($dokho === 'kho' || $dokho === 'Khó') { $searchKey1 = 'Khó'; $searchKey2 = 'kho'; }
 
-                // Fetch random questions from bank
-                // Table: cauhoi has id_nhch and id_baithi IS NULL for bank questions
-                $sql = "SELECT * FROM cauhoi WHERE id_nhch = ? AND id_baithi IS NULL AND dokho = ? AND trangthai = 'active' ORDER BY RAND() LIMIT ?";
+                // Do not limit the query to $count initially because some might be duplicates.
+                // Select all matching questions in random order, then take until we reach $count.
+                $sql = "SELECT * FROM cauhoi WHERE id_nhch = ? AND id_baithi IS NULL AND (dokho = ? OR dokho = ?) AND trangthai = 'active' ORDER BY RAND()";
                 $stmt = $this->conn->prepare($sql);
-                $stmt->bind_param("isi", $id_nhch, $dokho, $count);
+                $stmt->bind_param("iss", $id_nhch, $searchKey1, $searchKey2);
                 $stmt->execute();
                 $res = $stmt->get_result();
 
+                $addedForThisDifficulty = 0;
                 while ($q = $res->fetch_assoc()) {
+                    if ($addedForThisDifficulty >= $count) break;
+
                     // Check if question already exists in exam (to avoid duplicates if importing multiple times)
                     if ($this->checkDuplicate($id_baithi, $q['noidungcauhoi'])) continue;
 
@@ -315,6 +328,7 @@ class CauHoiModel
                         $stmt_ia->execute();
                     }
                     $importedCount++;
+                    $addedForThisDifficulty++;
                 }
             }
 

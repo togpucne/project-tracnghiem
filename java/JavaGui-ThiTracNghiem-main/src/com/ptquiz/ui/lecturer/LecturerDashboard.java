@@ -1,3 +1,6 @@
+package com.ptquiz.ui.lecturer;
+
+import com.ptquiz.core.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -7,18 +10,21 @@ public class LecturerDashboard extends JPanel {
     private JPanel statsGrid;
 
     public LecturerDashboard() {
+        initComponents();
+    }
+
+    private void initComponents() {
         setLayout(new BorderLayout());
-        setBackground(new Color(249, 250, 251));
-        setBorder(new EmptyBorder(40, 40, 40, 40));
+        setBackground(Color.WHITE);
+        setBorder(new EmptyBorder(30, 40, 30, 40));
 
         // Header
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(249, 250, 251));
-        headerPanel.setBorder(new EmptyBorder(0, 0, 40, 0));
-
-        JLabel welcomeLabel = new JLabel("Chào mừng, " + UserSession.ten + "!");
-        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        welcomeLabel.setForeground(new Color(15, 23, 42));
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(Color.WHITE);
+        
+        JLabel welcomeLabel = new JLabel("Chào mừng, " + UserSession.ten + " (ID: " + UserSession.userId + ")!");
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        welcomeLabel.setForeground(new Color(31, 41, 55));
 
         JLabel subLabel = new JLabel("Theo dõi hiệu suất giảng dạy và kết quả thi của sinh viên.");
         subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -26,18 +32,23 @@ public class LecturerDashboard extends JPanel {
 
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setBackground(new Color(249, 250, 251));
+        textPanel.setBackground(Color.WHITE);
         textPanel.add(welcomeLabel);
         textPanel.add(Box.createVerticalStrut(8));
         textPanel.add(subLabel);
 
-        headerPanel.add(textPanel, BorderLayout.WEST);
-        add(headerPanel, BorderLayout.NORTH);
+        header.add(textPanel, BorderLayout.WEST);
+        add(header, BorderLayout.NORTH);
 
         // Stats Grid
         statsGrid = new JPanel(new GridLayout(1, 4, 25, 0));
-        statsGrid.setBackground(new Color(249, 250, 251));
-        add(statsGrid, BorderLayout.CENTER);
+        statsGrid.setBackground(Color.WHITE);
+        
+        JPanel statsContainer = new JPanel(new BorderLayout());
+        statsContainer.setBackground(Color.WHITE);
+        statsContainer.add(statsGrid, BorderLayout.NORTH);
+        
+        add(statsContainer, BorderLayout.CENTER);
 
         loadStats();
     }
@@ -50,10 +61,15 @@ public class LecturerDashboard extends JPanel {
             }
 
             try {
-                String subjects = extractBasic(jsonResponse, "subjects");
-                String exams = extractBasic(jsonResponse, "exams");
-                String questions = extractBasic(jsonResponse, "questions");
-                String attempts = extractBasic(jsonResponse, "attempts");
+                // The API returns stats inside a "stats" object
+                int statsIndex = jsonResponse.indexOf("\"stats\":");
+                if (statsIndex == -1) return;
+                String statsPart = jsonResponse.substring(statsIndex);
+
+                String subjects = APIHelper.extractJsonValue(statsPart, "subjects");
+                String exams = APIHelper.extractJsonValue(statsPart, "exams");
+                String questions = APIHelper.extractJsonValue(statsPart, "questions");
+                String attempts = APIHelper.extractJsonValue(statsPart, "attempts");
 
                 SwingUtilities.invokeLater(() -> {
                     statsGrid.removeAll();
@@ -79,11 +95,9 @@ public class LecturerDashboard extends JPanel {
             new EmptyBorder(25, 25, 25, 25)
         ));
 
-        JPanel iconPanel = new JPanel(new GridBagLayout());
-        iconPanel.setPreferredSize(new Dimension(52, 52));
-        iconPanel.setBackground(bgColor);
-        iconPanel.setBorder(BorderFactory.createEmptyBorder());
-        // In a real app we'd use FontAwesome or similar, here we just use background color
+        JPanel iconPanel = new JPanel();
+        iconPanel.setPreferredSize(new Dimension(10, 52));
+        iconPanel.setBackground(iconColor);
         
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
@@ -93,7 +107,7 @@ public class LecturerDashboard extends JPanel {
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         titleLabel.setForeground(new Color(100, 116, 139));
 
-        JLabel valLabel = new JLabel(value);
+        JLabel valLabel = new JLabel(value != null ? value : "0");
         valLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
         valLabel.setForeground(new Color(30, 41, 59));
 
@@ -105,16 +119,5 @@ public class LecturerDashboard extends JPanel {
         card.add(textPanel, BorderLayout.CENTER);
 
         return card;
-    }
-
-    private String extractBasic(String json, String key) {
-        // Simple search for "key": value or "key": "value"
-        java.util.regex.Matcher ms = java.util.regex.Pattern.compile("\"" + key + "\"\\s*:\\s*\"([^\"]*)\"").matcher(json);
-        if (ms.find()) return ms.group(1);
-
-        java.util.regex.Matcher mn = java.util.regex.Pattern.compile("\"" + key + "\"\\s*:\\s*([^,}]+)").matcher(json);
-        if (mn.find()) return mn.group(1).replaceAll("[\\]\\}]", "").trim();
-
-        return "0";
     }
 }

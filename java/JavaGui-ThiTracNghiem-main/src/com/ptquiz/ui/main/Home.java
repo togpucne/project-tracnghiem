@@ -1,3 +1,10 @@
+package com.ptquiz.ui.main;
+
+import com.ptquiz.core.*;
+import com.ptquiz.ui.auth.Login;
+import com.ptquiz.ui.lecturer.*;
+import com.ptquiz.ui.profile.ProfilePanel;
+import com.ptquiz.ui.student.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -38,9 +45,13 @@ public class Home extends JFrame {
         // ------------- EXAM LIBRARY CARD -------------
         cards.add(new ExamLibraryPanel(), "LIBRARY");
 
-        // ------------- LECTURER DASHBOARD CARD -------------
+        // ------------- LECTURER PANELS -------------
         if ("giangvien".equals(UserSession.role)) {
             cards.add(new LecturerDashboard(), "LECTURER_DASHBOARD");
+            cards.add(new SubjectManagementPanel(), "MANAGE_SUBJECTS");
+            cards.add(new ExamManagementPanel(), "MANAGE_EXAMS");
+            cards.add(new BankManagementPanel(), "MANAGE_BANKS");
+            cards.add(new ResultViewPanel(), "VIEW_RESULTS");
         }
 
         // ------------- PROFILE CARD -------------
@@ -73,11 +84,15 @@ public class Home extends JFrame {
             btn.setBackground(active ? new Color(239, 68, 68) : new Color(31, 41, 55));
         }
 
-        if ("HISTORY".equals(viewName)) {
-            // Find and refresh history panel
-            for (Component c : cards.getComponents()) {
-                if (c instanceof HistoryPanel) {
-                    ((HistoryPanel) c).refresh();
+        // Refresh data when switching to certain views
+        for (Component comp : cards.getComponents()) {
+            if (comp.isVisible()) {
+                if (comp instanceof LecturerDashboard) {
+                    ((LecturerDashboard) comp).loadStats();
+                } else if (comp instanceof SubjectManagementPanel) {
+                    ((SubjectManagementPanel) comp).loadData();
+                } else if (comp instanceof HistoryPanel) {
+                    ((HistoryPanel) comp).refresh();
                 }
             }
         }
@@ -260,27 +275,20 @@ public class Home extends JFrame {
 
         // Menu Buttons
         if ("giangvien".equals(UserSession.role)) {
-            sidebar.add(createMenuButton("Bảng điều khiển", true, "LECTURER_DASHBOARD"));
+            sidebar.add(createMenuButton("Tổng quan", true, "LECTURER_DASHBOARD"));
+            sidebar.add(createMenuButton("Quản lý môn học", false, "MANAGE_SUBJECTS"));
+            sidebar.add(createMenuButton("Quản lý đề thi", false, "MANAGE_EXAMS"));
+            sidebar.add(createMenuButton("Ngân hàng câu hỏi", false, "MANAGE_BANKS"));
+            sidebar.add(createMenuButton("Kết quả thi", false, "VIEW_RESULTS"));
             
-            JButton refreshBtn = createMenuButton("Làm mới dữ liệu", false, null);
-            refreshBtn.addActionListener(e -> {
-                for (Component c : cards.getComponents()) {
-                    if (c instanceof LecturerDashboard) {
-                        ((LecturerDashboard) c).loadStats();
-                    }
-                }
-            });
-            sidebar.add(refreshBtn);
+            sidebar.add(Box.createVerticalStrut(20));
         } else {
             sidebar.add(createMenuButton("Trang chủ", true, "HOME"));
             sidebar.add(createMenuButton("Đề bài", false, "LIBRARY"));
+            sidebar.add(createMenuButton("Lịch sử làm bài", false, "HISTORY"));
         }
         
         sidebar.add(createMenuButton("Thông tin cá nhân", false, "PROFILE"));
-        
-        if (!"giangvien".equals(UserSession.role)) {
-            sidebar.add(createMenuButton("Lịch sử làm bài", false, "HISTORY"));
-        }
 
 
 
@@ -395,12 +403,5 @@ public class Home extends JFrame {
         return card;
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        SwingUtilities.invokeLater(() -> new Home());
-    }
+    // Main method removed to ensure app starts from Login.java
 }

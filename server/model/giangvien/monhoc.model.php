@@ -6,22 +6,31 @@ function getAll_monhoc_with_user($id_nguoidung, $vaitro)
     $conn = Database::connect();
     $list = [];
 
-    $sql = "SELECT
+    $whereClause = ($vaitro === 'admin') ? "1=1" : "m.id_nguoidung = ?";
+    
+    $sql = "SELECT 
                 m.*,
-                COUNT(DISTINCT b.id_baithi) AS so_bai_thi,
-                COUNT(DISTINCT ch.id_cauhoi) AS so_cau_hoi,
-                COUNT(DISTINCT d.id_dapan) AS so_dap_an,
-                GROUP_CONCAT(DISTINCT b.ten_baithi ORDER BY b.id_baithi DESC SEPARATOR '||') AS ds_baithi
+                (SELECT COUNT(*) FROM baithi b WHERE b.id_monhoc = m.id_monhoc) AS so_bai_thi,
+                (SELECT COUNT(DISTINCT ch.id_cauhoi) 
+                 FROM baithi b 
+                 JOIN cauhoi ch ON b.id_baithi = ch.id_baithi 
+                 WHERE b.id_monhoc = m.id_monhoc) AS so_cau_hoi,
+                (SELECT COUNT(DISTINCT d.id_dapan)
+                 FROM baithi b
+                 JOIN cauhoi ch ON b.id_baithi = ch.id_baithi
+                 JOIN dapan d ON ch.id_cauhoi = d.id_cauhoi
+                 WHERE b.id_monhoc = m.id_monhoc) AS so_dap_an,
+                (SELECT GROUP_CONCAT(b.ten_baithi SEPARATOR '||') 
+                 FROM baithi b 
+                 WHERE b.id_monhoc = m.id_monhoc) AS ds_baithi
             FROM monhoc m
-            LEFT JOIN baithi b ON m.id_monhoc = b.id_monhoc
-            LEFT JOIN cauhoi ch ON b.id_baithi = ch.id_baithi
-            LEFT JOIN dapan d ON ch.id_cauhoi = d.id_cauhoi
-            WHERE m.id_nguoidung = ?
-            GROUP BY m.id_monhoc
+            WHERE $whereClause
             ORDER BY m.id_monhoc DESC";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id_nguoidung);
+    if ($vaitro !== 'admin') {
+        $stmt->bind_param("i", $id_nguoidung);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
 

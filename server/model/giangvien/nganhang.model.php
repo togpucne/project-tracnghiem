@@ -354,6 +354,19 @@ function createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $d
     $conn->begin_transaction();
 
     try {
+        // Check for duplicate
+        $stmtCheck = $conn->prepare("SELECT id_cauhoi FROM cauhoi WHERE id_nhch = ? AND noidungcauhoi = ? AND id_baithi IS NULL");
+        $stmtCheck->bind_param("is", $id_nganhang, $noidungcauhoi);
+        $stmtCheck->execute();
+        $resCheck = $stmtCheck->get_result();
+        if ($resCheck->num_rows > 0) {
+            $stmtCheck->close();
+            $conn->rollback();
+            $conn->close();
+            return 0; // Duplicate exists
+        }
+        $stmtCheck->close();
+
         // id_baithi is NULL for bank questions
         $stmt = $conn->prepare("INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, loai_cauhoi, trangthai, ngaytao)
                                 VALUES (NULL, ?, ?, ?, ?, ?, NOW())");
@@ -451,6 +464,17 @@ function createManyInBank($id_nhch, $questions)
     try {
         $count = 0;
         foreach ($questions as $q) {
+            // Check for duplicate
+            $stmtCheck = $conn->prepare("SELECT id_cauhoi FROM cauhoi WHERE id_nhch = ? AND noidungcauhoi = ? AND id_baithi IS NULL");
+            $stmtCheck->bind_param("is", $id_nhch, $q['noidungcauhoi']);
+            $stmtCheck->execute();
+            $resCheck = $stmtCheck->get_result();
+            if ($resCheck->num_rows > 0) {
+                $stmtCheck->close();
+                continue; // Skip duplicate
+            }
+            $stmtCheck->close();
+
             $stmt = $conn->prepare("INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, ngaytao)
                                     VALUES (NULL, ?, ?, ?, NOW())");
             $stmt->bind_param("iss", $id_nhch, $q['noidungcauhoi'], $q['dokho']);

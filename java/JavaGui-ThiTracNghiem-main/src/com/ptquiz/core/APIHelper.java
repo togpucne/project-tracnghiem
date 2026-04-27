@@ -1,3 +1,5 @@
+package com.ptquiz.core;
+
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -17,8 +19,11 @@ public class APIHelper {
             URL url = new java.net.URI(BASE_URL + endpoint).toURL();
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setRequestProperty("Accept", "application/json");
+            if (UserSession.token != null && !UserSession.token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + UserSession.token);
+            }
             conn.setDoOutput(true);
 
             try (OutputStream os = conn.getOutputStream()) {
@@ -41,6 +46,9 @@ public class APIHelper {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            if (UserSession.token != null && !UserSession.token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + UserSession.token);
+            }
             conn.setDoOutput(true);
 
             try (OutputStream os = conn.getOutputStream();
@@ -99,8 +107,13 @@ public class APIHelper {
 
         if (code >= 200 && code < 300) {
             String message = extractJsonValue(responseStr, "message");
-            if (message.isEmpty() && responseStr.contains("thành công"))
-                message = "Thành công!";
+            if (message.isEmpty()) {
+                if (responseStr.contains("\"success\":true") || responseStr.contains("thành công")) {
+                    message = "Thao tác thành công!";
+                } else {
+                    message = "Máy chủ đã xử lý yêu cầu.";
+                }
+            }
             return new APIResponse(true, message, responseStr);
         } else {
             String error = extractJsonValue(responseStr, "error");
@@ -111,21 +124,30 @@ public class APIHelper {
     }
 
     public static String extractJsonValue(String json, String key) {
-        String searchKey = "\"" + key + "\":";
-        int index = json.indexOf(searchKey);
-        if (index == -1) {
-            searchKey = "\"" + key + "\" :";
-            index = json.indexOf(searchKey);
-            if (index == -1) {
-                searchKey = "\"" + key + "\": ";
-                index = json.indexOf(searchKey);
-                if (index == -1) return "";
+        if (json == null || json.isEmpty()) return "";
+        
+        // Try multiple formats: "key":value, "key" :value, "key": value
+        String[] patterns = {
+            "\"" + key + "\":",
+            "\"" + key + "\" :",
+            "\"" + key + "\": "
+        };
+        
+        int index = -1;
+        int patternLen = 0;
+        for (String p : patterns) {
+            index = json.indexOf(p);
+            if (index != -1) {
+                patternLen = p.length();
+                break;
             }
         }
+        
+        if (index == -1) return "";
 
-        int afterColon = index + searchKey.length();
+        int afterColon = index + patternLen;
         // Skip whitespace
-        while (afterColon < json.length() && Character.isWhitespace(json.charAt(afterColon))) {
+        while (afterColon < json.length() && (Character.isWhitespace(json.charAt(afterColon)) || json.charAt(afterColon) == ' ')) {
             afterColon++;
         }
 
@@ -134,14 +156,26 @@ public class APIHelper {
         if (json.charAt(afterColon) == '"') {
             // String value
             int start = afterColon + 1;
-            int end = json.indexOf("\"", start);
-            if (end == -1) return "";
-            String rawValue = json.substring(start, end).replace("\\\"", "\"").replace("\\/", "/");
-            return unescapeUnicode(rawValue);
+            StringBuilder sb = new StringBuilder();
+            boolean escaped = false;
+            for (int i = start; i < json.length(); i++) {
+                char c = json.charAt(i);
+                if (escaped) {
+                    sb.append(c);
+                    escaped = false;
+                } else if (c == '\\') {
+                    escaped = true;
+                } else if (c == '"') {
+                    break;
+                } else {
+                    sb.append(c);
+                }
+            }
+            return unescapeUnicode(sb.toString().replace("\\/", "/"));
         } else {
             // Numeric, Boolean, or Null value
             int end = afterColon;
-            while (end < json.length() && json.charAt(end) != ',' && json.charAt(end) != '}' && json.charAt(end) != ']') {
+            while (end < json.length() && json.charAt(end) != ',' && json.charAt(end) != '}' && json.charAt(end) != ']' && !Character.isWhitespace(json.charAt(end))) {
                 end++;
             }
             return json.substring(afterColon, end).trim();
@@ -172,9 +206,30 @@ public class APIHelper {
     }
 
     public static String escapeJSON(String str) {
-        if (str == null)
-            return "";
-        return str.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+        if (str == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            switch (ch) {
+                case '"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                case '\b': sb.append("\\b"); break;
+                case '\f': sb.append("\\f"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                default:
+                    if (ch <= 31) {
+                        String ss = Integer.toHexString(ch);
+                        sb.append("\\u");
+                        for (int k = 0; k < 4 - ss.length(); k++) sb.append('0');
+                        sb.append(ss.toUpperCase());
+                    } else {
+                        sb.append(ch);
+                    }
+            }
+        }
+        return sb.toString();
     }
 
     public static class APIResponse {
@@ -195,6 +250,9 @@ public class APIHelper {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
+            if (UserSession.token != null && !UserSession.token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + UserSession.token);
+            }
 
             int code = conn.getResponseCode();
             Scanner scanner;
