@@ -332,7 +332,7 @@ public class QuestionManagementFrame extends JFrame {
     private void renderExamInfo(String baithiJson) {
         statsContainer.removeAll();
         String status = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(baithiJson, "trangthai"));
-        String statusText = status.equals("open") ? "<html><b style='color:#10b981;'>Đang mở</b></html>" : "<html><b style='color:#f59e0b;'>Đã đóng</b></html>";
+        String statusText = "Đang mở".equals(status) ? "<html><b style='color:#10b981;'>Đang mở</b></html>" : "<html><b style='color:#f59e0b;'>Đóng</b></html>";
         addStatCard("SỐ CÂU HỎI", maxQuestions + " câu");
         addStatCard("THỜI GIAN LÀM BÀI", APIHelper.extractJsonValue(baithiJson, "thoigianlam") + " phút");
         addStatCard("TRẠNG THÁI", statusText);
