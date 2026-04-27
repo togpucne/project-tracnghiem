@@ -74,7 +74,7 @@ if ($stmt->fetch()) {
 }
 
 $stmt->close();
-$conn->close();
+// $conn->close();
 
 // Chuyển hướng về trang chủ
 header("Location: ../../index.php");

@@ -26,8 +26,6 @@ class SecurityLogger
         $stmt = $conn->prepare("INSERT INTO api_logs (id_nguoidung, endpoint, method, ip_address, request_params, response_code, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("issssis", $id_nguoidung, $endpoint, $method, $ip_address, $request_params, $response_code, $user_agent);
         $stmt->execute();
-        $stmt->close();
-        $conn->close();
     }
 
     /**

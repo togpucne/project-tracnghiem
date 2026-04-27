@@ -75,7 +75,7 @@ if (!class_exists('Api')) {
             $stmt->bind_param("i", $userId);
             $stmt->execute();
             $userData = $stmt->get_result()->fetch_assoc();
-            $conn->close();
+            // $conn->close();
 
             if (!$userData || $userData['trangthai'] !== 'active') {
                 @session_destroy();

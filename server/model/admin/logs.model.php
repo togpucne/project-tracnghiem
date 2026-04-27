@@ -5,7 +5,7 @@ function get_api_logs($filters = []) {
     $conn = Database::connect();
     
     // Lấy 100 bản ghi mới nhất để đảm bảo tốc độ cực nhanh
-    $sql = "SELECT l.*, IFNULL(n.ten, 'Khách vãng lai') as ten, n.vaitro 
+    $sql = "SELECT l.*, IFNULL(n.ten, 'Khách vãng lai') as ten, n.vaitro, n.trangthai 
             FROM api_logs l 
             LEFT JOIN nguoidung n ON l.id_nguoidung = n.id_nguoidung 
             WHERE 1=1";
@@ -25,6 +25,12 @@ function get_api_logs($filters = []) {
     }
 
     // Tìm kiếm theo IP hoặc Endpoint hoặc Tên (nếu có)
+    if (!empty($filters['method'])) {
+        $sql .= " AND l.method = ?";
+        $types .= "s";
+        $params[] = $filters['method'];
+    }
+
     if (!empty($filters['keyword'])) {
         $like = "%" . $filters['keyword'] . "%";
         $sql .= " AND (l.endpoint LIKE ? OR l.ip_address LIKE ? OR n.ten LIKE ?)";
@@ -34,7 +40,14 @@ function get_api_logs($filters = []) {
         $params[] = $like;
     }
 
-    $sql .= " ORDER BY l.thoigian DESC LIMIT 100";
+    // Lọc theo ngày
+    if (!empty($filters['date'])) {
+        $sql .= " AND DATE(l.created_at) = ?";
+        $types .= "s";
+        $params[] = $filters['date'];
+    }
+
+    $sql .= " ORDER BY l.created_at DESC LIMIT 100";
     
     $stmt = $conn->prepare($sql);
     if ($types !== "") {

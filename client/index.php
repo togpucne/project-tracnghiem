@@ -12,7 +12,7 @@ if (isset($_SESSION['user'])) {
     $stmt->execute();
     $result = $stmt->get_result();
     $userStatus = $result->fetch_assoc();
-    $conn->close();
+    // $conn->close();
 
     if (!$userStatus || $userStatus['trangthai'] !== 'active') {
         session_destroy();
