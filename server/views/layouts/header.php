@@ -183,11 +183,11 @@
             <button class="nav-user-area nav-user-trigger dropdown-toggle" type="button" id="serverUserDropdown"
                 data-bs-toggle="dropdown" aria-expanded="false">
                 <div class="user-info-text d-none d-md-block">
-                    <span class="user-name">Chào, <?php echo $_SESSION['user']['ten']; ?> (ID: <?php echo $_SESSION['user']['id_nguoidung']; ?>)</span>
+                    <span class="user-name" id="headerUserName">Chào, <?php echo $_SESSION['user']['ten']; ?></span>
                     <span class="user-role"><?php echo ($_SESSION['user']['vaitro'] == 'admin') ? 'Quản trị viên' : 'Giảng viên'; ?></span>
                 </div>
                 <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1); overflow: hidden;">
-                    <img src="/project-tracnghiem/server/public/imgs/avatars/<?= htmlspecialchars($_SESSION['user']['avatar'] ?? 'default.jpg') ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <img id="headerUserAvatar" src="/project-tracnghiem/server/public/imgs/avatars/<?= htmlspecialchars($_SESSION['user']['avatar'] ?? 'default.jpg') ?>" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
             </button>
 

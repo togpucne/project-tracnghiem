@@ -34,7 +34,7 @@ function getAccessibleBankSubjects($id_nguoidung, $vaitro)
     return $list;
 }
 
-function getQuestionBanks($id_nguoidung, $vaitro, $id_monhoc = 0)
+function getQuestionBanks($id_nguoidung, $vaitro, $id_monhoc = 0, $onlyActive = false)
 {
     $conn = Database::connect();
     $list = [];
@@ -69,6 +69,10 @@ function getQuestionBanks($id_nguoidung, $vaitro, $id_monhoc = 0)
         $sql .= " AND nh.id_mon = ?";
         $params[] = $id_monhoc;
         $types .= "i";
+    }
+
+    if ($onlyActive) {
+        $sql .= " AND nh.trangthai = 1";
     }
 
     $sql .= " ORDER BY nh.id_nhch DESC";

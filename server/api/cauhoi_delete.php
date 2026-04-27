@@ -10,18 +10,20 @@ $data = Api::jsonInput();
 $id_cauhoi = (int) ($data["id_cauhoi"] ?? 0);
 
 if ($id_cauhoi <= 0) {
-    Api::json(["error" => "Thi?u ID c�u h?i"], 400);
+    Api::json(["error" => "ID câu hỏi không hợp lệ"], 400);
 }
 
 $model = new CauHoiModel();
 $cauhoi = $model->getById($id_cauhoi);
 if (!$cauhoi) {
-    Api::json(["error" => "Kh�ng t�m th?y c�u h?i"], 404);
+    Api::json(["error" => "Không tìm thấy câu hỏi"], 404);
 }
 
 $conn = Database::connect();
 $role = $user["vaitro"] ?? "";
 $ownerId = (int) ($user["id_nguoidung"] ?? 0);
+
+// Kiểm tra quyền sở hữu bài thi chứa câu hỏi này
 $sql = "SELECT bt.id_baithi
     FROM baithi bt
     JOIN monhoc mh ON bt.id_monhoc = mh.id_monhoc
@@ -30,18 +32,16 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("iis", $cauhoi["id_baithi"], $ownerId, $role);
 $stmt->execute();
 if ($stmt->get_result()->num_rows === 0) {
-    // $conn->close();
-    Api::json(["error" => "B?n kh�ng c� quy?n x�a c�u h?i n�y"], 403);
+    Api::json(["error" => "Bạn không có quyền xóa câu hỏi này"], 403);
 }
-// $conn->close();
 
 $result = $model->delete($id_cauhoi);
 
 if (!($result["success"] ?? false)) {
-    Api::json(["error" => $result["message"] ?? "Kh�ng th? x�a c�u h?i"], 400);
+    Api::json(["error" => $result["message"] ?? "Không thể xóa câu hỏi"], 400);
 }
 
 Api::json([
     "success" => true,
-    "message" => "X�a c�u h?i th�nh c�ng",
+    "message" => "Xóa câu hỏi thành công",
 ]);

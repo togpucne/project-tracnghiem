@@ -162,6 +162,14 @@ document.getElementById('profileForm').addEventListener('submit', async function
 
         showProfileAlert(json.message || 'Cập nhật thành công');
         document.getElementById('profilePassword').value = '';
+        
+        // Update header in real-time
+        const newName = document.getElementById('profileName').value.trim();
+        document.getElementById('headerUserName').innerText = `Chào, ${newName}`;
+        if (json.avatar) {
+            document.getElementById('headerUserAvatar').src = `/project-tracnghiem/server/public/imgs/avatars/${json.avatar}`;
+        }
+
         await loadProfile();
     } catch (error) {
         showProfileAlert(error.message, 'danger');

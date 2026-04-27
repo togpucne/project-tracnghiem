@@ -9,7 +9,7 @@ $data = Api::jsonInput();
 
 $id_baithi = (int) ($data["id_baithi"] ?? 0);
 $id_cauhoi = (int) ($data["id_cauhoi"] ?? 0);
-$noidungcauhoi = trim($data["noidungcauhoi"] ?? "");
+$noidungcauhoi = trim((string)($data["noidungcauhoi"] ?? ""));
 $dokho = $data["dokho"] ?? "Dễ";
 $loai_cauhoi = (int) ($data["loai_cauhoi"] ?? 1);
 $options = $data["options"] ?? [];
@@ -20,20 +20,29 @@ if ($id_baithi <= 0 || $noidungcauhoi === "") {
 }
 
 if ($loai_cauhoi === 1) {
+    // Trắc nghiệm
     if (count($options) < 2 || $correctIndex < 0) {
         Api::json(["error" => "Trắc nghiệm cần ít nhất 2 đáp án và 1 đáp án đúng"], 400);
     }
 } else {
-    // Fill-in-the-blank
-    if (count($options) < 1) {
-        Api::json(["error" => "Điền từ cần chính xác 1 đáp án đúng"], 400);
+    // Điền từ (Fill-in-the-blank)
+    // Kiểm tra xem có dấu [...] nào không
+    $placeholderCount = substr_count($noidungcauhoi, '[...]');
+    if ($placeholderCount === 0) {
+        Api::json(["error" => "Câu hỏi điền từ phải có ít nhất một dấu [...] trong nội dung"], 400);
     }
-    $correctIndex = 0; // Force first
+    
+    if (count($options) !== $placeholderCount) {
+        Api::json(["error" => "Số lượng đáp án (" . count($options) . ") phải khớp với số lượng dấu [...] trong câu hỏi ($placeholderCount)"], 400);
+    }
+    $correctIndex = 0; // Luôn coi là đúng cho logic model
 }
 
 $conn = Database::connect();
 $role = $user["vaitro"] ?? "";
 $ownerId = (int) ($user["id_nguoidung"] ?? 0);
+
+// Kiểm tra quyền với bài thi
 $sql = "SELECT bt.id_baithi
     FROM baithi bt
     JOIN monhoc mh ON bt.id_monhoc = mh.id_monhoc
@@ -42,10 +51,8 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("iis", $id_baithi, $ownerId, $role);
 $stmt->execute();
 if ($stmt->get_result()->num_rows === 0) {
-    // $conn->close();
     Api::json(["error" => "Bạn không có quyền sửa bài thi này"], 403);
 }
-// $conn->close();
 
 $dapan_list = [];
 $temp_check = [];
@@ -56,14 +63,17 @@ foreach ($options as $index => $noidung) {
     }
 
     $normalized = mb_strtolower($noidung, "UTF-8");
-    if (in_array($normalized, $temp_check, true)) {
-        Api::json(["error" => "Các đáp án không được trùng nhau"], 400);
+    // Chỉ check trùng đáp án với loại trắc nghiệm
+    if ($loai_cauhoi === 1) {
+        if (in_array($normalized, $temp_check, true)) {
+            Api::json(["error" => "Các đáp án trắc nghiệm không được trùng nhau"], 400);
+        }
+        $temp_check[] = $normalized;
     }
-    $temp_check[] = $normalized;
 
     $dapan_list[] = [
         "noidung" => $noidung,
-        "dapandung" => $index === $correctIndex ? 1 : 0,
+        "dapandung" => ($loai_cauhoi === 2 || $index === $correctIndex) ? 1 : 0,
     ];
 }
 

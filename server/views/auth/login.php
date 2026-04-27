@@ -28,7 +28,8 @@ if (isset($_POST['btn_login'])) {
                 $_SESSION['user'] = [
                     'id_nguoidung' => $user['id_nguoidung'],
                     'ten' => $user['ten'],
-                    'vaitro' => $user['vaitro']
+                    'vaitro' => $user['vaitro'],
+                    'avatar' => $user['avatar'] ?? 'default.jpg'
                 ];
                 header("Location: index.php?act=dashboard");
                 exit;

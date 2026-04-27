@@ -610,6 +610,8 @@ function openQuestionModal(id = 0) {
         if (diff == '3' || diff.toLowerCase() === 'khó') diff = 'kho';
         document.getElementById('bankQuestionDifficulty').value = diff;
         document.getElementById('bankQuestionStatus').value = question.trangthai || 'active';
+        document.getElementById('bankQuestionType').value = question.loai_cauhoi || 1;
+        toggleBankAnswerType();
         fillQuestionSubjectOptions(question.id_monhoc || '');
         document.getElementById('bankAnswerOptions').innerHTML = '';
         (question.dapan || []).forEach((answer) => {
@@ -734,16 +736,53 @@ document.getElementById('bankQuestionForm').addEventListener('submit', async fun
     const options = optionInputs.map((input) => input.value.trim());
     const correctIndex = radioInputs.findIndex((input) => input.checked);
 
+    const loai_cauhoi = parseInt(document.getElementById('bankQuestionType').value || 1);
+    const noidung = document.getElementById('bankQuestionContent').value.trim();
+
+    if (loai_cauhoi === 1) {
+        if (options.length < 2 || options.some(opt => opt === '')) {
+            showBankAlert('Trắc nghiệm cần ít nhất 2 đáp án hợp lệ', 'danger');
+            return;
+        }
+        if (new Set(options.map(v => v.toLowerCase())).size !== options.length) {
+            showBankAlert('Các đáp án không được trùng nhau', 'danger');
+            return;
+        }
+        if (correctIndex < 0) {
+            showBankAlert('Vui lòng chọn một đáp án đúng', 'danger');
+            return;
+        }
+    } else {
+        // Validation cho câu hỏi ĐIỀN TỪ
+        const placeholderMatch = noidung.match(/\[\.\.\.\]/g);
+        const placeholderCount = placeholderMatch ? placeholderMatch.length : 0;
+        
+        if (placeholderCount === 0) {
+            showBankAlert('Câu hỏi điền từ phải có ít nhất một dấu [...] trong nội dung câu hỏi để tạo chỗ trống.', 'danger');
+            return;
+        }
+        
+        if (options.length !== placeholderCount) {
+            showBankAlert(`Số lượng đáp án (${options.length}) phải khớp với số lượng dấu [...] trong nội dung (${placeholderCount}).`, 'danger');
+            return;
+        }
+
+        if (options.some(opt => opt === '')) {
+            showBankAlert('Vui lòng nhập đầy đủ nội dung cho các đáp án điền từ.', 'danger');
+            return;
+        }
+    }
+
     const payload = {
         id_cauhoi_nganhang: Number(document.getElementById('bankQuestionId').value || 0),
         id_nganhang: Number(selectedBank?.id_nganhang || 0),
         id_monhoc: Number(document.getElementById('bankQuestionSubject').value || 0),
-        noidungcauhoi: document.getElementById('bankQuestionContent').value.trim(),
+        noidungcauhoi: noidung,
         dokho: document.getElementById('bankQuestionDifficulty').value,
-        loai_cauhoi: parseInt(document.getElementById('bankQuestionType').value || 1),
+        loai_cauhoi: loai_cauhoi,
         trangthai: document.getElementById('bankQuestionStatus').value,
         options,
-        correct_index: correctIndex
+        correct_index: loai_cauhoi === 2 ? 0 : correctIndex
     };
 
     try {

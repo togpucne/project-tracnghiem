@@ -215,7 +215,7 @@ function renderExamInfoCard() {
     const items = [
         ['Số câu hỏi', `${examInfo.tongcauhoi || 0} câu`],
         ['Thời gian làm bài', `${examInfo.thoigianlam || 0} phút`],
-        ['Trạng thái', `<span style="color:${examInfo.trangthai === 'open' ? '#27ae60' : '#e67e22'}; font-weight:700;">${examInfo.trangthai === 'open' ? 'Đang mở' : 'Đã đóng'}</span>`],
+        ['Trạng thái', `<span style="color:${examInfo.trangthai === 'Đang mở' ? '#27ae60' : '#e67e22'}; font-weight:700;">${examInfo.trangthai === 'Đang mở' ? 'Đang mở' : 'Đã đóng'}</span>`],
         ['Thời gian mở', examInfo.thoigianbatdau || '---'],
         ['Thời gian đóng', examInfo.thoigianketthuc || '---'],
         ['Xáo trộn', Number(examInfo.xao_tron) === 1 ? '<span class="badge bg-primary">Bật</span>' : '<span class="badge bg-secondary">Tắt</span>'],
@@ -619,8 +619,22 @@ document.getElementById('questionForm').addEventListener('submit', async functio
             return;
         }
     } else {
-        if (optionsValues.length < 1 || optionsValues[0] === '') {
-            showQuestionAlert('Vui lòng nhập đáp án đúng cho câu điền từ', 'error');
+        // Validation cho câu hỏi ĐIỀN TỪ
+        const placeholderMatch = noidung.match(/\[\.\.\.\]/g);
+        const placeholderCount = placeholderMatch ? placeholderMatch.length : 0;
+        
+        if (placeholderCount === 0) {
+            showQuestionAlert('Câu hỏi điền từ phải có ít nhất một dấu [...] trong nội dung câu hỏi để tạo chỗ trống.', 'error');
+            return;
+        }
+        
+        if (optionsValues.length !== placeholderCount) {
+            showQuestionAlert(`Số lượng đáp án (${optionsValues.length}) phải khớp với số lượng dấu [...] trong nội dung (${placeholderCount}).`, 'error');
+            return;
+        }
+
+        if (optionsValues.some(opt => opt === '')) {
+            showQuestionAlert('Vui lòng nhập đầy đủ nội dung cho các đáp án điền từ.', 'error');
             return;
         }
         selectedIndex = 0;
