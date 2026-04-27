@@ -1,4 +1,4 @@
-ï»¿<?php
+<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/Database.php";
@@ -10,13 +10,13 @@ $data = Api::jsonInput();
 $id_cauhoi = (int) ($data["id_cauhoi"] ?? 0);
 
 if ($id_cauhoi <= 0) {
-    Api::json(["error" => "Thiáº¿u ID cÃ¢u há»i"], 400);
+    Api::json(["error" => "Thi?u ID câu h?i"], 400);
 }
 
 $model = new CauHoiModel();
 $cauhoi = $model->getById($id_cauhoi);
 if (!$cauhoi) {
-    Api::json(["error" => "KhÃ´ng tÃ¬m tháº¥y cÃ¢u há»i"], 404);
+    Api::json(["error" => "Không tìm th?y câu h?i"], 404);
 }
 
 $conn = Database::connect();
@@ -30,18 +30,18 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("iis", $cauhoi["id_baithi"], $ownerId, $role);
 $stmt->execute();
 if ($stmt->get_result()->num_rows === 0) {
-    $conn->close();
-    Api::json(["error" => "Báº¡n khÃ´ng cÃ³ quyá»n xÃ³a cÃ¢u há»i nÃ y"], 403);
+    // $conn->close();
+    Api::json(["error" => "B?n không có quy?n xóa câu h?i này"], 403);
 }
-$conn->close();
+// $conn->close();
 
 $result = $model->delete($id_cauhoi);
 
 if (!($result["success"] ?? false)) {
-    Api::json(["error" => $result["message"] ?? "KhÃ´ng thá»ƒ xÃ³a cÃ¢u há»i"], 400);
+    Api::json(["error" => $result["message"] ?? "Không th? xóa câu h?i"], 400);
 }
 
 Api::json([
     "success" => true,
-    "message" => "XÃ³a cÃ¢u há»i thÃ nh cÃ´ng",
+    "message" => "Xóa câu h?i thành công",
 ]);

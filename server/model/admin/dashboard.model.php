@@ -20,7 +20,7 @@ function get_admin_dashboard_stats() {
     $resRequests = $conn->query("SELECT COUNT(*) as total FROM api_logs WHERE created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)");
     $totalRequests = $resRequests->fetch_assoc()['total'];
 
-    $conn->close();
+    // $conn->close();
 
     return [
         'total_users' => $totalUsers,
@@ -38,6 +38,6 @@ function get_recent_critical_logs() {
             ORDER BY l.created_at DESC LIMIT 5";
     $res = $conn->query($sql);
     $data = $res->fetch_all(MYSQLI_ASSOC);
-    $conn->close();
+    // $conn->close();
     return $data;
 }

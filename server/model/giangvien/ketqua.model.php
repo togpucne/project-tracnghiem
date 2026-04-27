@@ -29,7 +29,7 @@ function get_exam_results_summary($id_giangvien) {
     $data = $result->fetch_all(MYSQLI_ASSOC);
     
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $data;
 }
 
@@ -60,7 +60,7 @@ function get_exam_submissions($id_baithi) {
     $data = $result->fetch_all(MYSQLI_ASSOC);
     
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $data;
 }
 
@@ -124,7 +124,7 @@ function get_submission_detail($id_lanthi) {
     }
     
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     
     return [
         'info' => $info,
@@ -177,7 +177,7 @@ function get_lecturer_dashboard_stats($id_giangvien) {
     $total_attempts = $stmt->get_result()->fetch_assoc()['total'];
 
     $stmt->close();
-    $conn->close();
+    // $conn->close();
 
     return [
         'subjects' => $total_subjects,
@@ -208,7 +208,7 @@ function get_lecturer_chart_data($id_giangvien) {
     $data = $result->fetch_all(MYSQLI_ASSOC);
     
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $data;
 }
 

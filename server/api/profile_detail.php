@@ -12,7 +12,7 @@ $stmt->bind_param("i", $id_nguoidung);
 $stmt->execute();
 $profile = $stmt->get_result()->fetch_assoc();
 $stmt->close();
-$conn->close();
+// $conn->close();
 
 if (!$profile) {
     Api::json(["error" => "Không tìm thấy thông tin người dùng"], 404);

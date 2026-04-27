@@ -68,7 +68,7 @@ function getManagedUsers($filters = [])
     }
 
     $stmt->close();
-    $conn->close();
+    // $conn->close();
 
     return $list;
 }
@@ -85,7 +85,7 @@ function getManagedUserById($id_nguoidung)
     $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    $conn->close();
+    // $conn->close();
 
     return $user ?: null;
 }
@@ -99,7 +99,7 @@ function isUserEmailExists($email, $excludeId = 0)
     $stmt->execute();
     $exists = (bool) $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    $conn->close();
+    // $conn->close();
 
     return $exists;
 }
@@ -115,7 +115,7 @@ function createManagedUser($email, $matkhau, $ten, $vaitro, $trangthai = "active
     $ok = $stmt->execute();
     $newId = $conn->insert_id;
     $stmt->close();
-    $conn->close();
+    // $conn->close();
 
     return $ok ? $newId : 0;
 }
@@ -143,7 +143,7 @@ function updateManagedUser($id_nguoidung, $email, $ten, $vaitro, $trangthai, $ma
     $ok = $stmt->execute();
     $affected = $stmt->affected_rows >= 0;
     $stmt->close();
-    $conn->close();
+    // $conn->close();
 
     return $ok && $affected;
 }
@@ -159,7 +159,7 @@ function softDeleteManagedUser($id_nguoidung)
     $ok = $stmt->execute();
     $affected = $stmt->affected_rows >= 0;
     $stmt->close();
-    $conn->close();
+    // $conn->close();
 
     return $ok && $affected;
 }

@@ -30,7 +30,7 @@ function getAccessibleBankSubjects($id_nguoidung, $vaitro)
     }
 
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $list;
 }
 
@@ -84,7 +84,7 @@ function getQuestionBanks($id_nguoidung, $vaitro, $id_monhoc = 0)
     }
 
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $list;
 }
 
@@ -118,7 +118,7 @@ function getQuestionBankById($id_nganhang, $id_nguoidung, $vaitro)
     $stmt->close();
 
     if (!$bank) {
-        $conn->close();
+        // $conn->close();
         return null;
     }
 
@@ -136,7 +136,7 @@ function getQuestionBankById($id_nganhang, $id_nguoidung, $vaitro)
     }
     $stmtSubjects->close();
 
-    $conn->close();
+    // $conn->close();
     return $bank;
 }
 
@@ -174,7 +174,7 @@ function validateBankSubjects($subjectIds, $id_nguoidung, $vaitro)
     }
 
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     
     // Return the list of valid IDs found in the DB
     return $validIds;
@@ -192,10 +192,10 @@ function createQuestionBank($ten_nganhang, $mieuta, $subjectIds, $id_nguoidung)
         $stmt->execute();
         $id_nganhang = (int) $conn->insert_id;
         $stmt->close();
-        $conn->close();
+        // $conn->close();
         return $id_nganhang;
     } catch (Exception $e) {
-        $conn->close();
+        // $conn->close();
         return 0;
     }
 }
@@ -213,10 +213,10 @@ function updateQuestionBank($id_nganhang, $ten_nganhang, $mieuta, $trangthai, $s
         $stmt->bind_param("ssiii", $ten_nganhang, $mieuta, $id_mon, $statusNum, $id_nganhang);
         $stmt->execute();
         $stmt->close();
-        $conn->close();
+        // $conn->close();
         return true;
     } catch (Exception $e) {
-        $conn->close();
+        // $conn->close();
         return false;
     }
 }
@@ -246,11 +246,11 @@ function deleteQuestionBank($id_nganhang)
         $stmt->execute();
 
         $conn->commit();
-        $conn->close();
+        // $conn->close();
         return true;
     } catch (Exception $e) {
         $conn->rollback();
-        $conn->close();
+        // $conn->close();
         return false;
     }
 }
@@ -290,7 +290,7 @@ function getQuestionBankQuestions($id_nganhang, $id_monhoc, $id_nguoidung, $vait
     }
 
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $questions;
 }
 
@@ -344,7 +344,7 @@ function getQuestionBankQuestionById($id_cauhoi_nganhang, $id_nguoidung, $vaitro
         $question['dapan'] = getBankAnswersByQuestionIdWithConnection($conn, $id_cauhoi_nganhang);
     }
 
-    $conn->close();
+    // $conn->close();
     return $question ?: null;
 }
 
@@ -362,7 +362,7 @@ function createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $d
         if ($resCheck->num_rows > 0) {
             $stmtCheck->close();
             $conn->rollback();
-            $conn->close();
+            // $conn->close();
             return 0; // Duplicate exists
         }
         $stmtCheck->close();
@@ -384,11 +384,11 @@ function createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $d
         }
 
         $conn->commit();
-        $conn->close();
+        // $conn->close();
         return $id_cauhoi;
     } catch (Exception $e) {
         $conn->rollback();
-        $conn->close();
+        // $conn->close();
         return 0;
     }
 }
@@ -420,11 +420,11 @@ function updateQuestionBankQuestion($id_cauhoi_nganhang, $id_monhoc, $noidungcau
         }
 
         $conn->commit();
-        $conn->close();
+        // $conn->close();
         return true;
     } catch (Exception $e) {
         $conn->rollback();
-        $conn->close();
+        // $conn->close();
         return false;
     }
 }
@@ -447,11 +447,11 @@ function deleteQuestionBankQuestion($id_cauhoi_nganhang)
         $stmt2->execute();
 
         $conn->commit();
-        $conn->close();
+        // $conn->close();
         return true;
     } catch (Exception $e) {
         $conn->rollback();
-        $conn->close();
+        // $conn->close();
         return false;
     }
 }
@@ -493,11 +493,11 @@ function createManyInBank($id_nhch, $questions)
         }
 
         $conn->commit();
-        $conn->close();
+        // $conn->close();
         return ["success" => true, "count" => $count];
     } catch (Exception $e) {
         $conn->rollback();
-        $conn->close();
+        // $conn->close();
         return ["success" => false, "message" => $e->getMessage()];
     }
 }

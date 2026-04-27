@@ -26,6 +26,6 @@ $stmt->bind_param("i", $id_nguoidung);
 $stmt->execute();
 $data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
-$conn->close();
+// $conn->close();
 
 Api::json(["success" => true, "data" => $data]);

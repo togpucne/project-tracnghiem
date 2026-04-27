@@ -16,7 +16,7 @@ function ketqua_index() {
         $stmt->execute();
         $baithi = $stmt->get_result()->fetch_assoc();
         $stmt->close();
-        $conn->close();
+        // $conn->close();
 
         return [
             'id_baithi' => $id_baithi,

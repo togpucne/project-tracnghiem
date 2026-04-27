@@ -34,8 +34,6 @@ class SecurityLogger
         $stmt = $conn->prepare("INSERT INTO api_logs (id_nguoidung, endpoint, method, action_name, ip_address, request_params, response_code, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("isssssis", $id_nguoidung, $endpoint, $method, $action_name, $ip_address, $request_params, $response_code, $user_agent);
         $stmt->execute();
-        $stmt->close();
-        $conn->close();
     }
 
     /**
@@ -96,7 +94,7 @@ class SecurityLogger
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
         $stmt->close();
-        $conn->close();
+        // $conn->close();
 
         return ($result['attempts'] ?? 0) >= 5; // Khóa nếu sai từ 5 lần trở lên
     }

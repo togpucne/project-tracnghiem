@@ -93,7 +93,7 @@ if (!class_exists('Api')) {
             $stmt->execute();
             $result = $stmt->get_result();
             $userStatus = $result->fetch_assoc();
-            $conn->close();
+            // $conn->close();
 
             if (!$userStatus || $userStatus['trangthai'] !== 'active') {
                 if (isset($_SESSION['user'])) session_destroy();

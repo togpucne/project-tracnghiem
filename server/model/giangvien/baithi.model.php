@@ -20,7 +20,7 @@ function getAll_baithi($id_nguoidung)
         $data[] = $row;
     }
 
-    $conn->close();
+    // $conn->close();
     return $data;
 }
 
@@ -39,7 +39,7 @@ function getAll_monhoc($id_nguoidung)
         $data[] = $row;
     }
 
-    $conn->close();
+    // $conn->close();
     return $data;
 }
 
@@ -51,7 +51,7 @@ function isBaiThiLocked($id_baithi)
     $stmt->bind_param("i", $id_baithi);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
-    $conn->close();
+    // $conn->close();
 
     return isset($result['total']) && (int) $result['total'] > 0;
 }
@@ -82,7 +82,7 @@ function save_baithi($data)
         }
         
         if (empty($updates)) {
-            $conn->close();
+            // $conn->close();
             return true;
         }
         
@@ -93,7 +93,7 @@ function save_baithi($data)
         $stmt = $conn->prepare($sql);
         $stmt->bind_param($types, ...$params);
         $res = $stmt->execute();
-        $conn->close();
+        // $conn->close();
         return $res;
     }
 
@@ -122,7 +122,7 @@ function save_baithi($data)
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ssisssiii", $ten, $mota, $thoigianlam, $tg_batdau, $tg_ketthuc, $trangthai, $xao_tron, $hien_dapan, $id_baithi);
         $res = $stmt->execute();
-        $conn->close();
+        // $conn->close();
         return $res;
     }
 
@@ -132,7 +132,7 @@ function save_baithi($data)
     $stmt_check->execute();
     if ($stmt_check->get_result()->num_rows > 0) {
         $_SESSION['error'] = "Bài thi '$ten' đã tồn tại (hoặc tương tự)!";
-        $conn->close();
+        // $conn->close();
         return false;
     }
 
@@ -154,7 +154,7 @@ function save_baithi($data)
         $_SESSION['error'] = "Lỗi Database: " . $conn->error;
     }
 
-    $conn->close();
+    // $conn->close();
     return $res;
 }
 
@@ -211,12 +211,12 @@ function delete_baithi($id)
         $res = $stmtDeleteExam->execute();
 
         $conn->commit();
-        $conn->close();
+        // $conn->close();
         return $res;
     } catch (Throwable $e) {
         $conn->rollback();
         $_SESSION['error'] = "Lỗi Database: " . $e->getMessage();
-        $conn->close();
+        // $conn->close();
         return false;
     }
 }

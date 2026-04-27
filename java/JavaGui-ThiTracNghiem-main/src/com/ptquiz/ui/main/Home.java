@@ -3,6 +3,7 @@ package com.ptquiz.ui.main;
 import com.ptquiz.core.*;
 import com.ptquiz.ui.auth.Login;
 import com.ptquiz.ui.lecturer.*;
+import com.ptquiz.ui.admin.*;
 import com.ptquiz.ui.profile.ProfilePanel;
 import com.ptquiz.ui.student.*;
 import javax.swing.*;
@@ -25,6 +26,11 @@ public class Home extends JFrame {
     private ResultViewPanel resultPanel;
     private LecturerDashboard dashboardPanel;
     private HistoryPanel historyPanel;
+
+    // Admin Panels
+    private AdminDashboardPanel adminDashboardPanel;
+    private UserManagementPanel userManagementPanel;
+    private SecurityMonitoringPanel securityMonitoringPanel;
 
     public Home() {
         setTitle("Trang chủ - Trắc Nghiệm");
@@ -66,6 +72,14 @@ public class Home extends JFrame {
             cards.add(examPanel, "MANAGE_EXAMS");
             cards.add(bankPanel, "MANAGE_BANKS");
             cards.add(resultPanel, "VIEW_RESULTS");
+        } else if ("admin".equals(UserSession.role)) {
+            adminDashboardPanel = new AdminDashboardPanel();
+            userManagementPanel = new UserManagementPanel();
+            securityMonitoringPanel = new SecurityMonitoringPanel();
+            
+            cards.add(adminDashboardPanel, "ADMIN_DASHBOARD");
+            cards.add(userManagementPanel, "MANAGE_USERS");
+            cards.add(securityMonitoringPanel, "SECURITY_MONITOR");
         }
 
         // ------------- PROFILE CARD -------------
@@ -80,6 +94,8 @@ public class Home extends JFrame {
         // Set default view based on role
         if ("giangvien".equals(UserSession.role)) {
             switchView("LECTURER_DASHBOARD");
+        } else if ("admin".equals(UserSession.role)) {
+            switchView("ADMIN_DASHBOARD");
         } else {
             switchView("HOME");
         }
@@ -106,6 +122,11 @@ public class Home extends JFrame {
             case "MANAGE_BANKS": if(bankPanel != null) bankPanel.loadBanks(); break;
             case "HISTORY": if(historyPanel != null) historyPanel.refresh(); break;
             case "HOME": refreshExams(); break;
+            
+            // Admin Views
+            case "ADMIN_DASHBOARD": if(adminDashboardPanel != null) adminDashboardPanel.loadStats(); break;
+            case "MANAGE_USERS": if(userManagementPanel != null) userManagementPanel.loadData(); break;
+            case "SECURITY_MONITOR": if(securityMonitoringPanel != null) securityMonitoringPanel.loadData(); break;
         }
     }
 
@@ -291,6 +312,12 @@ public class Home extends JFrame {
             sidebar.add(createMenuButton("Quản lý đề thi", false, "MANAGE_EXAMS"));
             sidebar.add(createMenuButton("Ngân hàng câu hỏi", false, "MANAGE_BANKS"));
             sidebar.add(createMenuButton("Kết quả thi", false, "VIEW_RESULTS"));
+            
+            sidebar.add(Box.createVerticalStrut(20));
+        } else if ("admin".equals(UserSession.role)) {
+            sidebar.add(createMenuButton("Tổng quan", true, "ADMIN_DASHBOARD"));
+            sidebar.add(createMenuButton("Quản lý người dùng", false, "MANAGE_USERS"));
+            sidebar.add(createMenuButton("Giám sát bảo mật", false, "SECURITY_MONITOR"));
             
             sidebar.add(Box.createVerticalStrut(20));
         } else {

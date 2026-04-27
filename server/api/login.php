@@ -29,7 +29,7 @@ $stmt->bind_param("s", $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
-$conn->close();
+// $conn->close();
 
 if ($user && password_verify($password, $user['matkhau'])) {
     if ($user['trangthai'] !== 'active') {

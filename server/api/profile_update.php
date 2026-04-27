@@ -67,7 +67,7 @@ if ($exists) {
     if ($avatarPath && file_exists(__DIR__ . '/../public/imgs/avatars/' . $avatarPath)) {
         unlink(__DIR__ . '/../public/imgs/avatars/' . $avatarPath);
     }
-    $conn->close();
+    // $conn->close();
     Api::json(["error" => "Email này đã được sử dụng bởi tài khoản khác"], 409);
 }
 
@@ -113,7 +113,7 @@ if ($ok && $avatarPath !== null && $oldAvatar !== 'default.jpg' && $oldAvatar !=
 }
 
 $stmt->close();
-$conn->close();
+// $conn->close();
 
 if (!$ok) {
     if ($avatarPath && file_exists(__DIR__ . '/../public/imgs/avatars/' . $avatarPath)) {

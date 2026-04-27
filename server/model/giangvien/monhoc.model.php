@@ -39,7 +39,7 @@ function getAll_monhoc_with_user($id_nguoidung, $vaitro)
     }
 
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $list;
 }
 
@@ -64,14 +64,14 @@ function isDuplicateMonHoc($tenmonhoc, $exclude_id = 0)
         while ($row = $result->fetch_assoc()) {
             if ($search === $normalize($row['tenmonhoc'])) {
                 $stmt->close();
-                $conn->close();
+                // $conn->close();
                 return true;
             }
         }
     }
 
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return false;
 }
 
@@ -87,7 +87,7 @@ function insert_monhoc($tenmonhoc, $id_nguoidung, $mieuta = null)
 
     $result = $stmt->execute();
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $result;
 }
 
@@ -103,7 +103,7 @@ function update_monhoc($id, $tenmonhoc, $mieuta = null)
 
     $result = $stmt->execute();
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $result;
 }
 
@@ -119,7 +119,7 @@ function update_monhoc_by_owner($id_monhoc, $tenmonhoc, $mieuta, $id_nguoidung, 
 
     $result = $stmt->execute();
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $result;
 }
 
@@ -134,13 +134,13 @@ function delete_monhoc($id_monhoc, $id_nguoidung, $vaitro)
     $result = $stmt->execute();
     if (!$result) {
         $stmt->close();
-        $conn->close();
+        // $conn->close();
         return false;
     }
 
     $deleted = $stmt->affected_rows > 0;
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $deleted;
 }
 
@@ -153,7 +153,7 @@ function count_baithi_by_monhoc($id_monhoc)
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    $conn->close();
+    // $conn->close();
 
     return (int) ($result['total'] ?? 0);
 }
@@ -167,6 +167,6 @@ function getOne_monhoc($id)
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    $conn->close();
+    // $conn->close();
     return $result;
 }

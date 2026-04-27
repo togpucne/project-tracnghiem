@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/giangvien/monhoc.model.php";
@@ -12,21 +12,21 @@ $mieuta = trim($data["mieuta"] ?? "");
 $mieuta = $mieuta === "" ? null : $mieuta;
 
 if ($tenmonhoc === "") {
-    Api::json(["error" => "Tên môn học không được để trống"], 400);
+    Api::json(["error" => "T�n m�n h?c kh�ng du?c d? tr?ng"], 400);
 }
 
 if (isDuplicateMonHoc($tenmonhoc, $id_monhoc)) {
-    Api::json(["error" => "Tên môn học này đã tồn tại trong hệ thống"], 409);
+    Api::json(["error" => "T�n m�n h?c n�y d� t?n t?i trong h? th?ng"], 409);
 }
 
 if ($id_monhoc > 0) {
     $existing = getOne_monhoc($id_monhoc);
     if (!$existing) {
-        Api::json(["error" => "Không tìm thấy môn học"], 404);
+        Api::json(["error" => "Kh�ng t�m th?y m�n h?c"], 404);
     }
 
     if (($user["vaitro"] ?? "") !== "admin" && (int) $existing["id_nguoidung"] !== (int) ($user["id_nguoidung"] ?? 0)) {
-        Api::json(["error" => "Bạn không có quyền sửa môn học này"], 403);
+        Api::json(["error" => "B?n kh�ng c� quy?n s?a m�n h?c n�y"], 403);
     }
 
     $ok = update_monhoc_by_owner(
@@ -41,10 +41,10 @@ if ($id_monhoc > 0) {
 }
 
 if (!$ok) {
-    Api::json(["error" => "Không thể lưu môn học"], 500);
+    Api::json(["error" => "Kh�ng th? luu m�n h?c"], 500);
 }
 
 Api::json([
     "success" => true,
-    "message" => $id_monhoc > 0 ? "Cập nhật môn học thành công" : "Thêm môn học thành công",
+    "message" => $id_monhoc > 0 ? "C?p nh?t m�n h?c th�nh c�ng" : "Th�m m�n h?c th�nh c�ng",
 ]);

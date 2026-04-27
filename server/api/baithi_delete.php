@@ -1,4 +1,4 @@
-ï»¿<?php
+<?php
 
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/Database.php";
@@ -11,7 +11,7 @@ $id_baithi = (int) ($data["id_baithi"] ?? 0);
 $id_nguoidung = (int) ($user["id_nguoidung"] ?? 0);
 
 if ($id_baithi <= 0) {
-    Api::json(["error" => "Thiáº¿u ID bÃ i thi"], 400);
+    Api::json(["error" => "Thi?u ID bài thi"], 400);
 }
 
 $conn = Database::connect();
@@ -24,18 +24,18 @@ $stmt->bind_param("ii", $id_baithi, $id_nguoidung);
 $stmt->execute();
 
 if ($stmt->get_result()->num_rows === 0) {
-    $conn->close();
-    Api::json(["error" => "Báº¡n khÃ´ng cÃ³ quyá»n xÃ³a bÃ i thi nÃ y"], 403);
+    // $conn->close();
+    Api::json(["error" => "B?n không có quy?n xóa bài thi này"], 403);
 }
 
-$conn->close();
+// $conn->close();
 $ok = delete_baithi($id_baithi);
 
 if (!$ok) {
-    Api::json(["error" => "KhÃ´ng thá»ƒ xÃ³a bÃ i thi"], 500);
+    Api::json(["error" => "Không th? xóa bài thi"], 500);
 }
 
 Api::json([
     "success" => true,
-    "message" => "XÃ³a bÃ i thi thÃ nh cÃ´ng",
+    "message" => "Xóa bài thi thành công",
 ]);

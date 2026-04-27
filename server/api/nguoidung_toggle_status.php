@@ -41,5 +41,5 @@ if ($updateStmt->execute()) {
     Api::json(["success" => false, "message" => "Lỗi cập nhật database"], 500);
 }
 
-$conn->close();
+// $conn->close();
 ?>

@@ -207,4 +207,41 @@ return [
         "auth" => true,
         "roles" => ["giangvien", "admin"],
     ],
+    // --- ADMIN ROUTES ---
+    "admin/dashboard" => [
+        "handler" => __DIR__ . "/../../server/api/admin_dashboard.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
+    "admin/users/list" => [
+        "handler" => __DIR__ . "/../../server/api/nguoidung_list.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
+    "admin/users/save" => [
+        "handler" => __DIR__ . "/../../server/api/nguoidung_save.php",
+        "methods" => ["POST"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
+    "admin/users/delete" => [
+        "handler" => __DIR__ . "/../../server/api/nguoidung_delete.php",
+        "methods" => ["POST", "DELETE"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
+    "admin/users/toggle-status" => [
+        "handler" => __DIR__ . "/../../server/api/nguoidung_toggle_status.php",
+        "methods" => ["POST"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
+    "admin/logs/list" => [
+        "handler" => __DIR__ . "/../../server/api/admin_logs.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
 ];

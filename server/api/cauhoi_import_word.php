@@ -36,10 +36,10 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("iis", $id_baithi, $ownerId, $role);
 $stmt->execute();
 if ($stmt->get_result()->num_rows === 0) {
-    $conn->close();
+    // $conn->close();
     Api::json(["error" => "Bạn không có quyền import vào bài thi này"], 403);
 }
-$conn->close();
+// $conn->close();
 
 function parse_docx_text($path)
 {

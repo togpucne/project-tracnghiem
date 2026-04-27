@@ -42,7 +42,7 @@ function logs_index()
             LEFT JOIN nguoidung n ON l.id_nguoidung = n.id_nguoidung 
             WHERE $where_sql
             ORDER BY l.created_at DESC 
-            LIMIT 500"; // Tăng giới hạn lên 500
+            LIMIT 50"; // Giảm xuống 50 để chạy cực nhanh
             
     $stmt = $conn->prepare($sql);
     if ($types !== "") {
@@ -63,7 +63,7 @@ function logs_index()
         }
     }
     
-    $conn->close();
+    // $conn->close();
     
     return [
         'title' => 'Giám sát Bảo mật API',

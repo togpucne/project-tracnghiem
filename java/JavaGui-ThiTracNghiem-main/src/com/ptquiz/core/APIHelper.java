@@ -172,10 +172,23 @@ public class APIHelper {
                 }
             }
             return unescapeUnicode(sb.toString().replace("\\/", "/"));
+        } else if (json.charAt(afterColon) == '[') {
+            // Array value: Take until the matching closing bracket
+            int start = afterColon;
+            int depth = 0;
+            for (int i = start; i < json.length(); i++) {
+                char c = json.charAt(i);
+                if (c == '[') depth++;
+                else if (c == ']') {
+                    depth--;
+                    if (depth == 0) return json.substring(start, i + 1);
+                }
+            }
+            return "";
         } else {
             // Numeric, Boolean, or Null value
             int end = afterColon;
-            while (end < json.length() && json.charAt(end) != ',' && json.charAt(end) != '}' && json.charAt(end) != ']' && !Character.isWhitespace(json.charAt(end))) {
+            while (end < json.length() && json.charAt(end) != ',' && json.charAt(end) != '}' && !Character.isWhitespace(json.charAt(end))) {
                 end++;
             }
             return json.substring(afterColon, end).trim();
@@ -273,5 +286,46 @@ public class APIHelper {
             e.printStackTrace();
             return "";
         }
+    }
+
+    /**
+     * Split a JSON array string like [{"a":"1"},{"b":"2"}] into individual object strings.
+     * Uses depth tracking to correctly handle nested objects.
+     */
+    public static java.util.List<String> splitJsonArray(String arrayJson) {
+        java.util.List<String> result = new java.util.ArrayList<>();
+        if (arrayJson == null || arrayJson.isEmpty()) return result;
+
+        // Find opening bracket
+        int start = arrayJson.indexOf('[');
+        if (start == -1) return result;
+
+        int depth = 0;
+        int objStart = -1;
+        boolean inString = false;
+        char prev = 0;
+
+        for (int i = start; i < arrayJson.length(); i++) {
+            char c = arrayJson.charAt(i);
+
+            if (c == '"' && prev != '\\') {
+                inString = !inString;
+            }
+
+            if (!inString) {
+                if (c == '{') {
+                    if (depth == 0) objStart = i;
+                    depth++;
+                } else if (c == '}') {
+                    depth--;
+                    if (depth == 0 && objStart != -1) {
+                        result.add(arrayJson.substring(objStart, i + 1));
+                        objStart = -1;
+                    }
+                }
+            }
+            prev = c;
+        }
+        return result;
     }
 }

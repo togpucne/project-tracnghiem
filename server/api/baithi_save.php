@@ -42,7 +42,7 @@ if (!$only_toggle) {
     $stmtMon->execute();
 
     if ($stmtMon->get_result()->num_rows === 0) {
-        $conn->close();
+        // $conn->close();
         Api::json(["error" => "Môn học không hợp lệ hoặc không thuộc quyền của bạn"], 403);
     }
 }
@@ -57,7 +57,7 @@ if ($id_baithi > 0) {
     $stmtExam->execute();
 
     if ($stmtExam->get_result()->num_rows === 0) {
-        $conn->close();
+        // $conn->close();
         Api::json(["error" => "Bạn không có quyền sửa bài thi này"], 403);
     }
 }
@@ -86,7 +86,7 @@ if ($only_toggle) {
 $ok = save_baithi($payload);
 
 if ($shouldCloseConnection) {
-    $conn->close();
+    // $conn->close();
 }
 
 if (!$ok) {
