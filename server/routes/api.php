@@ -151,6 +151,24 @@ return [
         "auth" => true,
         "roles" => ["giangvien"],
     ],
+    "lecturer/ketqua/summary" => [
+        "handler" => __DIR__ . "/../api/ketqua_summary.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["giangvien", "admin"],
+    ],
+    "lecturer/ketqua/submissions" => [
+        "handler" => __DIR__ . "/../api/ketqua_submissions.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["giangvien", "admin"],
+    ],
+    "lecturer/ketqua/detail" => [
+        "handler" => __DIR__ . "/../api/ketqua_detail.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["giangvien", "admin"],
+    ],
     "login" => [
         "handler" => __DIR__ . "/../api/login.php",
         "methods" => ["POST"],

@@ -381,21 +381,47 @@ public class QuestionManagementFrame extends JFrame {
         JComboBox<String> cbDiff = new JComboBox<>(new String[]{"Dễ", "Trung bình", "Khó"}); if (q != null) cbDiff.setSelectedItem(q.dokho); diffSub.add(cbDiff, BorderLayout.CENTER);
         optionsRow.add(typeSub); optionsRow.add(diffSub); formPanel.add(optionsRow); formPanel.add(Box.createVerticalStrut(20));
         JPanel answersHeader = new JPanel(new BorderLayout()); answersHeader.setBackground(Color.WHITE);
-        JLabel lblAns = new JLabel("Đáp án:"); lblAns.setFont(new Font("Segoe UI", Font.BOLD, 14)); answersHeader.add(lblAns, BorderLayout.WEST);
-        JButton btnAddAnswer = createButton("+ Thêm đáp án", COLOR_PRIMARY); answersHeader.add(btnAddAnswer, BorderLayout.EAST); formPanel.add(answersHeader); formPanel.add(Box.createVerticalStrut(10));
+        answersHeader.setMaximumSize(new Dimension(1000, 40));
+        JLabel lblAns = new JLabel("Danh sách đáp án:"); lblAns.setFont(new Font("Segoe UI", Font.BOLD, 15)); answersHeader.add(lblAns, BorderLayout.WEST);
+        
+        JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0)); btnWrapper.setBackground(Color.WHITE);
+        JButton btnAddAnswer = createButton("+ Thêm đáp án", COLOR_PRIMARY);
+        btnAddAnswer.setPreferredSize(new Dimension(150, 35));
+        btnWrapper.add(btnAddAnswer);
+        answersHeader.add(btnWrapper, BorderLayout.EAST); 
+        
+        formPanel.add(answersHeader); formPanel.add(Box.createVerticalStrut(10));
+        
         JPanel answersContainer = new JPanel(); answersContainer.setLayout(new BoxLayout(answersContainer, BoxLayout.Y_AXIS)); answersContainer.setBackground(Color.WHITE);
-        JScrollPane scrollAnswers = new JScrollPane(answersContainer); scrollAnswers.setPreferredSize(new Dimension(650, 250)); scrollAnswers.setBorder(BorderFactory.createLineBorder(COLOR_BORDER)); formPanel.add(scrollAnswers);
+        JScrollPane scrollAnswers = new JScrollPane(answersContainer); 
+        scrollAnswers.setPreferredSize(new Dimension(650, 300)); 
+        scrollAnswers.setBorder(BorderFactory.createLineBorder(COLOR_BORDER)); 
+        formPanel.add(scrollAnswers);
         
         List<JRadioButton> radios = new ArrayList<>(); List<JTextField> textFields = new ArrayList<>(); ButtonGroup group = new ButtonGroup();
         Runnable[] refreshUIRef = new Runnable[1];
         refreshUIRef[0] = () -> {
             answersContainer.removeAll(); radios.clear(); boolean isMulti = cbType.getSelectedIndex() == 0;
             for (int i = 0; i < textFields.size(); i++) {
-                JPanel row = new JPanel(new BorderLayout(10, 0)); row.setBackground(Color.WHITE); row.setBorder(new EmptyBorder(5, 5, 5, 5));
-                JTextField tf = textFields.get(i); tf.setPreferredSize(new Dimension(0, 35)); tf.setFont(new Font("Segoe UI", Font.PLAIN, 14)); row.add(tf, BorderLayout.CENTER);
-                JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0)); right.setBackground(Color.WHITE);
-                if (isMulti) { JRadioButton rb = new JRadioButton("Đúng"); rb.setBackground(Color.WHITE); group.add(rb); radios.add(rb); right.add(rb); }
-                JButton btnRem = new JButton("Xóa"); btnRem.setForeground(COLOR_DANGER); btnRem.setFont(new Font("Segoe UI", Font.BOLD, 12)); btnRem.setContentAreaFilled(false); btnRem.setBorderPainted(false);
+                JPanel row = new JPanel(new BorderLayout(15, 0)); row.setBackground(Color.WHITE); 
+                row.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(243, 244, 246)),
+                    new EmptyBorder(10, 10, 10, 10)
+                ));
+                row.setMaximumSize(new Dimension(1000, 60));
+                
+                JTextField tf = textFields.get(i); 
+                tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+                row.add(tf, BorderLayout.CENTER);
+                
+                JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0)); right.setBackground(Color.WHITE);
+                if (isMulti) { 
+                    JRadioButton rb = new JRadioButton("Đúng"); rb.setBackground(Color.WHITE); 
+                    rb.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                    group.add(rb); radios.add(rb); right.add(rb); 
+                }
+                JButton btnRem = new JButton("Xóa"); btnRem.setForeground(COLOR_DANGER); btnRem.setFont(new Font("Segoe UI", Font.BOLD, 13)); 
+                btnRem.setContentAreaFilled(false); btnRem.setBorderPainted(false); btnRem.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 int idx = i; btnRem.addActionListener(e -> { textFields.remove(idx); refreshUIRef[0].run(); }); right.add(btnRem);
                 row.add(right, BorderLayout.EAST); answersContainer.add(row);
             }
