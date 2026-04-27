@@ -80,7 +80,7 @@ public class ExamManagementPanel extends JPanel {
         loadData();
     }
 
-    private void loadData() {
+    public void loadData() {
         new Thread(() -> {
             String json = APIHelper.sendGet("lecturer/baithi/list");
             if (json == null || json.isEmpty()) return;

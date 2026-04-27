@@ -456,6 +456,23 @@ public class QuestionManagementFrame extends JFrame {
             
             if (!isMulti && textFields.size() > 0) correctIndex = 0;
 
+            // Validation for "Điền từ" (Fill-in-the-blank)
+            if (!isMulti) {
+                String content = txtContent.getText();
+                int placeholders = 0;
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\[\\.\\.\\.\\]").matcher(content);
+                while (m.find()) placeholders++;
+
+                if (placeholders == 0) {
+                    JOptionPane.showMessageDialog(dialog, "Câu hỏi điền từ phải có ít nhất một ký hiệu [...] để sinh viên điền vào!");
+                    return;
+                }
+                if (placeholders != textFields.size()) {
+                    JOptionPane.showMessageDialog(dialog, "Số lượng ký hiệu [...] (" + placeholders + ") không khớp với số lượng đáp án bạn đã nhập (" + textFields.size() + ")!\nVui lòng kiểm tra lại.");
+                    return;
+                }
+            }
+
             String payload = String.format("{\"id_baithi\":%d, \"id_cauhoi\":%d, \"noidungcauhoi\":\"%s\", \"dokho\":\"%s\", \"loai_cauhoi\":%d, \"options\":%s, \"correct_index\":%d}", 
                 examId, q==null?0:q.id_cauhoi, APIHelper.escapeJSON(txtContent.getText()), APIHelper.escapeJSON(cbDiff.getSelectedItem().toString()), cbType.getSelectedIndex()+1, optionsJson.toString(), correctIndex);
             

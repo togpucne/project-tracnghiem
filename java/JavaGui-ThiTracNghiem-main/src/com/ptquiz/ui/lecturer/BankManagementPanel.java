@@ -209,7 +209,7 @@ public class BankManagementPanel extends JPanel {
         loadBankQuestions();
     }
 
-    private void loadBanks() {
+    public void loadBanks() {
         new Thread(() -> {
             String json = APIHelper.sendGet("lecturer/nganhang/list");
             SwingUtilities.invokeLater(() -> {
@@ -918,6 +918,23 @@ public class BankManagementPanel extends JPanel {
             }
             if (correct == -1)
                 correct = 0; // Fallback for 'fill in' or if no RB exists
+
+            // Validation for "Điền từ" (Fill-in-the-blank)
+            if (cbType.getSelectedIndex() == 1) { // 1 is "Điền từ"
+                String content = txtContent.getText();
+                int placeholders = 0;
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\[\\.\\.\\.\\]").matcher(content);
+                while (m.find()) placeholders++;
+
+                if (placeholders == 0) {
+                    JOptionPane.showMessageDialog(dialog, "Câu hỏi điền từ phải có ít nhất một ký hiệu [...] để sinh viên điền vào!");
+                    return;
+                }
+                if (placeholders != tfs.size()) {
+                    JOptionPane.showMessageDialog(dialog, "Số lượng ký hiệu [...] (" + placeholders + ") không khớp với số lượng đáp án bạn đã nhập (" + tfs.size() + ")!\nVui lòng kiểm tra lại.");
+                    return;
+                }
+            }
 
             String selSubId = selectedBank.subjects.get(subIdx).id;
             String status = (cbStatus.getSelectedIndex() == 0) ? "active" : "inactive";

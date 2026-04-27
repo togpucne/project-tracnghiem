@@ -17,6 +17,14 @@ public class Home extends JFrame {
     private CardLayout cardLayout;
     private JPanel gridPanel;
     private java.util.Map<String, JButton> menuButtons = new java.util.HashMap<>();
+    
+    // Lecturer Panels
+    private SubjectManagementPanel subjectPanel;
+    private ExamManagementPanel examPanel;
+    private BankManagementPanel bankPanel;
+    private ResultViewPanel resultPanel;
+    private LecturerDashboard dashboardPanel;
+    private HistoryPanel historyPanel;
 
     public Home() {
         setTitle("Trang chủ - Trắc Nghiệm");
@@ -47,18 +55,24 @@ public class Home extends JFrame {
 
         // ------------- LECTURER PANELS -------------
         if ("giangvien".equals(UserSession.role)) {
-            cards.add(new LecturerDashboard(), "LECTURER_DASHBOARD");
-            cards.add(new SubjectManagementPanel(), "MANAGE_SUBJECTS");
-            cards.add(new ExamManagementPanel(), "MANAGE_EXAMS");
-            cards.add(new BankManagementPanel(), "MANAGE_BANKS");
-            cards.add(new ResultViewPanel(), "VIEW_RESULTS");
+            dashboardPanel = new LecturerDashboard();
+            subjectPanel = new SubjectManagementPanel();
+            examPanel = new ExamManagementPanel();
+            bankPanel = new BankManagementPanel();
+            resultPanel = new ResultViewPanel();
+            
+            cards.add(dashboardPanel, "LECTURER_DASHBOARD");
+            cards.add(subjectPanel, "MANAGE_SUBJECTS");
+            cards.add(examPanel, "MANAGE_EXAMS");
+            cards.add(bankPanel, "MANAGE_BANKS");
+            cards.add(resultPanel, "VIEW_RESULTS");
         }
 
         // ------------- PROFILE CARD -------------
         cards.add(new ProfilePanel(), "PROFILE");
 
         // ------------- HISTORY CARD -------------
-        HistoryPanel historyPanel = new HistoryPanel();
+        historyPanel = new HistoryPanel();
         cards.add(historyPanel, "HISTORY");
 
         wrapper.add(cards, BorderLayout.CENTER);
@@ -84,17 +98,14 @@ public class Home extends JFrame {
             btn.setBackground(active ? new Color(239, 68, 68) : new Color(31, 41, 55));
         }
 
-        // Refresh data when switching to certain views
-        for (Component comp : cards.getComponents()) {
-            if (comp.isVisible()) {
-                if (comp instanceof LecturerDashboard) {
-                    ((LecturerDashboard) comp).loadStats();
-                } else if (comp instanceof SubjectManagementPanel) {
-                    ((SubjectManagementPanel) comp).loadData();
-                } else if (comp instanceof HistoryPanel) {
-                    ((HistoryPanel) comp).refresh();
-                }
-            }
+        // Refresh data based on viewName
+        switch (viewName) {
+            case "LECTURER_DASHBOARD": if(dashboardPanel != null) dashboardPanel.loadStats(); break;
+            case "MANAGE_SUBJECTS": if(subjectPanel != null) subjectPanel.loadData(); break;
+            case "MANAGE_EXAMS": if(examPanel != null) examPanel.loadData(); break;
+            case "MANAGE_BANKS": if(bankPanel != null) bankPanel.loadBanks(); break;
+            case "HISTORY": if(historyPanel != null) historyPanel.refresh(); break;
+            case "HOME": refreshExams(); break;
         }
     }
 
