@@ -106,7 +106,7 @@ public class ExamManagementPanel extends JPanel {
                         ex.subjectName = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "tenmonhoc"));
                         ex.time = APIHelper.extractJsonValue(raw, "thoigianlam");
                         ex.count = APIHelper.extractJsonValue(raw, "tongcauhoi");
-                        ex.status = "Đang mở".equals(APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "trangthai"))) ? "Đang mở" : "Ẩn";
+                        ex.status = "Đang mở".equals(APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "trangthai"))) ? "Đang mở" : "Đóng";
                         ex.desc = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "mieuta"));
                         
                         String st = APIHelper.extractJsonValue(raw, "thoigianbatdau");
@@ -200,7 +200,7 @@ public class ExamManagementPanel extends JPanel {
         p.add(shuffleC);
 
         p.add(new JLabel("Trạng thái:"));
-        JComboBox<String> statC = new JComboBox<>(new String[]{"Đang mở", "Ẩn"});
+        JComboBox<String> statC = new JComboBox<>(new String[]{"Đang mở", "Đóng"});
         if (isEdit) statC.setSelectedItem(ex.status);
         p.add(statC);
 
