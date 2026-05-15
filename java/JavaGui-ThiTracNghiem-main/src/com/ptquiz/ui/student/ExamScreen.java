@@ -6,6 +6,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.*;
@@ -24,6 +26,9 @@ public class ExamScreen extends JFrame {
     private JPanel questionsPanel;
     private JPanel navGrid;
     private Map<String, String> selectedAnswers = new HashMap<>();
+    private Set<String> flaggedQuestions = new HashSet<>();
+    private Map<String, JPanel> questionCards = new HashMap<>();
+    private Map<String, List<JPanel>> optionPanels = new HashMap<>();
     private Preferences prefs = Preferences.userNodeForPackage(ExamScreen.class);
 
     private String titleBaithi;
@@ -234,60 +239,124 @@ public class ExamScreen extends JFrame {
     private void buildQuestionsUI(List<Question> qList) {
         questionsPanel.removeAll();
         navGrid.removeAll();
-
         int stt = 1;
+        questionCards.clear();
+        optionPanels.clear();
         for (Question q : qList) {
             JPanel card = new JPanel();
-            card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+            questionCards.put(q.id, card);
+            card.setLayout(new BorderLayout(0, 15));
             card.setBackground(Color.WHITE);
             card.setBorder(BorderFactory.createCompoundBorder(
-                new EmptyBorder(0, 0, 15, 0),
-                BorderFactory.createCompoundBorder(
-                    new LineBorder(new Color(229, 231, 235), 1, true),
-                    new EmptyBorder(20, 20, 20, 20)
-                )
+                new EmptyBorder(0, 0, 20, 0),
+                new LineBorder(new Color(229, 231, 235), 1, true)
+            ));
+            card.setBorder(BorderFactory.createCompoundBorder(
+                card.getBorder(),
+                new EmptyBorder(25, 25, 25, 25)
             ));
 
-            JLabel qLabel = new JLabel("<html><p style='width: 800px'><b>Câu " + stt + ":</b> " + q.noidung + "</p></html>");
-            qLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-            qLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-            card.add(qLabel);
-            card.add(Box.createVerticalStrut(15));
+            // Header: [Badge] [Question Text] ... [Flag]
+            JPanel header = new JPanel(new BorderLayout(15, 0));
+            header.setOpaque(false);
 
+            // Pill Badge for "Câu X"
+            JLabel badge = new JLabel("Câu " + stt);
+            badge.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            badge.setForeground(new Color(59, 130, 246)); // Blue-500
+            badge.setBackground(new Color(239, 246, 255));
+            badge.setOpaque(true);
+            badge.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(new Color(191, 219, 254), 1, true),
+                new EmptyBorder(4, 12, 4, 12)
+            ));
+            
+            JPanel badgeWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            badgeWrapper.setOpaque(false);
+            badgeWrapper.add(badge);
+            header.add(badgeWrapper, BorderLayout.NORTH);
+
+            JLabel qLabel = new JLabel("<html><p style='width: 800px'>" + q.noidung + "</p></html>");
+            qLabel.setFont(new Font("Segoe UI", Font.PLAIN, 17));
+            qLabel.setForeground(new Color(31, 41, 55));
+            header.add(qLabel, BorderLayout.CENTER);
+
+            // Flag Button (Top Right)
+            JButton flagBtn = new JButton(new FlagIcon(flaggedQuestions.contains(q.id), 24));
+            flagBtn.setBorderPainted(false);
+            flagBtn.setContentAreaFilled(false);
+            flagBtn.setFocusPainted(false);
+            flagBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            
+            final String currentQId = q.id;
+            flagBtn.addActionListener(e -> {
+                if (flaggedQuestions.contains(currentQId)) flaggedQuestions.remove(currentQId);
+                else flaggedQuestions.add(currentQId);
+                flagBtn.setIcon(new FlagIcon(flaggedQuestions.contains(currentQId), 24));
+                updateNavButton(currentQId);
+                saveFlagState();
+            });
+            
+            JPanel flagWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+            flagWrapper.setOpaque(false);
+            flagWrapper.add(flagBtn);
+            header.add(flagWrapper, BorderLayout.EAST);
+
+            card.add(header, BorderLayout.NORTH);
+
+            // Options Body
+            JPanel optionsBody = new JPanel();
+            optionsBody.setLayout(new BoxLayout(optionsBody, BoxLayout.Y_AXIS));
+            optionsBody.setOpaque(false);
+            
             ButtonGroup bg = new ButtonGroup();
+            List<JPanel> pList = new ArrayList<>();
             for (Answer a : q.answers) {
-                JRadioButton rb = new JRadioButton("<html><p style='width: 750px'>" + a.noidung + "</p></html>");
+                JPanel optionCard = new JPanel(new BorderLayout(15, 0));
+                optionCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
+                optionCard.setPreferredSize(new Dimension(0, 55));
+                optionCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                pList.add(optionCard);
+
+                JRadioButton rb = new JRadioButton("<html>" + a.noidung + "</html>");
                 rb.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-                rb.setBackground(Color.WHITE);
-                rb.setAlignmentX(Component.LEFT_ALIGNMENT);
+                rb.setOpaque(false);
                 rb.setFocusPainted(false);
                 bg.add(rb);
-                
+
                 if (a.id.equals(selectedAnswers.get(q.id))) {
                     rb.setSelected(true);
+                    styleOptionCard(optionCard, true);
+                } else {
+                    styleOptionCard(optionCard, false);
                 }
 
-                rb.addActionListener(e -> {
-                    saveAnswer(q.id, a.id);
-                    updateNavButton(q.id, true);
-                    syncDraftToServer(false); // Immediate sync on answer
+                optionCard.add(rb, BorderLayout.CENTER);
+                
+                // Make clicking the card select the radio
+                optionCard.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        rb.setSelected(true);
+                        handleAnswerSelection(q.id, a.id, pList, optionCard);
+                    }
                 });
-                card.add(rb);
-                card.add(Box.createVerticalStrut(8));
+                rb.addActionListener(e -> handleAnswerSelection(q.id, a.id, pList, optionCard));
+
+                optionsBody.add(optionCard);
+                optionsBody.add(Box.createVerticalStrut(10));
             }
+            optionPanels.put(q.id, pList);
+            card.add(optionsBody, BorderLayout.CENTER);
+            
             questionsPanel.add(card);
 
             JButton navBtn = new JButton(String.valueOf(stt));
             navBtn.setName("nav_" + q.id);
-            navBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            navBtn.setPreferredSize(new Dimension(45, 45));
             navBtn.setFocusPainted(false);
-            navBtn.setContentAreaFilled(false);
-            navBtn.setOpaque(true);
             navBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
             
-            boolean answered = selectedAnswers.containsKey(q.id);
-            styleNavBtn(navBtn, answered);
+            styleNavBtn(navBtn, q.id);
             
             navBtn.addActionListener(e -> {
                 ((JComponent) card.getParent()).scrollRectToVisible(card.getBounds());
@@ -303,24 +372,81 @@ public class ExamScreen extends JFrame {
         navGrid.repaint();
     }
 
-    private void styleNavBtn(JButton btn, boolean answered) {
-        if (answered) {
-            btn.setBackground(new Color(34, 197, 94)); // Green
-            btn.setForeground(Color.WHITE);
-            btn.setBorder(BorderFactory.createLineBorder(new Color(34, 197, 94)));
+    private void handleAnswerSelection(String qId, String aId, List<JPanel> allPanels, JPanel selectedPanel) {
+        saveAnswer(qId, aId);
+        for (JPanel p : allPanels) styleOptionCard(p, p == selectedPanel);
+        updateNavButton(qId);
+        syncDraftToServer(false);
+    }
+
+    private void styleOptionCard(JPanel p, boolean selected) {
+        if (selected) {
+            p.setBackground(new Color(239, 246, 255)); // Light Blue (giống web)
+            p.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(new Color(59, 130, 246), 2, true), // Blue border
+                new EmptyBorder(10, 20, 10, 20)
+            ));
         } else {
-            btn.setBackground(Color.WHITE);
-            btn.setForeground(new Color(31, 41, 55));
-            btn.setBorder(BorderFactory.createLineBorder(new Color(209, 213, 219)));
+            p.setBackground(Color.WHITE);
+            p.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(new Color(229, 231, 235), 1, true),
+                new EmptyBorder(10, 20, 10, 20)
+            ));
         }
     }
 
-    private void updateNavButton(String qId, boolean answered) {
+    private void styleNavBtn(JButton btn, String qId) {
+        boolean flagged = flaggedQuestions.contains(qId);
+        boolean answered = selectedAnswers.containsKey(qId);
+
+        btn.setPreferredSize(new Dimension(50, 50));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btn.setOpaque(true);
+        btn.setContentAreaFilled(true);
+        
+        if (answered) {
+            btn.setBackground(new Color(34, 197, 94)); // Green-500
+            btn.setForeground(Color.BLACK); // Số màu đen theo yêu cầu
+            btn.setBorder(new LineBorder(new Color(21, 128, 61), 1, true));
+        } else {
+            btn.setBackground(Color.WHITE);
+            btn.setForeground(Color.BLACK); // Số màu đen
+            btn.setBorder(new LineBorder(new Color(209, 213, 219), 1, true));
+        }
+
+        // Add flag indicator to Nav Button
+        if (flagged) {
+            btn.setIcon(new FlagIcon(true, 12));
+            btn.setHorizontalTextPosition(SwingConstants.RIGHT);
+            btn.setIconTextGap(2);
+        } else {
+            btn.setIcon(null);
+        }
+        
+        btn.setVerticalTextPosition(SwingConstants.CENTER);
+        btn.setHorizontalAlignment(SwingConstants.CENTER);
+    }
+
+    private void updateNavButton(String qId) {
         for (Component c : navGrid.getComponents()) {
             if (c instanceof JButton && ("nav_" + qId).equals(c.getName())) {
-                styleNavBtn((JButton) c, answered);
+                styleNavBtn((JButton) c, qId);
                 break;
             }
+        }
+    }
+
+    private void updateFlagBtnStyle(JButton btn, String qId) {
+        if (flaggedQuestions.contains(qId)) {
+            btn.setText("<html><font color='red' size='5'>■</font> Đã cờ</html>");
+            btn.setBackground(new Color(254, 226, 226));
+            btn.setForeground(new Color(220, 38, 38));
+            btn.setBorder(BorderFactory.createLineBorder(new Color(220, 38, 38)));
+        } else {
+            btn.setText("<html><font color='gray' size='5'>□</font> Gắn cờ</html>");
+            btn.setBackground(Color.WHITE);
+            btn.setForeground(new Color(107, 114, 128));
+            btn.setBorder(BorderFactory.createLineBorder(new Color(209, 213, 219)));
         }
     }
 
@@ -385,6 +511,21 @@ public class ExamScreen extends JFrame {
                 }
             }
         }
+        
+        String flags = prefs.get(getPrefKey() + "_flags", "");
+        if (!flags.isEmpty()) {
+            for (String id : flags.split(",")) {
+                if (!id.isEmpty()) flaggedQuestions.add(id);
+            }
+        }
+    }
+
+    private void saveFlagState() {
+        StringBuilder sb = new StringBuilder();
+        for (String id : flaggedQuestions) {
+            sb.append(id).append(",");
+        }
+        prefs.put(getPrefKey() + "_flags", sb.toString());
     }
 
     private void exitExam() {
@@ -414,6 +555,17 @@ public class ExamScreen extends JFrame {
         payload.append("{");
         payload.append("\"id_lanthi\":").append(idLanthi).append(",");
         payload.append("\"thoigianconlai\":").append(remainingSeconds).append(",");
+        
+        // Add flagged questions for API security research testing
+        payload.append("\"flagged_questions\":[");
+        boolean firstFlag = true;
+        for (String qId : flaggedQuestions) {
+            if (!firstFlag) payload.append(",");
+            payload.append("\"").append(qId).append("\"");
+            firstFlag = false;
+        }
+        payload.append("],");
+
         payload.append("\"answers\":{");
         
         boolean first = true;
@@ -465,7 +617,12 @@ public class ExamScreen extends JFrame {
                 if (res.success) {
                     String diem = extractBasic(res.rawData, "diem");
                     String socau = extractBasic(res.rawData, "socaudung");
+                    
+                    // Clear local persistence for this exam
                     prefs.remove(getPrefKey());
+                    prefs.remove(getPrefKey() + "_flags");
+                    flaggedQuestions.clear(); 
+                    
                     JOptionPane.showMessageDialog(this, "Nộp bài thành công!\nBạn đúng " + socau + " câu.\nĐiểm số: " + diem + " / 10");
                     closeNormally();
                     if(parentFrame instanceof Home) {
@@ -489,6 +646,28 @@ public class ExamScreen extends JFrame {
         if (mn.find()) return mn.group(1).replaceAll("[\\]\\}]", "").trim();
 
         return "";
+    }
+
+    // Custom Icon Class to DRAW the flag manually
+    class FlagIcon implements Icon {
+        private boolean active;
+        private int size;
+        public FlagIcon(boolean active, int size) { this.active = active; this.size = size; }
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(active ? new Color(239, 68, 68) : new Color(209, 213, 219));
+            // Draw flag pole
+            g2.fillRect(x + 4, y + 2, 2, size - 4);
+            // Draw flag triangle
+            int[] px = {x + 6, x + size - 4, x + 6};
+            int[] py = {y + 2, y + size/2 - 1, y + size/2 + 2};
+            g2.fillPolygon(px, py, 3);
+            g2.dispose();
+        }
+        @Override public int getIconWidth() { return size; }
+        @Override public int getIconHeight() { return size; }
     }
 
     class Question {
