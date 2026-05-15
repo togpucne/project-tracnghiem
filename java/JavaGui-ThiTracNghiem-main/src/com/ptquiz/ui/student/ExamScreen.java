@@ -60,6 +60,18 @@ public class ExamScreen extends JFrame {
         mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         setContentPane(mainPanel);
 
+        // Header Panel for Exam Title
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(new Color(249, 250, 251));
+        headerPanel.setBorder(new EmptyBorder(0, 0, 15, 0));
+        
+        JLabel titleLabel = new JLabel(this.titleBaithi);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        titleLabel.setForeground(new Color(31, 41, 55));
+        headerPanel.add(titleLabel, BorderLayout.WEST);
+        
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+
         questionsPanel = new JPanel();
         questionsPanel.setLayout(new BoxLayout(questionsPanel, BoxLayout.Y_AXIS));
         questionsPanel.setBackground(new Color(249, 250, 251));
