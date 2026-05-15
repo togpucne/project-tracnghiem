@@ -3,7 +3,7 @@
 require_once __DIR__ . "/../core/Api.php";
 require_once __DIR__ . "/../model/Database.php";
 
-$user = Api::requireRole(["admin", "giangvien"]);
+$user = Api::requireRole(["admin", "giangvien", "thisinh"]);
 $id_nguoidung = (int) ($user["id_nguoidung"] ?? 0);
 
 $conn = Database::connect();
