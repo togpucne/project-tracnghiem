@@ -226,14 +226,14 @@ public class Home extends JFrame {
         // --- 2. LATEST EXAMS SECTION ---
         JPanel examsSection = new JPanel(new BorderLayout());
         examsSection.setBackground(Color.WHITE);
-        examsSection.setBorder(new EmptyBorder(40, 40, 40, 40));
+        examsSection.setBorder(new EmptyBorder(60, 60, 60, 60)); // More margin
 
         JLabel sectionTitle = new JLabel("8 bài thi mới nhất");
         sectionTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         sectionTitle.setBorder(new EmptyBorder(0, 0, 30, 0));
         examsSection.add(sectionTitle, BorderLayout.NORTH);
 
-        gridPanel = new JPanel(new GridLayout(0, 4, 20, 20));
+        gridPanel = new JPanel(new GridLayout(0, 4, 40, 40));
         gridPanel.setBackground(Color.WHITE);
         examsSection.add(gridPanel, BorderLayout.CENTER);
 
@@ -412,7 +412,7 @@ public class Home extends JFrame {
         JButton btn = new JButton(text);
         if (viewName != null)
             menuButtons.put(viewName, btn);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 18));
         if (viewName != null && !viewName.isEmpty()) {
             btn.addActionListener(e -> switchView(viewName));
         }
@@ -424,8 +424,8 @@ public class Home extends JFrame {
         btn.setOpaque(true);
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-        btn.setBorder(new EmptyBorder(0, 40, 0, 0)); // Indent the text beautifully
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 65));
+        btn.setBorder(new EmptyBorder(0, 50, 0, 0)); // More indent for premium look
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btn.addMouseListener(new MouseAdapter() {
@@ -453,15 +453,17 @@ public class Home extends JFrame {
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(new Color(229, 231, 235), 1, true),
-                new EmptyBorder(25, 20, 25, 20)));
+                new EmptyBorder(35, 30, 35, 30))); // More internal margin
 
-        JLabel titleLabel = new JLabel("<html><div style='width: 150px;'><b>" + title + "</b></div></html>");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        JLabel titleLabel = new JLabel("<html><div style='width: 200px;'><b>" + title + "</b></div></html>");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20)); // Bigger title
         titleLabel.setForeground(new Color(31, 41, 55));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel infoLabel = new JLabel("<html>" + time + " | " + questions + "</html>");
-        infoLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        infoLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         infoLabel.setForeground(new Color(107, 114, 128));
+        infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel categoryLabel = new JLabel(category);
         categoryLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -481,7 +483,7 @@ public class Home extends JFrame {
             button.setForeground(Color.BLACK);
             button.setBorder(new RoundedBorder(Color.BLACK, radius, 1));
         }
-        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setFont(new Font("Segoe UI", Font.BOLD, 15));
         button.setFocusPainted(false);
         button.setOpaque(true);
         button.setContentAreaFilled(true);

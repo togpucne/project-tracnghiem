@@ -73,9 +73,9 @@ public class ExamLibraryPanel extends JPanel {
         mainContent.add(searchBarPanel, BorderLayout.NORTH);
 
         // Grid
-        gridPanel = new JPanel(new GridLayout(0, 3, 20, 20));
+        gridPanel = new JPanel(new GridLayout(0, 3, 40, 40));
         gridPanel.setBackground(Color.WHITE);
-        gridPanel.setBorder(new EmptyBorder(0, 20, 20, 20));
+        gridPanel.setBorder(new EmptyBorder(0, 40, 40, 40));
 
         // Wrapper to prevent vertical stretching in GridLayout
         JPanel gridWrapper = new JPanel(new BorderLayout());
@@ -178,18 +178,18 @@ public class ExamLibraryPanel extends JPanel {
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
             new LineBorder(new Color(229, 231, 235), 1, true),
-            new EmptyBorder(25, 20, 25, 20)
+            new EmptyBorder(35, 30, 35, 30)
         ));
-        card.setMaximumSize(new Dimension(300, 220));
+        card.setMaximumSize(new Dimension(350, 250));
 
-        JLabel title = new JLabel("<html><div style='width: 150px;'><b>" + item.title + "</b></div></html>");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        JLabel title = new JLabel("<html><div style='width: 200px;'><b>" + item.title + "</b></div></html>");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
         title.setForeground(new Color(31, 41, 55));
         card.add(title);
         card.add(Box.createVerticalStrut(10));
 
         JLabel info = new JLabel("<html>" + item.time + " | " + item.questions + "</html>");
-        info.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        info.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         info.setForeground(new Color(107, 114, 128));
         card.add(info);
         card.add(Box.createVerticalStrut(10));
@@ -215,7 +215,7 @@ public class ExamLibraryPanel extends JPanel {
             btn.setForeground(Color.BLACK);
             btn.setBorder(new RoundedBorder(Color.BLACK, radius, 1));
         }
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setFocusPainted(false);
         btn.setOpaque(true);
         btn.setContentAreaFilled(true);
