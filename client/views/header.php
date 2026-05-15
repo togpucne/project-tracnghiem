@@ -147,6 +147,16 @@
         <script>
         const isLoggedIn = <?= isset($_SESSION['user']) ? 'true' : 'false' ?>;
 
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            if (error === 'ongoing_mismatch') {
+                alert("TRUY CẬP BỊ TỪ CHỐI!\n\nHệ thống ghi nhận bạn đang có một bài thi khác đang làm dở.\n\nBạn phải hoàn thành hoặc Hủy bài thi đó trước khi bắt đầu bài mới.");
+            } else if (error === 'session_active') {
+                alert("TRUY CẬP BỊ TỪ CHỐI!\n\nBài thi này hiện đang được ĐƯỢC MỞ ở một thiết bị hoặc trình duyệt khác.\n\nVui lòng đóng cửa sổ đang làm trước khi vào lại.");
+            }
+        });
+
         function apiUrl(route, params = {}) {
             const cleanRoute = String(route || '').replace(/^\/+|\/+$/g, '');
             const url = new URL(`api/${cleanRoute}`, window.location.href);
@@ -173,12 +183,38 @@
             }
         }
 
-        function confirmLambai(id, isOngoing) {
+        async function confirmLambai(id, isOngoing) {
             if (!isLoggedIn) {
                 const loginModal = new bootstrap.Modal(document.getElementById('loginPromptModal'));
                 loginModal.show();
                 return;
             }
+
+            // CRITICAL SECURITY CHECK: Check for any ongoing or active exams
+            try {
+                const res = await fetch(apiUrl("exam/list"));
+                const json = await res.json();
+                if (json.success && json.data) {
+                    const activeExam = json.data.find(row => parseInt(row.is_ongoing) === 1);
+                    
+                    if (activeExam) {
+                        // 1. BLOCK if trying to start a DIFFERENT exam while one is ongoing
+                        if (parseInt(activeExam.id_baithi) !== parseInt(id)) {
+                            alert(`TRUY CẬP BỊ TỪ CHỐI!\n\nHệ thống ghi nhận bạn đang làm bài thi '${activeExam.ten_baithi}' dở dang.\n\nBạn phải hoàn thành hoặc Hủy bài thi đó trước khi bắt đầu bài mới.`);
+                            return;
+                        }
+                        
+                        // 2. BLOCK if the SAME exam is CURRENTLY active (Heartbeat < 30s)
+                        if (parseInt(activeExam.is_active) === 1) {
+                            alert(`TRUY CẬP BỊ TỪ CHỐI!\n\nHệ thống ghi nhận bài thi này hiện đang ĐƯỢC MỞ ở một thiết bị khác (App hoặc Web).\n\nBạn KHÔNG THỂ tham gia cùng lúc. Vui lòng đóng cửa sổ đang làm trước khi vào lại.`);
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Lỗi kiểm tra session:", e);
+            }
+
             const msg = isOngoing ? "Bạn có muốn tiếp tục làm bài thi này không?" :
                 "Bạn có chắc chắn muốn bắt đầu làm bài thi này không?";
             if (confirm(msg)) {

@@ -499,35 +499,53 @@ public class Home extends JFrame {
         button.setPreferredSize(new Dimension(150, 40));
 
         button.addActionListener(e -> {
-            // Check if any OTHER exam is ongoing before starting a NEW one
-            if (!isOngoing) {
-                new Thread(() -> {
-                    String json = APIHelper.sendGet("exam/list");
-                    java.util.List<String> exams = APIHelper.splitJsonArray(json);
-                    String ongoingTitle = null;
-                    for (String raw : exams) {
-                        if ("1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"))) {
-                            ongoingTitle = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
-                            break;
+            new Thread(() -> {
+                String json = APIHelper.sendGet("exam/list");
+                java.util.List<String> exams = APIHelper.splitJsonArray(json);
+                String foundOngoingId = null;
+                String foundOngoingTitle = null;
+                String foundIsActive = "0";
+                
+                for (String raw : exams) {
+                    if ("1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"))) {
+                        foundOngoingId = APIHelper.extractJsonValue(raw, "id_baithi");
+                        foundOngoingTitle = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
+                        foundIsActive = APIHelper.extractJsonValue(raw, "is_active");
+                        break;
+                    }
+                }
+                
+                final String ongoingId = foundOngoingId;
+                final String ongoingTitle = foundOngoingTitle;
+                final String currentIsActive = foundIsActive;
+                
+                SwingUtilities.invokeLater(() -> {
+                    if (ongoingId != null) {
+                        // 1. HARD BLOCK if it's a DIFFERENT exam
+                        if (!ongoingId.equals(idBaithi)) {
+                            JOptionPane.showMessageDialog(Home.this,
+                                "TRUY CẬP BỊ TỪ CHỐI!\n\n" +
+                                "Hệ thống ghi nhận bạn đang làm bài thi '" + ongoingTitle + "' trên thiết bị khác.\n\n" +
+                                "Bạn phải hoàn thành hoặc Hủy bài thi đó trước khi bắt đầu bài mới.",
+                                "Lỗi bảo mật", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        
+                        // 2. HARD BLOCK SAME exam ONLY if it is currently active (Heartbeat < 30s)
+                        if ("1".equals(currentIsActive)) {
+                            JOptionPane.showMessageDialog(Home.this,
+                                "TRUY CẬP BỊ TỪ CHỐI!\n\n" +
+                                "Hệ thống ghi nhận bài thi này hiện đang ĐƯỢC MỞ ở một thiết bị khác (App hoặc Web).\n\n" +
+                                "Bạn KHÔNG THỂ tham gia cùng lúc. Vui lòng đóng cửa sổ đang làm trước khi vào lại.",
+                                "Lỗi bảo mật", JOptionPane.ERROR_MESSAGE);
+                            return;
                         }
                     }
                     
-                    final String foundTitle = ongoingTitle;
-                    SwingUtilities.invokeLater(() -> {
-                        if (foundTitle != null) {
-                            JOptionPane.showMessageDialog(Home.this,
-                                "Hệ thống ghi nhận bạn đang làm bài thi trên thiết bị khác (hoặc trên trình duyệt Web).\n" +
-                                "Vui lòng hoàn thành hoặc Hủy bài thi '" + foundTitle + "' đó trước khi bắt đầu bài mới.",
-                                "Cảnh báo bảo mật", JOptionPane.WARNING_MESSAGE);
-                        } else {
-                            new ExamScreen(Home.this, idBaithi, title).setVisible(true);
-                        }
-                    });
-                }).start();
-            } else {
-                // If it IS ongoing, just let them resume
-                new ExamScreen(Home.this, idBaithi, title).setVisible(true);
-            }
+                    // Allow entry (New or Resume) if not active elsewhere
+                    new ExamScreen(Home.this, idBaithi, title).setVisible(true);
+                });
+            }).start();
         });
 
         card.add(titleLabel);
