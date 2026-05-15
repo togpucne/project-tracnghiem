@@ -226,7 +226,35 @@ public class ExamLibraryPanel extends JPanel {
         
         btn.addActionListener(e -> {
             JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            new ExamScreen(topFrame, item.id, item.title).setVisible(true);
+            // If starting a NEW exam, check if another is already ongoing
+            if (!item.isOngoing) {
+                new Thread(() -> {
+                    String json = APIHelper.sendGet("exam/list");
+                    java.util.List<String> exams = APIHelper.splitJsonArray(json);
+                    String ongoingTitle = null;
+                    for (String raw : exams) {
+                        if ("1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"))) {
+                            ongoingTitle = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
+                            break;
+                        }
+                    }
+
+                    final String foundTitle = ongoingTitle;
+                    SwingUtilities.invokeLater(() -> {
+                        if (foundTitle != null) {
+                            JOptionPane.showMessageDialog(topFrame,
+                                "Bạn đang có bài thi '" + foundTitle + "' đang làm dở.\n" +
+                                "Bạn phải hoàn thành hoặc Hủy bài đó trước khi bắt đầu bài mới.",
+                                "Thông báo", JOptionPane.WARNING_MESSAGE);
+                        } else {
+                            new ExamScreen(topFrame, item.id, item.title).setVisible(true);
+                        }
+                    });
+                }).start();
+            } else {
+                // If it's already ongoing (Làm tiếp), just open it
+                new ExamScreen(topFrame, item.id, item.title).setVisible(true);
+            }
         });
         card.add(btn);
 

@@ -499,7 +499,35 @@ public class Home extends JFrame {
         button.setPreferredSize(new Dimension(150, 40));
 
         button.addActionListener(e -> {
-            new ExamScreen(Home.this, idBaithi, title).setVisible(true);
+            // Check if any OTHER exam is ongoing before starting a NEW one
+            if (!isOngoing) {
+                new Thread(() -> {
+                    String json = APIHelper.sendGet("exam/list");
+                    java.util.List<String> exams = APIHelper.splitJsonArray(json);
+                    String ongoingTitle = null;
+                    for (String raw : exams) {
+                        if ("1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"))) {
+                            ongoingTitle = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
+                            break;
+                        }
+                    }
+                    
+                    final String foundTitle = ongoingTitle;
+                    SwingUtilities.invokeLater(() -> {
+                        if (foundTitle != null) {
+                            JOptionPane.showMessageDialog(Home.this,
+                                "Bạn đang có bài thi '" + foundTitle + "' đang làm dở.\n" +
+                                "Bạn phải hoàn thành hoặc Hủy bài đó trước khi bắt đầu bài mới.",
+                                "Thông báo", JOptionPane.WARNING_MESSAGE);
+                        } else {
+                            new ExamScreen(Home.this, idBaithi, title).setVisible(true);
+                        }
+                    });
+                }).start();
+            } else {
+                // If it IS ongoing, just let them resume
+                new ExamScreen(Home.this, idBaithi, title).setVisible(true);
+            }
         });
 
         card.add(titleLabel);
