@@ -37,6 +37,10 @@ public class ExamScreen extends JFrame {
         this.parentFrame = parentFrame;
         this.idBaithi = idBaithi;
         this.titleBaithi = titleBaithi;
+        
+        // Clear old state
+        flaggedQuestions.clear();
+        selectedAnswers.clear();
 
         setTitle("Làm bài thi");
         setSize(1300, 800);
@@ -248,12 +252,12 @@ public class ExamScreen extends JFrame {
             card.setLayout(new BorderLayout(0, 15));
             card.setBackground(Color.WHITE);
             card.setBorder(BorderFactory.createCompoundBorder(
-                new EmptyBorder(0, 0, 20, 0),
-                new LineBorder(new Color(229, 231, 235), 1, true)
+                new EmptyBorder(0, 0, 25, 0),
+                new RoundedBorder(new Color(229, 231, 235), 20, 1) // Modern Soft Corners
             ));
             card.setBorder(BorderFactory.createCompoundBorder(
                 card.getBorder(),
-                new EmptyBorder(25, 25, 25, 25)
+                new EmptyBorder(30, 30, 30, 30)
             ));
 
             // Header: [Badge] [Question Text] ... [Flag]
@@ -380,17 +384,18 @@ public class ExamScreen extends JFrame {
     }
 
     private void styleOptionCard(JPanel p, boolean selected) {
+        int radius = 15;
         if (selected) {
-            p.setBackground(new Color(239, 246, 255)); // Light Blue (giống web)
+            p.setBackground(new Color(239, 246, 255)); // Sea Blue-50
             p.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(59, 130, 246), 2, true), // Blue border
-                new EmptyBorder(10, 20, 10, 20)
+                new RoundedBorder(new Color(59, 130, 246), radius, 2), // Blue border
+                new EmptyBorder(12, 20, 12, 20)
             ));
         } else {
             p.setBackground(Color.WHITE);
             p.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(229, 231, 235), 1, true),
-                new EmptyBorder(10, 20, 10, 20)
+                new RoundedBorder(new Color(229, 231, 235), radius, 1),
+                new EmptyBorder(12, 20, 12, 20)
             ));
         }
     }
@@ -404,14 +409,15 @@ public class ExamScreen extends JFrame {
         btn.setOpaque(true);
         btn.setContentAreaFilled(true);
         
+        int radius = 12;
         if (answered) {
-            btn.setBackground(new Color(34, 197, 94)); // Green-500
-            btn.setForeground(Color.BLACK); // Số màu đen theo yêu cầu
-            btn.setBorder(new LineBorder(new Color(21, 128, 61), 1, true));
+            btn.setBackground(new Color(239, 246, 255)); // Sea Blue background
+            btn.setForeground(Color.BLACK);
+            btn.setBorder(new RoundedBorder(new Color(59, 130, 246), radius, 2)); // Blue border
         } else {
             btn.setBackground(Color.WHITE);
-            btn.setForeground(Color.BLACK); // Số màu đen
-            btn.setBorder(new LineBorder(new Color(209, 213, 219), 1, true));
+            btn.setForeground(Color.BLACK);
+            btn.setBorder(new RoundedBorder(new Color(229, 231, 235), radius, 1));
         }
 
         // Add flag indicator to Nav Button
@@ -646,6 +652,31 @@ public class ExamScreen extends JFrame {
         if (mn.find()) return mn.group(1).replaceAll("[\\]\\}]", "").trim();
 
         return "";
+    }
+
+    // Custom Rounded Border for a modern, soft look
+    class RoundedBorder extends javax.swing.border.AbstractBorder {
+        private Color color;
+        private int radius;
+        private int thickness;
+        RoundedBorder(Color color, int radius, int thickness) {
+            this.color = color;
+            this.radius = radius;
+            this.thickness = thickness;
+        }
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(thickness));
+            g2.drawRoundRect(x + thickness/2, y + thickness/2, width - thickness, height - thickness, radius, radius);
+            g2.dispose();
+        }
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return new Insets(radius/2, radius/2, radius/2, radius/2);
+        }
     }
 
     // Custom Icon Class to DRAW the flag manually
