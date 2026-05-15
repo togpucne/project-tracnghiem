@@ -516,9 +516,9 @@ public class Home extends JFrame {
                     SwingUtilities.invokeLater(() -> {
                         if (foundTitle != null) {
                             JOptionPane.showMessageDialog(Home.this,
-                                "Bạn đang có bài thi '" + foundTitle + "' đang làm dở.\n" +
-                                "Bạn phải hoàn thành hoặc Hủy bài đó trước khi bắt đầu bài mới.",
-                                "Thông báo", JOptionPane.WARNING_MESSAGE);
+                                "Hệ thống ghi nhận bạn đang làm bài thi trên thiết bị khác (hoặc trên trình duyệt Web).\n" +
+                                "Vui lòng hoàn thành hoặc Hủy bài thi '" + foundTitle + "' đó trước khi bắt đầu bài mới.",
+                                "Cảnh báo bảo mật", JOptionPane.WARNING_MESSAGE);
                         } else {
                             new ExamScreen(Home.this, idBaithi, title).setVisible(true);
                         }
