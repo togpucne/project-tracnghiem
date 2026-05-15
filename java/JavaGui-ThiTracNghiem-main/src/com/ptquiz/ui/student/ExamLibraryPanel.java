@@ -92,7 +92,7 @@ public class ExamLibraryPanel extends JPanel {
         loadData();
     }
 
-    private void loadData() {
+    public void loadData() {
         new Thread(() -> {
             // Load Subjects
             String subJson = APIHelper.sendGet("exam/subjects");
@@ -136,21 +136,16 @@ public class ExamLibraryPanel extends JPanel {
     private void parseExams(String json) {
         if (json == null || json.isEmpty()) return;
         allExams.clear();
-        int dataStart = json.indexOf("\"data\":[");
-        if (dataStart != -1) {
-            String dataPart = json.substring(dataStart);
-            String[] items = dataPart.split("\\{");
-            for (int i = 1; i < items.length; i++) {
-                String raw = "{" + items[i];
-                ExamItem item = new ExamItem();
-                item.id = extractJsonValue(raw, "id_baithi");
-                item.title = APIHelper.unescapeUnicode(extractJsonValue(raw, "ten_baithi"));
-                item.subject = APIHelper.unescapeUnicode(extractJsonValue(raw, "tenmonhoc"));
-                item.time = extractJsonValue(raw, "thoigianlam") + " phút";
-                item.questions = extractJsonValue(raw, "tongcauhoi") + " câu hỏi";
-                item.isOngoing = "1".equals(extractJsonValue(raw, "is_ongoing"));
-                allExams.add(item);
-            }
+        java.util.List<String> items = APIHelper.splitJsonArray(json);
+        for (String raw : items) {
+            ExamItem item = new ExamItem();
+            item.id = extractJsonValue(raw, "id_baithi");
+            item.title = APIHelper.unescapeUnicode(extractJsonValue(raw, "ten_baithi"));
+            item.subject = APIHelper.unescapeUnicode(extractJsonValue(raw, "tenmonhoc"));
+            item.time = extractJsonValue(raw, "thoigianlam") + " phút";
+            item.questions = extractJsonValue(raw, "tongcauhoi") + " câu hỏi";
+            item.isOngoing = "1".equals(extractJsonValue(raw, "is_ongoing"));
+            allExams.add(item);
         }
     }
 
@@ -210,14 +205,15 @@ public class ExamLibraryPanel extends JPanel {
         card.add(Box.createVerticalStrut(20));
 
         JButton btn = new JButton(item.isOngoing ? "Làm tiếp" : "Làm bài");
+        int radius = 12;
         if (item.isOngoing) {
-            btn.setBackground(new Color(255, 235, 59)); // Vibrant Yellow
-            btn.setForeground(new Color(31, 41, 55)); // Dark text for contrast
-            btn.setBorder(new LineBorder(new Color(234, 179, 8), 1, true)); // Subtle darker yellow border
+            btn.setBackground(new Color(250, 204, 21)); // Yellow-400 (Vibrant)
+            btn.setForeground(Color.BLACK);
+            btn.setBorder(new RoundedBorder(new Color(234, 179, 8), radius, 2));
         } else {
             btn.setBackground(Color.WHITE);
             btn.setForeground(Color.BLACK);
-            btn.setBorder(new LineBorder(Color.BLACK, 1, true));
+            btn.setBorder(new RoundedBorder(Color.BLACK, radius, 1));
         }
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btn.setFocusPainted(false);
@@ -239,6 +235,31 @@ public class ExamLibraryPanel extends JPanel {
 
     private String extractJsonValue(String json, String key) {
         return APIHelper.extractJsonValue(json, key);
+    }
+
+    // Custom Rounded Border - Private static to avoid conflicts
+    private static class RoundedBorder extends javax.swing.border.AbstractBorder {
+        private Color color;
+        private int radius;
+        private int thickness;
+        RoundedBorder(Color color, int radius, int thickness) {
+            this.color = color;
+            this.radius = radius;
+            this.thickness = thickness;
+        }
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(thickness));
+            g2.drawRoundRect(x + thickness/2, y + thickness/2, width - thickness, height - thickness, radius, radius);
+            g2.dispose();
+        }
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return new Insets(radius/2, radius/2, radius/2, radius/2);
+        }
     }
 
     static class ExamItem {

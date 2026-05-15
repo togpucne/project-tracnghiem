@@ -37,7 +37,7 @@ public class ExamScreen extends JFrame {
         this.parentFrame = parentFrame;
         this.idBaithi = idBaithi;
         this.titleBaithi = titleBaithi;
-        
+
         // Clear old state
         flaggedQuestions.clear();
         selectedAnswers.clear();
@@ -46,7 +46,7 @@ public class ExamScreen extends JFrame {
         setSize(1300, 800);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -63,7 +63,7 @@ public class ExamScreen extends JFrame {
         questionsPanel = new JPanel();
         questionsPanel.setLayout(new BoxLayout(questionsPanel, BoxLayout.Y_AXIS));
         questionsPanel.setBackground(new Color(249, 250, 251));
-        
+
         JScrollPane scrollPane = new JScrollPane(questionsPanel);
         scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
@@ -80,28 +80,27 @@ public class ExamScreen extends JFrame {
         stickyPanel.setLayout(new BoxLayout(stickyPanel, BoxLayout.Y_AXIS));
         stickyPanel.setBackground(Color.WHITE);
         stickyPanel.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(229, 231, 235), 1, true),
-            new EmptyBorder(20, 20, 20, 20)
-        ));
+                new LineBorder(new Color(229, 231, 235), 1, true),
+                new EmptyBorder(20, 20, 20, 20)));
 
         // Timer
         JLabel timeTitle = new JLabel("Thời gian làm bài", SwingConstants.CENTER);
         timeTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         timeTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         timerLabel = new JLabel("00:00", SwingConstants.CENTER);
         timerLabel.setFont(new Font("Segoe UI", Font.BOLD, 36));
         timerLabel.setForeground(new Color(220, 38, 38)); // Red for timer
         timerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         // Nav Grid
         navGrid = new JPanel(new WrapLayout(FlowLayout.LEFT, 10, 10));
         navGrid.setBackground(Color.WHITE);
-        
+
         JScrollPane navScroll = new JScrollPane(navGrid);
         navScroll.setBorder(null);
         navScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        
+
         // Submit
         JButton submitBtn = new JButton("Nộp bài");
         submitBtn.setBackground(Color.WHITE);
@@ -111,8 +110,8 @@ public class ExamScreen extends JFrame {
         submitBtn.setOpaque(true);
         submitBtn.setContentAreaFilled(false);
         submitBtn.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(34, 197, 94), 1, true),
-            new EmptyBorder(12, 0, 12, 0)));
+                new LineBorder(new Color(34, 197, 94), 1, true),
+                new EmptyBorder(12, 0, 12, 0)));
         submitBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         submitBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         submitBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -126,8 +125,8 @@ public class ExamScreen extends JFrame {
         exitBtn.setOpaque(true);
         exitBtn.setContentAreaFilled(false);
         exitBtn.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(239, 68, 68), 1, true),
-            new EmptyBorder(12, 0, 12, 0)));
+                new LineBorder(new Color(239, 68, 68), 1, true),
+                new EmptyBorder(12, 0, 12, 0)));
         exitBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         exitBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         exitBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -164,19 +163,19 @@ public class ExamScreen extends JFrame {
                 idLanthi = extractBasic(jsonResponse, "id_lanthi");
                 String thoigianlamStr = extractBasic(jsonResponse, "thoigianlam");
                 String elapsedStr = extractBasic(jsonResponse, "elapsed_seconds");
-                
+
                 String thoigianconlaiStr = extractBasic(jsonResponse, "thoigianconlai");
                 String cautraloiTamStr = extractBasic(jsonResponse, "cautraloi_tam");
-                
+
                 int totalMinutes = Integer.parseInt(thoigianlamStr);
                 int elapsed = Integer.parseInt(elapsedStr);
-                
+
                 if (!thoigianconlaiStr.isEmpty() && !thoigianconlaiStr.equals("null")) {
                     remainingSeconds = Integer.parseInt(thoigianconlaiStr);
                 } else {
                     remainingSeconds = (totalMinutes * 60) - elapsed;
                 }
-                
+
                 if (!cautraloiTamStr.isEmpty() && !cautraloiTamStr.equals("null")) {
                     for (String pair : cautraloiTamStr.split("\\|")) {
                         if (pair.contains(":")) {
@@ -185,7 +184,7 @@ public class ExamScreen extends JFrame {
                         }
                     }
                 }
-                
+
                 if (remainingSeconds <= 0) {
                     SwingUtilities.invokeLater(() -> {
                         JOptionPane.showMessageDialog(this, "Thời gian làm bài đã hết! Hệ thống sẽ tự động nộp bài.");
@@ -204,17 +203,17 @@ public class ExamScreen extends JFrame {
                         String qRaw = questionsRaw[i];
                         String idCauhoi = qRaw.substring(0, qRaw.indexOf(",")).trim().replace("\"", "");
                         String noiDung = extractBasic("{\"id_cauhoi\":" + qRaw, "noidung");
-                        
+
                         Question q = new Question();
                         q.id = idCauhoi;
                         q.noidung = APIHelper.unescapeUnicode(noiDung);
-                        
+
                         String[] dapanBlocks = qRaw.split("\"id_dapan\":");
                         for (int j = 1; j < dapanBlocks.length; j++) {
                             String dRaw = dapanBlocks[j];
                             String idDapan = dRaw.substring(0, dRaw.indexOf(",")).trim().replace("\"", "");
                             String dNoidung = extractBasic("{\"id_dapan\":" + dRaw, "noidungdapan");
-                            
+
                             Answer ans = new Answer();
                             ans.id = idDapan;
                             ans.noidung = APIHelper.unescapeUnicode(dNoidung);
@@ -252,13 +251,12 @@ public class ExamScreen extends JFrame {
             card.setLayout(new BorderLayout(0, 15));
             card.setBackground(Color.WHITE);
             card.setBorder(BorderFactory.createCompoundBorder(
-                new EmptyBorder(0, 0, 25, 0),
-                new RoundedBorder(new Color(229, 231, 235), 20, 1) // Modern Soft Corners
+                    new EmptyBorder(0, 0, 25, 0),
+                    new RoundedBorder(new Color(229, 231, 235), 20, 1) // Modern Soft Corners
             ));
             card.setBorder(BorderFactory.createCompoundBorder(
-                card.getBorder(),
-                new EmptyBorder(30, 30, 30, 30)
-            ));
+                    card.getBorder(),
+                    new EmptyBorder(30, 30, 30, 30)));
 
             // Header: [Badge] [Question Text] ... [Flag]
             JPanel header = new JPanel(new BorderLayout(15, 0));
@@ -271,10 +269,9 @@ public class ExamScreen extends JFrame {
             badge.setBackground(new Color(239, 246, 255));
             badge.setOpaque(true);
             badge.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(191, 219, 254), 1, true),
-                new EmptyBorder(4, 12, 4, 12)
-            ));
-            
+                    new LineBorder(new Color(191, 219, 254), 1, true),
+                    new EmptyBorder(4, 12, 4, 12)));
+
             JPanel badgeWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             badgeWrapper.setOpaque(false);
             badgeWrapper.add(badge);
@@ -291,16 +288,18 @@ public class ExamScreen extends JFrame {
             flagBtn.setContentAreaFilled(false);
             flagBtn.setFocusPainted(false);
             flagBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            
+
             final String currentQId = q.id;
             flagBtn.addActionListener(e -> {
-                if (flaggedQuestions.contains(currentQId)) flaggedQuestions.remove(currentQId);
-                else flaggedQuestions.add(currentQId);
+                if (flaggedQuestions.contains(currentQId))
+                    flaggedQuestions.remove(currentQId);
+                else
+                    flaggedQuestions.add(currentQId);
                 flagBtn.setIcon(new FlagIcon(flaggedQuestions.contains(currentQId), 24));
                 updateNavButton(currentQId);
                 saveFlagState();
             });
-            
+
             JPanel flagWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
             flagWrapper.setOpaque(false);
             flagWrapper.add(flagBtn);
@@ -312,7 +311,7 @@ public class ExamScreen extends JFrame {
             JPanel optionsBody = new JPanel();
             optionsBody.setLayout(new BoxLayout(optionsBody, BoxLayout.Y_AXIS));
             optionsBody.setOpaque(false);
-            
+
             ButtonGroup bg = new ButtonGroup();
             List<JPanel> pList = new ArrayList<>();
             for (Answer a : q.answers) {
@@ -336,7 +335,7 @@ public class ExamScreen extends JFrame {
                 }
 
                 optionCard.add(rb, BorderLayout.CENTER);
-                
+
                 // Make clicking the card select the radio
                 optionCard.addMouseListener(new MouseAdapter() {
                     @Override
@@ -352,24 +351,24 @@ public class ExamScreen extends JFrame {
             }
             optionPanels.put(q.id, pList);
             card.add(optionsBody, BorderLayout.CENTER);
-            
+
             questionsPanel.add(card);
 
             JButton navBtn = new JButton(String.valueOf(stt));
             navBtn.setName("nav_" + q.id);
             navBtn.setFocusPainted(false);
             navBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            
+
             styleNavBtn(navBtn, q.id);
-            
+
             navBtn.addActionListener(e -> {
                 ((JComponent) card.getParent()).scrollRectToVisible(card.getBounds());
             });
             navGrid.add(navBtn);
-            
+
             stt++;
         }
-        
+
         questionsPanel.revalidate();
         questionsPanel.repaint();
         navGrid.revalidate();
@@ -378,7 +377,8 @@ public class ExamScreen extends JFrame {
 
     private void handleAnswerSelection(String qId, String aId, List<JPanel> allPanels, JPanel selectedPanel) {
         saveAnswer(qId, aId);
-        for (JPanel p : allPanels) styleOptionCard(p, p == selectedPanel);
+        for (JPanel p : allPanels)
+            styleOptionCard(p, p == selectedPanel);
         updateNavButton(qId);
         syncDraftToServer(false);
     }
@@ -388,15 +388,13 @@ public class ExamScreen extends JFrame {
         if (selected) {
             p.setBackground(new Color(239, 246, 255)); // Sea Blue-50
             p.setBorder(BorderFactory.createCompoundBorder(
-                new RoundedBorder(new Color(59, 130, 246), radius, 2), // Blue border
-                new EmptyBorder(12, 20, 12, 20)
-            ));
+                    new RoundedBorder(new Color(59, 130, 246), radius, 2), // Blue border
+                    new EmptyBorder(12, 20, 12, 20)));
         } else {
             p.setBackground(Color.WHITE);
             p.setBorder(BorderFactory.createCompoundBorder(
-                new RoundedBorder(new Color(229, 231, 235), radius, 1),
-                new EmptyBorder(12, 20, 12, 20)
-            ));
+                    new RoundedBorder(new Color(229, 231, 235), radius, 1),
+                    new EmptyBorder(12, 20, 12, 20)));
         }
     }
 
@@ -408,7 +406,7 @@ public class ExamScreen extends JFrame {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setOpaque(true);
         btn.setContentAreaFilled(true);
-        
+
         int radius = 12;
         if (answered) {
             btn.setBackground(new Color(239, 246, 255)); // Sea Blue background
@@ -428,7 +426,7 @@ public class ExamScreen extends JFrame {
         } else {
             btn.setIcon(null);
         }
-        
+
         btn.setVerticalTextPosition(SwingConstants.CENTER);
         btn.setHorizontalAlignment(SwingConstants.CENTER);
     }
@@ -461,6 +459,7 @@ public class ExamScreen extends JFrame {
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             int tickCount = 0;
+
             @Override
             public void run() {
                 remainingSeconds--;
@@ -472,7 +471,8 @@ public class ExamScreen extends JFrame {
                     updateTimerLabel();
                     if (remainingSeconds <= 0) {
                         timer.cancel();
-                        JOptionPane.showMessageDialog(ExamScreen.this, "Hết thời gian làm bài! Hệ thống sẽ tự động nộp bài.");
+                        JOptionPane.showMessageDialog(ExamScreen.this,
+                                "Hết thời gian làm bài! Hệ thống sẽ tự động nộp bài.");
                         doSubmit();
                     }
                 });
@@ -481,7 +481,8 @@ public class ExamScreen extends JFrame {
     }
 
     private void updateTimerLabel() {
-        if (remainingSeconds < 0) remainingSeconds = 0;
+        if (remainingSeconds < 0)
+            remainingSeconds = 0;
         int m = remainingSeconds / 60;
         int s = remainingSeconds % 60;
         timerLabel.setText(String.format("%02d:%02d", m, s));
@@ -495,7 +496,7 @@ public class ExamScreen extends JFrame {
     }
 
     private String getPrefKey() {
-        return "exam_" + idBaithi; 
+        return "exam_" + idBaithi;
     }
 
     private void saveAnswer(String qId, String ansId) {
@@ -517,11 +518,12 @@ public class ExamScreen extends JFrame {
                 }
             }
         }
-        
+
         String flags = prefs.get(getPrefKey() + "_flags", "");
         if (!flags.isEmpty()) {
             for (String id : flags.split(",")) {
-                if (!id.isEmpty()) flaggedQuestions.add(id);
+                if (!id.isEmpty())
+                    flaggedQuestions.add(id);
             }
         }
     }
@@ -535,17 +537,18 @@ public class ExamScreen extends JFrame {
     }
 
     private void exitExam() {
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Bạn có chắc muốn thoát bài thi? Dữ liệu hiện tại và thời gian đếm ngược sẽ được lưu lại.", 
-            "Xác nhận thoát", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc muốn thoát bài thi? Dữ liệu hiện tại và thời gian đếm ngược sẽ được lưu lại.",
+                "Xác nhận thoát", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             syncDraftToServer(true); // Blocking sync before closing
             closeNormally();
         }
     }
-    
+
     private void closeNormally() {
-        if (timer != null) timer.cancel();
+        if (timer != null)
+            timer.cancel();
         dispose();
         if (parentFrame != null) {
             if (parentFrame instanceof Home) {
@@ -556,33 +559,36 @@ public class ExamScreen extends JFrame {
     }
 
     private void syncDraftToServer(boolean blocking) {
-        if (idLanthi == null || idLanthi.isEmpty()) return;
+        if (idLanthi == null || idLanthi.isEmpty())
+            return;
         StringBuilder payload = new StringBuilder();
         payload.append("{");
         payload.append("\"id_lanthi\":").append(idLanthi).append(",");
         payload.append("\"thoigianconlai\":").append(remainingSeconds).append(",");
-        
+
         // Add flagged questions for API security research testing
         payload.append("\"flagged_questions\":[");
         boolean firstFlag = true;
         for (String qId : flaggedQuestions) {
-            if (!firstFlag) payload.append(",");
+            if (!firstFlag)
+                payload.append(",");
             payload.append("\"").append(qId).append("\"");
             firstFlag = false;
         }
         payload.append("],");
 
         payload.append("\"answers\":{");
-        
+
         boolean first = true;
         for (Map.Entry<String, String> e : selectedAnswers.entrySet()) {
-            if (!first) payload.append(",");
+            if (!first)
+                payload.append(",");
             payload.append("\"").append(e.getKey()).append("\":\"").append(e.getValue()).append("\"");
             first = false;
         }
         payload.append("}");
         payload.append("}");
-        
+
         if (blocking) {
             APIHelper.sendPost("exam/sync-draft", payload.toString());
         } else {
@@ -593,24 +599,28 @@ public class ExamScreen extends JFrame {
     }
 
     private void submitExam() {
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn chắc chắn muốn nộp bài?\nThời gian vẫn còn: " + timerLabel.getText(), "Xác nhận nộp bài", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn chắc chắn muốn nộp bài?\nThời gian vẫn còn: " + timerLabel.getText(), "Xác nhận nộp bài",
+                JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             doSubmit();
         }
     }
 
     private void doSubmit() {
-        if (timer != null) timer.cancel();
-        
+        if (timer != null)
+            timer.cancel();
+
         StringBuilder payload = new StringBuilder();
         payload.append("{");
         payload.append("\"id_lanthi\":").append(idLanthi).append(",");
         payload.append("\"id_baithi\":").append(idBaithi).append(",");
         payload.append("\"answers\":{");
-        
+
         boolean first = true;
         for (Map.Entry<String, String> e : selectedAnswers.entrySet()) {
-            if (!first) payload.append(",");
+            if (!first)
+                payload.append(",");
             payload.append("\"").append(e.getKey()).append("\":\"").append(e.getValue()).append("\"");
             first = false;
         }
@@ -623,20 +633,21 @@ public class ExamScreen extends JFrame {
                 if (res.success) {
                     String diem = extractBasic(res.rawData, "diem");
                     String socau = extractBasic(res.rawData, "socaudung");
-                    
+
                     // Clear local persistence for this exam
                     prefs.remove(getPrefKey());
                     prefs.remove(getPrefKey() + "_flags");
-                    flaggedQuestions.clear(); 
-                    
-                    JOptionPane.showMessageDialog(this, "Nộp bài thành công!\nBạn đúng " + socau + " câu.\nĐiểm số: " + diem + " / 10");
+                    flaggedQuestions.clear();
+
+                    JOptionPane.showMessageDialog(this,
+                            "Nộp bài thành công!\nBạn đúng " + socau + " câu.\nĐiểm số: " + diem + " / 10");
                     closeNormally();
-                    if(parentFrame instanceof Home) {
-                        ((Home)parentFrame).switchView("HISTORY");
+                    if (parentFrame instanceof Home) {
+                        ((Home) parentFrame).switchView("HISTORY");
                     }
                 } else {
                     JOptionPane.showMessageDialog(this, "Lỗi khi nộp bài: " + res.message);
-                    if(remainingSeconds > 0 && timer != null) {
+                    if (remainingSeconds > 0 && timer != null) {
                         startTimer();
                     }
                 }
@@ -645,11 +656,14 @@ public class ExamScreen extends JFrame {
     }
 
     private String extractBasic(String json, String key) {
-        java.util.regex.Matcher ms = java.util.regex.Pattern.compile("\"" + key + "\"\\s*:\\s*\"([^\"]*)\"").matcher(json);
-        if (ms.find()) return ms.group(1);
+        java.util.regex.Matcher ms = java.util.regex.Pattern.compile("\"" + key + "\"\\s*:\\s*\"([^\"]*)\"")
+                .matcher(json);
+        if (ms.find())
+            return ms.group(1);
 
         java.util.regex.Matcher mn = java.util.regex.Pattern.compile("\"" + key + "\"\\s*:\\s*([^,}]+)").matcher(json);
-        if (mn.find()) return mn.group(1).replaceAll("[\\]\\}]", "").trim();
+        if (mn.find())
+            return mn.group(1).replaceAll("[\\]\\}]", "").trim();
 
         return "";
     }
@@ -659,23 +673,27 @@ public class ExamScreen extends JFrame {
         private Color color;
         private int radius;
         private int thickness;
+
         RoundedBorder(Color color, int radius, int thickness) {
             this.color = color;
             this.radius = radius;
             this.thickness = thickness;
         }
+
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(color);
             g2.setStroke(new BasicStroke(thickness));
-            g2.drawRoundRect(x + thickness/2, y + thickness/2, width - thickness, height - thickness, radius, radius);
+            g2.drawRoundRect(x + thickness / 2, y + thickness / 2, width - thickness, height - thickness, radius,
+                    radius);
             g2.dispose();
         }
+
         @Override
         public Insets getBorderInsets(Component c) {
-            return new Insets(radius/2, radius/2, radius/2, radius/2);
+            return new Insets(radius / 2, radius / 2, radius / 2, radius / 2);
         }
     }
 
@@ -683,7 +701,12 @@ public class ExamScreen extends JFrame {
     class FlagIcon implements Icon {
         private boolean active;
         private int size;
-        public FlagIcon(boolean active, int size) { this.active = active; this.size = size; }
+
+        public FlagIcon(boolean active, int size) {
+            this.active = active;
+            this.size = size;
+        }
+
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -692,13 +715,21 @@ public class ExamScreen extends JFrame {
             // Draw flag pole
             g2.fillRect(x + 4, y + 2, 2, size - 4);
             // Draw flag triangle
-            int[] px = {x + 6, x + size - 4, x + 6};
-            int[] py = {y + 2, y + size/2 - 1, y + size/2 + 2};
+            int[] px = { x + 6, x + size - 4, x + 6 };
+            int[] py = { y + 2, y + size / 2 - 1, y + size / 2 + 2 };
             g2.fillPolygon(px, py, 3);
             g2.dispose();
         }
-        @Override public int getIconWidth() { return size; }
-        @Override public int getIconHeight() { return size; }
+
+        @Override
+        public int getIconWidth() {
+            return size;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return size;
+        }
     }
 
     class Question {

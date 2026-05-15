@@ -26,6 +26,7 @@ public class Home extends JFrame {
     private ResultViewPanel resultPanel;
     private LecturerDashboard dashboardPanel;
     private HistoryPanel historyPanel;
+    private ExamLibraryPanel libraryPanel;
 
     // Admin Panels
     private AdminDashboardPanel adminDashboardPanel;
@@ -57,7 +58,8 @@ public class Home extends JFrame {
         cards.add(createHomePanel(), "HOME");
 
         // ------------- EXAM LIBRARY CARD -------------
-        cards.add(new ExamLibraryPanel(), "LIBRARY");
+        libraryPanel = new ExamLibraryPanel();
+        cards.add(libraryPanel, "LIBRARY");
 
         // ------------- LECTURER PANELS -------------
         if ("giangvien".equals(UserSession.role)) {
@@ -131,12 +133,21 @@ public class Home extends JFrame {
     }
 
     public void refreshExams() {
-        if (gridPanel != null) {
-            gridPanel.removeAll();
-            loadLatest8Exams(gridPanel);
-            gridPanel.revalidate();
-            gridPanel.repaint();
-        }
+        // Add a small delay to ensure server sync is complete
+        new Thread(() -> {
+            try { Thread.sleep(300); } catch (Exception e) {}
+            SwingUtilities.invokeLater(() -> {
+                if (gridPanel != null) {
+                    gridPanel.removeAll();
+                    loadLatest8Exams(gridPanel);
+                    gridPanel.revalidate();
+                    gridPanel.repaint();
+                }
+                if (libraryPanel != null) {
+                    libraryPanel.loadData();
+                }
+            });
+        }).start();
     }
 
     private JPanel createHomePanel() {
@@ -271,18 +282,16 @@ public class Home extends JFrame {
 
             SwingUtilities.invokeLater(() -> {
                 gridPanel.removeAll();
-                int dataStart = jsonResponse.indexOf("\"data\":[");
-                if (dataStart != -1) {
-                    String dataPart = jsonResponse.substring(dataStart);
-                    String[] items = dataPart.split("\\{");
-                    for (int i = 1; i < Math.min(items.length, 9); i++) {
-                        String raw = "{" + items[i];
-                        String id = APIHelper.extractJsonValue(raw, "id_baithi");
-                        String title = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
-                        String sub = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "tenmonhoc"));
-                        boolean ongoing = "1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"));
-                        gridPanel.add(createExamCard(id, title, sub, "60 phút", "10 câu", ongoing));
-                    }
+                java.util.List<String> items = APIHelper.splitJsonArray(jsonResponse);
+                int count = 0;
+                for (String raw : items) {
+                    if (count >= 8) break;
+                    String id = APIHelper.extractJsonValue(raw, "id_baithi");
+                    String title = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
+                    String sub = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "tenmonhoc"));
+                    boolean ongoing = "1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"));
+                    gridPanel.add(createExamCard(id, title, sub, "60 phút", "10 câu", ongoing));
+                    count++;
                 }
                 gridPanel.revalidate();
                 gridPanel.repaint();
@@ -406,14 +415,15 @@ public class Home extends JFrame {
         categoryLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
 
         JButton button = new JButton(isOngoing ? "Làm tiếp" : "Làm bài");
+        int radius = 12;
         if (isOngoing) {
-            button.setBackground(new Color(255, 235, 59)); // Vibrant Yellow
-            button.setForeground(new Color(31, 41, 55)); // Dark text for contrast
-            button.setBorder(new LineBorder(new Color(234, 179, 8), 1, true)); // Subtle darker yellow border
+            button.setBackground(new Color(250, 204, 21)); // Yellow-400
+            button.setForeground(Color.BLACK);
+            button.setBorder(new RoundedBorder(new Color(234, 179, 8), radius, 2));
         } else {
             button.setBackground(Color.WHITE);
             button.setForeground(Color.BLACK);
-            button.setBorder(new LineBorder(Color.BLACK, 1, true));
+            button.setBorder(new RoundedBorder(Color.BLACK, radius, 1));
         }
         button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setFocusPainted(false);
@@ -441,5 +451,28 @@ public class Home extends JFrame {
         return card;
     }
 
-    // Main method removed to ensure app starts from Login.java
+    // Custom Rounded Border - Private static to avoid conflicts
+    private static class RoundedBorder extends javax.swing.border.AbstractBorder {
+        private Color color;
+        private int radius;
+        private int thickness;
+        RoundedBorder(Color color, int radius, int thickness) {
+            this.color = color;
+            this.radius = radius;
+            this.thickness = thickness;
+        }
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(thickness));
+            g2.drawRoundRect(x + thickness/2, y + thickness/2, width - thickness, height - thickness, radius, radius);
+            g2.dispose();
+        }
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return new Insets(radius/2, radius/2, radius/2, radius/2);
+        }
+    }
 }
