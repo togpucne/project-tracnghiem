@@ -367,7 +367,13 @@ public class Home extends JFrame {
         logo.setForeground(Color.WHITE);
         logo.setAlignmentX(Component.CENTER_ALIGNMENT);
         logo.setBorder(new EmptyBorder(40, 0, 60, 0));
-
+        logo.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        logo.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                switchView("HOME");
+            }
+        });
         sidebar.add(logo);
 
         // Menu Buttons
