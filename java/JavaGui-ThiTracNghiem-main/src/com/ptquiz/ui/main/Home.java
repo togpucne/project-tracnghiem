@@ -18,7 +18,7 @@ public class Home extends JFrame {
     private CardLayout cardLayout;
     private JPanel gridPanel;
     private java.util.Map<String, JButton> menuButtons = new java.util.HashMap<>();
-    
+
     // Lecturer Panels
     private SubjectManagementPanel subjectPanel;
     private ExamManagementPanel examPanel;
@@ -68,7 +68,7 @@ public class Home extends JFrame {
             examPanel = new ExamManagementPanel();
             bankPanel = new BankManagementPanel();
             resultPanel = new ResultViewPanel();
-            
+
             cards.add(dashboardPanel, "LECTURER_DASHBOARD");
             cards.add(subjectPanel, "MANAGE_SUBJECTS");
             cards.add(examPanel, "MANAGE_EXAMS");
@@ -78,7 +78,7 @@ public class Home extends JFrame {
             adminDashboardPanel = new AdminDashboardPanel();
             userManagementPanel = new UserManagementPanel();
             securityMonitoringPanel = new SecurityMonitoringPanel();
-            
+
             cards.add(adminDashboardPanel, "ADMIN_DASHBOARD");
             cards.add(userManagementPanel, "MANAGE_USERS");
             cards.add(securityMonitoringPanel, "SECURITY_MONITOR");
@@ -107,7 +107,7 @@ public class Home extends JFrame {
 
     public void switchView(String viewName) {
         cardLayout.show(cards, viewName);
-        
+
         // Update sidebar highlights
         for (java.util.Map.Entry<String, JButton> entry : menuButtons.entrySet()) {
             boolean active = entry.getKey().equals(viewName);
@@ -118,34 +118,87 @@ public class Home extends JFrame {
 
         // Refresh data based on viewName
         switch (viewName) {
-            case "LECTURER_DASHBOARD": if(dashboardPanel != null) dashboardPanel.loadStats(); break;
-            case "MANAGE_SUBJECTS": if(subjectPanel != null) subjectPanel.loadData(); break;
-            case "MANAGE_EXAMS": if(examPanel != null) examPanel.loadData(); break;
-            case "MANAGE_BANKS": if(bankPanel != null) bankPanel.loadBanks(); break;
-            case "HISTORY": if(historyPanel != null) historyPanel.refresh(); break;
-            case "HOME": refreshExams(); break;
-            
+            case "LECTURER_DASHBOARD":
+                if (dashboardPanel != null)
+                    dashboardPanel.loadStats();
+                break;
+            case "MANAGE_SUBJECTS":
+                if (subjectPanel != null)
+                    subjectPanel.loadData();
+                break;
+            case "MANAGE_EXAMS":
+                if (examPanel != null)
+                    examPanel.loadData();
+                break;
+            case "MANAGE_BANKS":
+                if (bankPanel != null)
+                    bankPanel.loadBanks();
+                break;
+            case "HISTORY":
+                if (historyPanel != null)
+                    historyPanel.refresh();
+                break;
+            case "HOME":
+                refreshExams();
+                break;
+
             // Admin Views
-            case "ADMIN_DASHBOARD": if(adminDashboardPanel != null) adminDashboardPanel.loadStats(); break;
-            case "MANAGE_USERS": if(userManagementPanel != null) userManagementPanel.loadData(); break;
-            case "SECURITY_MONITOR": if(securityMonitoringPanel != null) securityMonitoringPanel.loadData(); break;
+            case "ADMIN_DASHBOARD":
+                if (adminDashboardPanel != null)
+                    adminDashboardPanel.loadStats();
+                break;
+            case "MANAGE_USERS":
+                if (userManagementPanel != null)
+                    userManagementPanel.loadData();
+                break;
+            case "SECURITY_MONITOR":
+                if (securityMonitoringPanel != null)
+                    securityMonitoringPanel.loadData();
+                break;
         }
     }
 
     public void refreshExams() {
-        // Add a small delay to ensure server sync is complete
+        // Immediate visual feedback
+        if (gridPanel != null) {
+            gridPanel.removeAll();
+            gridPanel.add(new JLabel("Đang tải dữ liệu mới..."));
+            gridPanel.revalidate();
+            gridPanel.repaint();
+        }
+
+        // Single thread for fetching
         new Thread(() -> {
-            try { Thread.sleep(300); } catch (Exception e) {}
+            try { Thread.sleep(400); } catch (Exception e) {} // Wait for server DB commit
+            String jsonResponse = APIHelper.sendGet("exam/list");
+            
             SwingUtilities.invokeLater(() -> {
-                if (gridPanel != null) {
+                // 1. Refresh Home Dashboard
+                if (gridPanel != null && jsonResponse != null && !jsonResponse.isEmpty()) {
                     gridPanel.removeAll();
-                    loadLatest8Exams(gridPanel);
+                    java.util.List<String> items = APIHelper.splitJsonArray(jsonResponse);
+                    int count = 0;
+                    for (String raw : items) {
+                        if (count >= 8) break;
+                        String id = APIHelper.extractJsonValue(raw, "id_baithi");
+                        String title = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
+                        String sub = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "tenmonhoc"));
+                        boolean ongoing = "1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"));
+                        gridPanel.add(createExamCard(id, title, sub, "60 phút", "10 câu", ongoing));
+                        count++;
+                    }
                     gridPanel.revalidate();
                     gridPanel.repaint();
                 }
+
+                // 2. Refresh Library Grid
                 if (libraryPanel != null) {
                     libraryPanel.loadData();
                 }
+                
+                // Force global UI repaint
+                cards.revalidate();
+                cards.repaint();
             });
         }).start();
     }
@@ -183,7 +236,7 @@ public class Home extends JFrame {
         gridPanel = new JPanel(new GridLayout(0, 4, 20, 20));
         gridPanel.setBackground(Color.WHITE);
         examsSection.add(gridPanel, BorderLayout.CENTER);
-        
+
         loadLatest8Exams(gridPanel);
         content.add(examsSection);
 
@@ -196,13 +249,14 @@ public class Home extends JFrame {
         JLabel mTitle = new JLabel("Phần mềm luyện thi online — PT QUIZ");
         mTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         mTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         JTextArea mDesc = new JTextArea(
-            "PT QUIZ là nền tảng luyện thi trắc nghiệm online giúp người học ôn tập hiệu quả với nhiều chủ đề như TOEIC, IELTS, Lập trình, Toán học và nhiều lĩnh vực khác.\n\n" +
-            "Hệ thống mô phỏng đề thi thật, cung cấp ngân hàng câu hỏi đa dạng, luyện tập theo chủ đề hoặc làm đề full test.\n\n" +
-            "Theo dõi tiến độ học tập, thống kê kết quả chi tiết và gợi ý lộ trình phù hợp.\n\n" +
-            "Luyện tập miễn phí ngay hôm nay cùng PT QUIZ!"
-        );
+                "PT QUIZ là nền tảng luyện thi trắc nghiệm online giúp người học ôn tập hiệu quả với nhiều chủ đề như TOEIC, IELTS, Lập trình, Toán học và nhiều lĩnh vực khác.\n\n"
+                        +
+                        "Hệ thống mô phỏng đề thi thật, cung cấp ngân hàng câu hỏi đa dạng, luyện tập theo chủ đề hoặc làm đề full test.\n\n"
+                        +
+                        "Theo dõi tiến độ học tập, thống kê kết quả chi tiết và gợi ý lộ trình phù hợp.\n\n" +
+                        "Luyện tập miễn phí ngay hôm nay cùng PT QUIZ!");
         mDesc.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         mDesc.setLineWrap(true);
         mDesc.setWrapStyleWord(true);
@@ -265,7 +319,7 @@ public class Home extends JFrame {
         lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
         parent.add(lbl);
         parent.add(Box.createVerticalStrut(8));
-        
+
         JTextField tf = new JTextField();
         tf.setMaximumSize(new Dimension(500, 40));
         tf.setPreferredSize(new Dimension(500, 40));
@@ -278,14 +332,16 @@ public class Home extends JFrame {
     private void loadLatest8Exams(JPanel gridPanel) {
         new Thread(() -> {
             String jsonResponse = APIHelper.sendGet("exam/list");
-            if (jsonResponse == null || jsonResponse.isEmpty()) return;
+            if (jsonResponse == null || jsonResponse.isEmpty())
+                return;
 
             SwingUtilities.invokeLater(() -> {
                 gridPanel.removeAll();
                 java.util.List<String> items = APIHelper.splitJsonArray(jsonResponse);
                 int count = 0;
                 for (String raw : items) {
-                    if (count >= 8) break;
+                    if (count >= 8)
+                        break;
                     String id = APIHelper.extractJsonValue(raw, "id_baithi");
                     String title = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
                     String sub = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "tenmonhoc"));
@@ -321,23 +377,21 @@ public class Home extends JFrame {
             sidebar.add(createMenuButton("Quản lý đề thi", false, "MANAGE_EXAMS"));
             sidebar.add(createMenuButton("Ngân hàng câu hỏi", false, "MANAGE_BANKS"));
             sidebar.add(createMenuButton("Kết quả thi", false, "VIEW_RESULTS"));
-            
+
             sidebar.add(Box.createVerticalStrut(20));
         } else if ("admin".equals(UserSession.role)) {
             sidebar.add(createMenuButton("Tổng quan", true, "ADMIN_DASHBOARD"));
             sidebar.add(createMenuButton("Quản lý người dùng", false, "MANAGE_USERS"));
             sidebar.add(createMenuButton("Giám sát bảo mật", false, "SECURITY_MONITOR"));
-            
+
             sidebar.add(Box.createVerticalStrut(20));
         } else {
             sidebar.add(createMenuButton("Trang chủ", true, "HOME"));
             sidebar.add(createMenuButton("Đề bài", false, "LIBRARY"));
             sidebar.add(createMenuButton("Lịch sử làm bài", false, "HISTORY"));
         }
-        
+
         sidebar.add(createMenuButton("Thông tin cá nhân", false, "PROFILE"));
-
-
 
         sidebar.add(Box.createVerticalGlue()); // Push logout to bottom
 
@@ -356,7 +410,8 @@ public class Home extends JFrame {
 
     private JButton createMenuButton(String text, boolean active, String viewName) {
         JButton btn = new JButton(text);
-        if (viewName != null) menuButtons.put(viewName, btn);
+        if (viewName != null)
+            menuButtons.put(viewName, btn);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         if (viewName != null && !viewName.isEmpty()) {
             btn.addActionListener(e -> switchView(viewName));
@@ -391,7 +446,8 @@ public class Home extends JFrame {
         return btn;
     }
 
-    private JPanel createExamCard(String idBaithi, String title, String category, String time, String questions, boolean isOngoing) {
+    private JPanel createExamCard(String idBaithi, String title, String category, String time, String questions,
+            boolean isOngoing) {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Color.WHITE);
@@ -435,8 +491,7 @@ public class Home extends JFrame {
         button.setPreferredSize(new Dimension(150, 40));
 
         button.addActionListener(e -> {
-            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            new ExamScreen(topFrame, idBaithi, title).setVisible(true);
+            new ExamScreen(Home.this, idBaithi, title).setVisible(true);
         });
 
         card.add(titleLabel);
@@ -456,23 +511,27 @@ public class Home extends JFrame {
         private Color color;
         private int radius;
         private int thickness;
+
         RoundedBorder(Color color, int radius, int thickness) {
             this.color = color;
             this.radius = radius;
             this.thickness = thickness;
         }
+
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(color);
             g2.setStroke(new BasicStroke(thickness));
-            g2.drawRoundRect(x + thickness/2, y + thickness/2, width - thickness, height - thickness, radius, radius);
+            g2.drawRoundRect(x + thickness / 2, y + thickness / 2, width - thickness, height - thickness, radius,
+                    radius);
             g2.dispose();
         }
+
         @Override
         public Insets getBorderInsets(Component c) {
-            return new Insets(radius/2, radius/2, radius/2, radius/2);
+            return new Insets(radius / 2, radius / 2, radius / 2, radius / 2);
         }
     }
 }
