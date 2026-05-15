@@ -17,6 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class ExamScreen extends JFrame {
+    private static boolean isAnyExamOpen = false; // Static lock to prevent multiple exams
     private String idBaithi;
     private JFrame parentFrame;
     private String idLanthi = "";
@@ -34,9 +35,19 @@ public class ExamScreen extends JFrame {
     private String titleBaithi;
 
     public ExamScreen(JFrame parentFrame, String idBaithi, String titleBaithi) {
+        // Check if an exam is already open
+        if (isAnyExamOpen) {
+            JOptionPane.showMessageDialog(parentFrame, 
+                "Bạn đang có một bài thi đang diễn ra. Vui lòng hoàn thành hoặc thoát bài thi hiện tại trước khi bắt đầu bài mới.",
+                "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            dispose();
+            return;
+        }
+
         this.parentFrame = parentFrame;
         this.idBaithi = idBaithi;
         this.titleBaithi = titleBaithi;
+        isAnyExamOpen = true; // Lock
 
         // Clear old state
         flaggedQuestions.clear();
@@ -559,6 +570,7 @@ public class ExamScreen extends JFrame {
     }
 
     private void closeNormally() {
+        isAnyExamOpen = false; // Release lock
         if (timer != null)
             timer.cancel();
         dispose();
