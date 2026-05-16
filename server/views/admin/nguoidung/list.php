@@ -116,10 +116,19 @@
                                 <option value="inactive">Đã khóa</option>
                             </select>
                         </div>
-                        <div class="col-12">
+                        <div class="col-12" id="passwordFieldContainer">
                             <label class="form-label fw-semibold">Mật khẩu</label>
                             <input type="password" class="form-control" id="userPassword" name="matkhau" placeholder="Ít nhất 6 ký tự">
                             <small class="text-muted" id="userPasswordHint">Bắt buộc khi tạo mới.</small>
+                        </div>
+                        <div class="col-12" id="resetPasswordContainer" style="display:none;">
+                            <div class="form-check form-switch p-3 border rounded" style="background: #f8fafc;">
+                                <input class="form-check-input ms-0 me-2" type="checkbox" id="resetPasswordToggle">
+                                <label class="form-check-label fw-semibold" for="resetPasswordToggle">
+                                    Reset mật khẩu về <code style="color: #e11d48; background: #fff1f2; padding: 2px 6px; border-radius: 4px;">User@123456</code>
+                                </label>
+                                <div class="text-muted small mt-1">Admin không thể xem mật khẩu hiện tại, chỉ có thể đặt lại về mật khẩu mặc định.</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -254,10 +263,20 @@ function openUserModal(id = 0) {
         document.getElementById('userId').value = user.id_nguoidung;
         document.getElementById('userName').value = user.ten || '';
         document.getElementById('userEmail').value = user.email || '';
+        document.getElementById('userEmail').readOnly = true; // Không cho sửa email
         document.getElementById('userRole').value = user.vaitro || 'thisinh';
         document.getElementById('userStatus').value = user.trangthai || 'active';
+        
+        // Ẩn ô mật khẩu, hiện ô reset
+        document.getElementById('passwordFieldContainer').style.display = 'none';
+        document.getElementById('resetPasswordContainer').style.display = 'block';
+        document.getElementById('resetPasswordToggle').checked = false;
         document.getElementById('userPassword').required = false;
-        userPasswordHint.textContent = 'Để trống nếu muốn giữ nguyên mật khẩu hiện tại.';
+    } else {
+        document.getElementById('userEmail').readOnly = false;
+        document.getElementById('passwordFieldContainer').style.display = 'block';
+        document.getElementById('resetPasswordContainer').style.display = 'none';
+        document.getElementById('userPassword').required = true;
     }
 
     userModal.style.display = 'flex';
@@ -313,7 +332,8 @@ userForm.addEventListener('submit', async function(event) {
         email: document.getElementById('userEmail').value.trim(),
         vaitro: document.getElementById('userRole').value,
         trangthai: document.getElementById('userStatus').value,
-        matkhau: document.getElementById('userPassword').value
+        matkhau: document.getElementById('userPassword').value,
+        reset_pwd: document.getElementById('resetPasswordToggle').checked
     };
 
     try {
