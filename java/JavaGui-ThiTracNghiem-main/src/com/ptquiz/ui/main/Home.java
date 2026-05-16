@@ -371,7 +371,13 @@ public class Home extends JFrame {
         logo.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                switchView("HOME");
+                if ("admin".equals(UserSession.role)) {
+                    switchView("ADMIN_DASHBOARD");
+                } else if ("giangvien".equals(UserSession.role)) {
+                    switchView("LECTURER_DASHBOARD");
+                } else {
+                    switchView("HOME");
+                }
             }
         });
         sidebar.add(logo);

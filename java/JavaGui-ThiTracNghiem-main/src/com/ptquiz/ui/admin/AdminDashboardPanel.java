@@ -72,10 +72,10 @@ public class AdminDashboardPanel extends JPanel {
 
                 SwingUtilities.invokeLater(() -> {
                     statsGrid.removeAll();
-                    statsGrid.add(createStatCard("Tổng người dùng", totalUsers, COLOR_PRIMARY, new Color(239, 246, 255)));
-                    statsGrid.add(createStatCard("Tài khoản bị khóa", totalLocked, COLOR_DANGER, new Color(254, 242, 242)));
-                    statsGrid.add(createStatCard("Cảnh báo bảo mật", totalAlerts, COLOR_WARNING, new Color(255, 247, 237)));
-                    statsGrid.add(createStatCard("Yêu cầu hệ thống", totalRequests, COLOR_SUCCESS, new Color(240, 253, 244)));
+                    statsGrid.add(createStatCard("Người dùng", totalUsers, "👥", COLOR_PRIMARY, new Color(239, 246, 255)));
+                    statsGrid.add(createStatCard("Đã khóa", totalLocked, "🔒", COLOR_DANGER, new Color(254, 242, 242)));
+                    statsGrid.add(createStatCard("Cảnh báo 24h", totalAlerts, "⚡", COLOR_WARNING, new Color(255, 247, 237)));
+                    statsGrid.add(createStatCard("Requests 24h", totalRequests, "🔄", COLOR_SUCCESS, new Color(240, 253, 244)));
                     statsGrid.revalidate();
                     statsGrid.repaint();
                 });
@@ -85,35 +85,44 @@ public class AdminDashboardPanel extends JPanel {
         }).start();
     }
 
-    private JPanel createStatCard(String title, String value, Color iconColor, Color bgColor) {
+    private JPanel createStatCard(String title, String value, String iconText, Color iconColor, Color bgColor) {
         JPanel card = new JPanel(new BorderLayout(20, 0));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(241, 245, 249), 1, true),
-            new EmptyBorder(25, 25, 25, 25)
+            new LineBorder(new Color(231, 235, 241), 1, true),
+            new EmptyBorder(20, 20, 20, 20)
         ));
 
-        JPanel leftSide = new JPanel(new BorderLayout());
-        leftSide.setBackground(Color.WHITE);
+        // Left Icon Box
+        JPanel iconBox = new JPanel(new GridBagLayout());
+        iconBox.setPreferredSize(new Dimension(54, 54));
+        iconBox.setBackground(bgColor);
+        iconBox.setBorder(new LineBorder(bgColor, 1, true));
         
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        titleLabel.setForeground(COLOR_TEXT_LIGHT);
+        JLabel lblIcon = new JLabel(iconText);
+        lblIcon.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 22));
+        lblIcon.setForeground(iconColor);
+        iconBox.add(lblIcon);
+
+        // Right Text Panel
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setBackground(Color.WHITE);
         
         JLabel valLabel = new JLabel(value);
-        valLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        valLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
         valLabel.setForeground(COLOR_TEXT);
         
-        leftSide.add(titleLabel, BorderLayout.NORTH);
-        leftSide.add(valLabel, BorderLayout.CENTER);
+        JLabel titleLabel = new JLabel(title.toUpperCase());
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        titleLabel.setForeground(COLOR_TEXT_LIGHT);
         
-        card.add(leftSide, BorderLayout.CENTER);
-
-        // A small vertical accent bar
-        JPanel accent = new JPanel();
-        accent.setPreferredSize(new Dimension(5, 0));
-        accent.setBackground(iconColor);
-        card.add(accent, BorderLayout.WEST);
+        textPanel.add(valLabel);
+        textPanel.add(Box.createVerticalStrut(2));
+        textPanel.add(titleLabel);
+        
+        card.add(iconBox, BorderLayout.WEST);
+        card.add(textPanel, BorderLayout.CENTER);
 
         return card;
     }
