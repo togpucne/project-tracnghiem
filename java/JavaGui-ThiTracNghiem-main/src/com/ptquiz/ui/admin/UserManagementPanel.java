@@ -295,20 +295,36 @@ public class UserManagementPanel extends JPanel {
         JComboBox<String> cbStatus = new JComboBox<>(new String[]{"active", "inactive"});
         cbStatus.setSelectedItem(initStatus);
         JPasswordField txtPass = new JPasswordField();
+        JCheckBox chkReset = new JCheckBox("Reset mật khẩu về User@123456");
+        chkReset.setBackground(Color.WHITE);
+        chkReset.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        chkReset.setForeground(new Color(225, 29, 72));
 
         gbc.gridy = 0; gbc.gridx = 0; pnlBody.add(createInputGroup("Họ tên", txtTen), gbc);
         gbc.gridx = 1; pnlBody.add(createInputGroup("Email", txtEmail), gbc);
         gbc.gridy = 1; gbc.gridx = 0; pnlBody.add(createComboGroup("Vai trò", cbRole), gbc);
         gbc.gridx = 1; pnlBody.add(createComboGroup("Trạng thái", cbStatus), gbc);
         gbc.gridy = 2; gbc.gridx = 0; gbc.gridwidth = 2;
+        
         JPanel pnlP = new JPanel(new BorderLayout(0, 5));
         pnlP.setBackground(Color.WHITE);
         pnlP.add(createBoldLabel("Mật khẩu"), BorderLayout.NORTH);
-        txtPass.setPreferredSize(new Dimension(0, 38));
-        pnlP.add(txtPass, BorderLayout.CENTER);
-        JLabel lblH = new JLabel(isEdit ? "Để trống nếu giữ nguyên mật khẩu cũ." : "Bắt buộc khi tạo mới. Ít nhất 6 ký tự.");
+        
+        JLabel lblH = new JLabel();
         lblH.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         lblH.setForeground(Color.BLACK);
+
+        if (isEdit) {
+            txtEmail.setEditable(false);
+            txtEmail.setBackground(new Color(243, 244, 246));
+            pnlP.add(chkReset, BorderLayout.CENTER);
+            lblH.setText("Admin không thể xem mật khẩu hiện tại, chỉ có thể đặt lại về mặc định.");
+        } else {
+            txtPass.setPreferredSize(new Dimension(0, 38));
+            pnlP.add(txtPass, BorderLayout.CENTER);
+            lblH.setText("Bắt buộc khi tạo mới. Ít nhất 6 ký tự.");
+        }
+        
         pnlP.add(lblH, BorderLayout.SOUTH);
         pnlBody.add(pnlP, gbc);
         dialog.add(pnlBody, BorderLayout.CENTER);
@@ -327,7 +343,9 @@ public class UserManagementPanel extends JPanel {
         btnSave.addActionListener(e -> {
             String ten = txtTen.getText().trim();
             String email = txtEmail.getText().trim();
-            String pass = new String(txtPass.getPassword());
+            String pass = isEdit ? "" : new String(txtPass.getPassword());
+            boolean resetPwd = isEdit && chkReset.isSelected();
+
             if (ten.isEmpty()) { JOptionPane.showMessageDialog(dialog, "Họ tên không được để trống!"); return; }
             if (!Pattern.compile("^(.+)@(.+)$").matcher(email).matches()) { 
                 JOptionPane.showMessageDialog(dialog, "Email không hợp lệ!"); return; 
@@ -335,11 +353,10 @@ public class UserManagementPanel extends JPanel {
             if (!isEdit && pass.length() < 6) { 
                 JOptionPane.showMessageDialog(dialog, "Mật khẩu mới phải từ 6 ký tự!"); return; 
             }
-            if (isEdit && !pass.isEmpty() && pass.length() < 6) {
-                JOptionPane.showMessageDialog(dialog, "Mật khẩu mới (nếu đổi) phải từ 6 ký tự!"); return;
-            }
-            String payload = String.format("{\"id_nguoidung\":%d, \"ten\":\"%s\", \"email\":\"%s\", \"vaitro\":\"%s\", \"trangthai\":\"%s\", \"matkhau\":\"%s\"}",
-                id, APIHelper.escapeJSON(ten), APIHelper.escapeJSON(email), cbRole.getSelectedItem(), cbStatus.getSelectedItem(), APIHelper.escapeJSON(pass));
+            
+            String payload = String.format("{\"id_nguoidung\":%d, \"ten\":\"%s\", \"email\":\"%s\", \"vaitro\":\"%s\", \"trangthai\":\"%s\", \"matkhau\":\"%s\", \"reset_pwd\":%b}",
+                id, APIHelper.escapeJSON(ten), APIHelper.escapeJSON(email), cbRole.getSelectedItem(), cbStatus.getSelectedItem(), APIHelper.escapeJSON(pass), resetPwd);
+            
             new Thread(() -> {
                 APIHelper.APIResponse res = APIHelper.sendPost("admin/users/save", payload);
                 SwingUtilities.invokeLater(() -> {
