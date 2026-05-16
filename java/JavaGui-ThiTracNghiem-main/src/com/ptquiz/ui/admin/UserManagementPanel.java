@@ -290,10 +290,14 @@ public class UserManagementPanel extends JPanel {
 
         JTextField txtTen = new JTextField(initTen);
         JTextField txtEmail = new JTextField(initEmail);
-        JComboBox<String> cbRole = new JComboBox<>(new String[]{"thisinh", "giangvien"});
-        cbRole.setSelectedItem(initRole);
-        JComboBox<String> cbStatus = new JComboBox<>(new String[]{"active", "inactive"});
-        cbStatus.setSelectedItem(initStatus);
+        
+        // Use Vietnamese labels for display
+        JComboBox<String> cbRole = new JComboBox<>(new String[]{"Thí sinh", "Giảng viên"});
+        cbRole.setSelectedItem("giangvien".equals(initRole) ? "Giảng viên" : "Thí sinh");
+        
+        JComboBox<String> cbStatus = new JComboBox<>(new String[]{"Hoạt động", "Đã khóa"});
+        cbStatus.setSelectedItem("inactive".equals(initStatus) ? "Đã khóa" : "Hoạt động");
+
         JPasswordField txtPass = new JPasswordField();
         JCheckBox chkReset = new JCheckBox("Reset mật khẩu về User@123456");
         chkReset.setBackground(Color.WHITE);
@@ -346,6 +350,10 @@ public class UserManagementPanel extends JPanel {
             String pass = isEdit ? "" : new String(txtPass.getPassword());
             boolean resetPwd = isEdit && chkReset.isSelected();
 
+            // Map Vietnamese labels back to API codes
+            String finalRole = "Giảng viên".equals(cbRole.getSelectedItem()) ? "giangvien" : "thisinh";
+            String finalStatus = "Đã khóa".equals(cbStatus.getSelectedItem()) ? "inactive" : "active";
+
             if (ten.isEmpty()) { JOptionPane.showMessageDialog(dialog, "Họ tên không được để trống!"); return; }
             if (!Pattern.compile("^(.+)@(.+)$").matcher(email).matches()) { 
                 JOptionPane.showMessageDialog(dialog, "Email không hợp lệ!"); return; 
@@ -355,7 +363,7 @@ public class UserManagementPanel extends JPanel {
             }
             
             String payload = String.format("{\"id_nguoidung\":%d, \"ten\":\"%s\", \"email\":\"%s\", \"vaitro\":\"%s\", \"trangthai\":\"%s\", \"matkhau\":\"%s\", \"reset_pwd\":%b}",
-                id, APIHelper.escapeJSON(ten), APIHelper.escapeJSON(email), cbRole.getSelectedItem(), cbStatus.getSelectedItem(), APIHelper.escapeJSON(pass), resetPwd);
+                id, APIHelper.escapeJSON(ten), APIHelper.escapeJSON(email), finalRole, finalStatus, APIHelper.escapeJSON(pass), resetPwd);
             
             new Thread(() -> {
                 APIHelper.APIResponse res = APIHelper.sendPost("admin/users/save", payload);
