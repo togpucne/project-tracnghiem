@@ -105,9 +105,14 @@ while ($row = $res->fetch_assoc()) {
 
 $cauhoi = array_values($cauhoi_map);
 if ($xao_tron) {
-    shuffle($cauhoi);
+    // Deterministic shuffle using ID attempt and ID question
+    usort($cauhoi, function($a, $b) use ($id_lanthi) {
+        return strcmp(md5($a['id_cauhoi'] . $id_lanthi), md5($b['id_cauhoi'] . $id_lanthi));
+    });
     foreach ($cauhoi as &$item) {
-        shuffle($item["dapan"]);
+        usort($item["dapan"], function($a, $b) use ($id_lanthi) {
+            return strcmp(md5($a['id_dapan'] . $id_lanthi), md5($b['id_dapan'] . $id_lanthi));
+        });
     }
     unset($item);
 }
