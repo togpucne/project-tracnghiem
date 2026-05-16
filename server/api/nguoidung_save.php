@@ -52,8 +52,8 @@ if ($id_nguoidung > 0) {
         Api::json(["error" => "Email không hợp lệ"], 400);
     }
 
-    if (strlen($matkhau) < 6) {
-        Api::json(["error" => "Mật khẩu phải có ít nhất 6 ký tự"], 400);
+    if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\\\|,.<>\/?]).{8,}$/', $matkhau)) {
+        Api::json(["error" => "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"], 400);
     }
 
     if (isUserEmailExists($email)) {

@@ -59,6 +59,9 @@ if (!isset($_SESSION['user'])) {
                                 <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
                             </button>
                         </div>
+                        <div class="mt-2 small text-muted">
+                            <i class="fa-solid fa-circle-info me-1"></i> 8+ ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.
+                        </div>
                     </div>
 
                     <div class="mb-5">
@@ -132,6 +135,15 @@ document.getElementById('profileForm').addEventListener('submit', async function
     e.preventDefault();
     
     const formData = new FormData(this);
+    
+    const password = document.getElementById('matkhauInput').value;
+    if (password !== "") {
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\\\|,.<>\/?]).{8,}$/;
+        if (!regex.test(password)) {
+            alert("Mật khẩu mới không đủ mạnh!\nYêu cầu: Ít nhất 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt (@, #, !...).");
+            return;
+        }
+    }
     
     const fileInput = document.getElementById('profileAvatar');
     if (fileInput.files.length > 0) {

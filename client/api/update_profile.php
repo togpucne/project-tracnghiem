@@ -59,11 +59,11 @@ if ($stmt->get_result()->num_rows > 0) {
     Response::json(["success" => false, "error" => "Email nay da duoc su dung boi nguoi khac"], 400);
 }
 
-if ($matkhau !== "" && strlen($matkhau) < 6) {
+if ($matkhau !== "" && !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\\\|,.<>\/?]).{8,}$/', $matkhau)) {
     if ($avatarPath && file_exists(__DIR__ . '/../../server/public/imgs/avatars/' . $avatarPath)) {
         unlink(__DIR__ . '/../../server/public/imgs/avatars/' . $avatarPath);
     }
-    Response::json(["success" => false, "error" => "Mat khau moi phai co toi thieu 6 ky tu"], 400);
+    Response::json(["success" => false, "error" => "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"], 400);
 }
 
 // Lấy avatar cũ để xóa sau khi update thành công

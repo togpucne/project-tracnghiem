@@ -102,7 +102,7 @@ public class ProfilePanel extends JPanel {
 
         nameField = createInput("Họ và tên", UserSession.ten, formPanel);
         emailField = createInput("Email", UserSession.email, formPanel);
-        passField = createPasswordInput("Mật khẩu", UserSession.matkhau, formPanel);
+        passField = createPasswordInput("Mật khẩu (Bỏ trống nếu giữ nguyên)", "", formPanel);
         dateField = createInput("Ngày tham gia", UserSession.ngaythamgia, formPanel);
         dateField.setEditable(false);
         dateField.setBackground(new Color(243, 244, 246));
@@ -188,7 +188,6 @@ public class ProfilePanel extends JPanel {
         parent.add(Box.createVerticalStrut(5));
         parent.add(toggleBtn);
         parent.add(Box.createVerticalStrut(15));
-        
         return tf;
     }
 
@@ -197,8 +196,21 @@ public class ProfilePanel extends JPanel {
         String email = emailField.getText().trim();
         String pass = new String(passField.getPassword());
         
-        if (!pass.isEmpty() && pass.length() < 6) {
-            JOptionPane.showMessageDialog(this, "Mật khẩu mới phải có tối thiểu 6 ký tự", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        if (!pass.isEmpty() && (pass.length() < 8 || 
+            !pass.matches(".*[A-Z].*") || 
+            !pass.matches(".*[a-z].*") || 
+            !pass.matches(".*[0-9].*") || 
+            !pass.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*"))) {
+            
+            JOptionPane.showMessageDialog(this, 
+                "Mật khẩu mới không đủ bảo mật!\n" +
+                "Yêu cầu:\n" +
+                "- Ít nhất 8 ký tự\n" +
+                "- Có 1 chữ HOA\n" +
+                "- Có 1 chữ thường\n" +
+                "- Có 1 chữ số\n" +
+                "- Có 1 ký tự đặc biệt (@, #, !, $...)", 
+                "Cảnh báo bảo mật", JOptionPane.WARNING_MESSAGE);
             return;
         }
         

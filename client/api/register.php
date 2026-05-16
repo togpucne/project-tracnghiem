@@ -15,8 +15,9 @@ if (!filter_var($data["email"], FILTER_VALIDATE_EMAIL)) {
     Response::json(["error" => "Email khong hop le"], 400);
 }
 
-if (strlen($data["password"]) < 6) {
-    Response::json(["error" => "Mat khau toi thieu 6 ky tu"], 400);
+// Password complexity validation (8+ chars, upper, lower, digit, special)
+if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\\\|,.<>\/?]).{8,}$/', $data["password"])) {
+    Response::json(["error" => "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"], 400);
 }
 
 $conn = Database::connect();

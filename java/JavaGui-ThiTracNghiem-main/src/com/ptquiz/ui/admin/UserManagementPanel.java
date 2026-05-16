@@ -358,8 +358,22 @@ public class UserManagementPanel extends JPanel {
             if (!Pattern.compile("^(.+)@(.+)$").matcher(email).matches()) { 
                 JOptionPane.showMessageDialog(dialog, "Email không hợp lệ!"); return; 
             }
-            if (!isEdit && pass.length() < 6) { 
-                JOptionPane.showMessageDialog(dialog, "Mật khẩu mới phải từ 6 ký tự!"); return; 
+            if (!isEdit && (pass.length() < 8 || 
+                !pass.matches(".*[A-Z].*") || 
+                !pass.matches(".*[a-z].*") || 
+                !pass.matches(".*[0-9].*") || 
+                !pass.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*"))) { 
+                
+                JOptionPane.showMessageDialog(dialog, 
+                    "Mật khẩu không đủ bảo mật!\n" +
+                    "Yêu cầu:\n" +
+                    "- Ít nhất 8 ký tự\n" +
+                    "- Có 1 chữ HOA\n" +
+                    "- Có 1 chữ thường\n" +
+                    "- Có 1 chữ số\n" +
+                    "- Có 1 ký tự đặc biệt (@, #, !, $...)", 
+                    "Cảnh báo bảo mật", JOptionPane.WARNING_MESSAGE);
+                return; 
             }
             
             String payload = String.format("{\"id_nguoidung\":%d, \"ten\":\"%s\", \"email\":\"%s\", \"vaitro\":\"%s\", \"trangthai\":\"%s\", \"matkhau\":\"%s\", \"reset_pwd\":%b}",

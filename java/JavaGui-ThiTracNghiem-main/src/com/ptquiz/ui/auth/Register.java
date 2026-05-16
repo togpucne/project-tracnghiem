@@ -144,6 +144,25 @@ public class Register extends JFrame {
                 return;
             }
 
+            // Password Complexity Validation
+            if (password.length() < 8 || 
+                !password.matches(".*[A-Z].*") || 
+                !password.matches(".*[a-z].*") || 
+                !password.matches(".*[0-9].*") || 
+                !password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
+                
+                JOptionPane.showMessageDialog(this, 
+                    "Mật khẩu không đủ bảo mật!\n" +
+                    "Yêu cầu:\n" +
+                    "- Ít nhất 8 ký tự\n" +
+                    "- Có 1 chữ HOA\n" +
+                    "- Có 1 chữ thường\n" +
+                    "- Có 1 chữ số\n" +
+                    "- Có 1 ký tự đặc biệt (@, #, !, $...)", 
+                    "Cảnh báo bảo mật", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             String jsonRequest = String.format("{\"fullname\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
                     APIHelper.escapeJSON(fullname),
                     APIHelper.escapeJSON(email),
