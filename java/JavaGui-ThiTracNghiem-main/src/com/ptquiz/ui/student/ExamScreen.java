@@ -32,6 +32,7 @@ public class ExamScreen extends JFrame {
     private Map<String, List<JPanel>> optionPanels = new HashMap<>();
     private Preferences prefs = Preferences.userNodeForPackage(ExamScreen.class);
 
+    private String appToken = UUID.randomUUID().toString();
     private String titleBaithi;
 
     public ExamScreen(JFrame parentFrame, String idBaithi, String titleBaithi) {
@@ -173,8 +174,26 @@ public class ExamScreen extends JFrame {
 
     private void loadData() {
         new Thread(() -> {
-            String jsonResponse = APIHelper.sendGet("exam/questions?id=" + idBaithi);
-            if (jsonResponse == null || jsonResponse.isEmpty() || jsonResponse.contains("\"error\"")) {
+            String jsonResponse = APIHelper.sendGet("exam/questions?id=" + idBaithi + "&token=JAVA_" + appToken);
+            if (jsonResponse == null || jsonResponse.isEmpty()) {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(this, "Không thể kết nối máy chủ!");
+                    closeNormally();
+                });
+                return;
+            }
+
+            if (jsonResponse.contains("\"error\":\"dual_session\"")) {
+                String msg = extractBasic(jsonResponse, "message");
+                final String finalMsg = msg.isEmpty() ? "Bài thi đang mở ở thiết bị khác." : msg;
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(this, finalMsg, "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    closeNormally();
+                });
+                return;
+            }
+
+            if (jsonResponse.contains("\"error\"")) {
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(this, "Không thể tải đề thi hoặc đề thi đã bị thao tác lỗi!");
                     closeNormally();
@@ -559,12 +578,15 @@ public class ExamScreen extends JFrame {
         prefs.put(getPrefKey() + "_flags", sb.toString());
     }
 
+    private boolean isSyncing = false;
+
     private void exitExam() {
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Bạn có chắc muốn thoát bài thi? Dữ liệu hiện tại và thời gian đếm ngược sẽ được lưu lại.",
                 "Xác nhận thoát", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
-            syncDraftToServer(true); // Blocking sync before closing
+            if (timer != null) timer.cancel();
+            syncDraftToServer(true, true); // Blocking sync with RELEASE flag
             closeNormally();
         }
     }
@@ -583,12 +605,26 @@ public class ExamScreen extends JFrame {
     }
 
     private void syncDraftToServer(boolean blocking) {
+        syncDraftToServer(blocking, false);
+    }
+
+    private void syncDraftToServer(boolean blocking, boolean release) {
         if (idLanthi == null || idLanthi.isEmpty())
             return;
-        StringBuilder payload = new StringBuilder();
+            
+        // If not a release, check if already syncing to avoid conflicts
+        if (!release && isSyncing) return;
+        
+        isSyncing = true;
+        try {
+            StringBuilder payload = new StringBuilder();
         payload.append("{");
         payload.append("\"id_lanthi\":").append(idLanthi).append(",");
         payload.append("\"thoigianconlai\":").append(remainingSeconds).append(",");
+        payload.append("\"token\":\"JAVA_").append(appToken).append("\",");
+        if (release) {
+            payload.append("\"release\":true,");
+        }
 
         // Add flagged questions for API security research testing
         payload.append("\"flagged_questions\":[");
@@ -620,7 +656,10 @@ public class ExamScreen extends JFrame {
                 APIHelper.sendPost("exam/sync-draft", payload.toString());
             }).start();
         }
+    } finally {
+        if (!release) isSyncing = false;
     }
+}
 
     private void submitExam() {
         int confirm = JOptionPane.showConfirmDialog(this,

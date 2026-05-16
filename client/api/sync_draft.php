@@ -16,18 +16,49 @@ $thoigianconlai = isset($data["thoigianconlai"]) ? (int) $data["thoigianconlai"]
 $answers = isset($data["answers"]) ? json_encode($data["answers"]) : null;
 
 $conn = Database::connect();
-$user_id = $_SESSION["user"]["id"];
 
-$stmt = $conn->prepare("SELECT id_lanthi FROM lanthi WHERE id_lanthi = ? AND id_nguoidung = ?");
-$stmt->bind_param("ii", $id_lanthi, $user_id);
+// Support authentication via session (Web) or id_lanthi (App)
+$user_id = isset($_SESSION["user"]["id"]) ? $_SESSION["user"]["id"] : null;
+
+$stmt = $conn->prepare("SELECT id_lanthi, id_nguoidung, session_token, last_active FROM lanthi WHERE id_lanthi = ?");
+$stmt->bind_param("i", $id_lanthi);
 $stmt->execute();
+$row = $stmt->get_result()->fetch_assoc();
 
-if ($stmt->get_result()->num_rows === 0) {
+if (!$row) {
     Response::json(["error" => "Forbidden"], 403);
 }
 
-$stmt = $conn->prepare("UPDATE lanthi SET thoigianconlai = ?, cautraloi_tam = ? WHERE id_lanthi = ?");
-$stmt->bind_param("isi", $thoigianconlai, $answers, $id_lanthi);
+// Security check: if not logged in (App), ensure we only operate on the provided id_lanthi
+if ($user_id !== null && $row["id_nguoidung"] != $user_id) {
+    Response::json(["error" => "Forbidden"], 403);
+}
+
+// LOCK CHECK in sync-draft
+$session_token = $data["token"] ?? "unknown";
+$stored_token = $row["session_token"];
+$last_active = $row["last_active"];
+
+if ($last_active) {
+    $last_time = strtotime($last_active);
+    if ((time() - $last_time) < 45 && $stored_token !== $session_token && !empty($stored_token) && $stored_token !== "unknown") {
+        Response::json([
+            "error" => "dual_session", 
+            "message" => "Thiết bị khác đang giữ khóa. Vui lòng chờ hoặc thoát thiết bị kia.",
+            "debug" => ["stored" => $stored_token, "sent" => $session_token]
+        ], 403);
+    }
+}
+
+$release = isset($data["release"]) && $data["release"] === true;
+
+if ($release) {
+    $stmt = $conn->prepare("UPDATE lanthi SET thoigianconlai = ?, cautraloi_tam = ?, last_active = NULL, session_token = NULL WHERE id_lanthi = ?");
+    $stmt->bind_param("isi", $thoigianconlai, $answers, $id_lanthi);
+} else {
+    $stmt = $conn->prepare("UPDATE lanthi SET thoigianconlai = ?, cautraloi_tam = ?, last_active = NOW(), session_token = ? WHERE id_lanthi = ?");
+    $stmt->bind_param("issi", $thoigianconlai, $answers, $session_token, $id_lanthi);
+}
 
 if ($stmt->execute()) {
     Response::json(["success" => true]);

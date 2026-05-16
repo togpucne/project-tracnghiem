@@ -26,8 +26,50 @@ $ten_baithi = $baithi["ten_baithi"];
 $thoigianlam = (int) $baithi["thoigianlam"];
 $xao_tron = (int) ($baithi["xao_tron"] ?? 0);
 
+// AUTO-REPAIR DATABASE: Ensure columns exist
+$conn->query("ALTER TABLE lanthi ADD COLUMN IF NOT EXISTS last_active DATETIME NULL");
+$conn->query("ALTER TABLE lanthi ADD COLUMN IF NOT EXISTS session_token VARCHAR(255) NULL");
+
+$session_token = $_GET["token"] ?? "unknown";
+
+// USER-WIDE LOCKING LOGIC: Check if this user is active on ANY exam on another device
+$stmt_lock = $conn->prepare("
+    SELECT id_baithi, last_active, session_token 
+    FROM lanthi 
+    WHERE id_nguoidung = ? AND trangthai = 'ongoing' 
+      AND last_active > DATE_SUB(NOW(), INTERVAL 45 SECOND)
+    ORDER BY last_active DESC LIMIT 1
+");
+$stmt_lock->bind_param("i", $user_id);
+$stmt_lock->execute();
+$lock_res = $stmt_lock->get_result()->fetch_assoc();
+
+if ($lock_res) {
+    $last_active = $lock_res["last_active"];
+    $stored_token = $lock_res["session_token"];
+    
+    if ($last_active) {
+        $last_time = strtotime($last_active);
+        // If active in last 45 seconds AND tokens don't match -> CHECK PLATFORM
+        if ((time() - $last_time) < 45 && !empty($stored_token) && $stored_token !== "unknown" && $stored_token !== $session_token) {
+            
+            // Allow override if same platform (e.g. JAVA overrides JAVA, WEB overrides WEB)
+            $old_platform = substr($stored_token, 0, 4);
+            $new_platform = substr($session_token, 0, 4);
+            
+            if ($old_platform !== $new_platform) {
+                Response::json([
+                    "error" => "dual_session", 
+                    "message" => "Tài khoản của bạn đang hoạt động ở một thiết bị hoặc trình duyệt khác. Vui lòng thoát ở thiết bị kia trước khi bắt đầu hoặc tiếp tục bài thi này."
+                ], 403);
+            }
+        }
+    }
+}
+
 $stmt = $conn->prepare("
-    SELECT id_lanthi, thoigianconlai, cautraloi_tam, TIMESTAMPDIFF(SECOND, thoigianbatdau, NOW()) as elapsed_seconds
+    SELECT id_lanthi, thoigianconlai, cautraloi_tam, last_active, session_token,
+           TIMESTAMPDIFF(SECOND, thoigianbatdau, NOW()) as elapsed_seconds
     FROM lanthi
     WHERE id_nguoidung = ? AND id_baithi = ? AND trangthai = 'ongoing'
     LIMIT 1
@@ -43,9 +85,21 @@ $cautraloi_tam = null;
 if ($res->num_rows > 0) {
     $row = $res->fetch_assoc();
     $id_lanthi = $row["id_lanthi"];
+    
+    // Update session token and activity for the current device
+    $stmt_update = $conn->prepare("UPDATE lanthi SET session_token = ?, last_active = NOW() WHERE id_lanthi = ?");
+    $stmt_update->bind_param("si", $session_token, $id_lanthi);
+    $stmt_update->execute();
+
     $elapsed_seconds = (int) $row["elapsed_seconds"];
-    // Always calculate remaining time based on start time to ensure it "keeps running"
-    $thoigianconlai = ($thoigianlam * 60) - $elapsed_seconds;
+    
+    // Prioritize saved time from draft
+    if ($row["thoigianconlai"] !== null) {
+        $thoigianconlai = (int) $row["thoigianconlai"];
+    } else {
+        $thoigianconlai = ($thoigianlam * 60) - $elapsed_seconds;
+    }
+    
     if ($thoigianconlai < 0) $thoigianconlai = 0;
     $cautraloi_tam = $row["cautraloi_tam"];
 } else {

@@ -198,11 +198,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     let timerInterval = null;
 
     try {
-        const res = await fetch(apiUrl("exam/questions", { id: id_baithi }));
+        const res = await fetch(apiUrl("exam/questions", { 
+            id: id_baithi, 
+            token: "WEB_<?= session_id() ?>" 
+        }));
         const data = await res.json();
 
         if (!data.success) {
-            examApp.innerHTML = `<div class="alert alert-danger">${data.error || 'Lỗi tải đề thi'}</div>`;
+            const errorMsg = data.message || data.error || 'Lỗi tải đề thi';
+            examApp.innerHTML = `<div class="alert alert-danger shadow-sm border-start border-danger border-4">
+                <i class="fas fa-exclamation-triangle me-2"></i> ${errorMsg}
+            </div>`;
             return;
         }
 
@@ -416,7 +422,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             await fetch(apiUrl("exam/sync-draft"), {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id_lanthi: id_lanthi, thoigianconlai: remainingSeconds, answers }),
+                body: JSON.stringify({ 
+                    id_lanthi: id_lanthi, 
+                    thoigianconlai: remainingSeconds, 
+                    answers, 
+                    token: "WEB_<?= session_id() ?>" 
+                }),
                 keepalive: true
             });
         } catch (e) {}
@@ -453,7 +464,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("exitBtn").onclick = async () => {
         if (confirm("Thoát và lưu lại tiến trình?")) {
             window.onbeforeunload = null; // Disable the prompt
-            await syncDraft();
+            try {
+                await fetch(apiUrl("exam/sync-draft"), {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        id_lanthi: id_lanthi, 
+                        thoigianconlai: remainingSeconds, 
+                        answers, 
+                        token: "WEB_<?= session_id() ?>",
+                        release: true 
+                    })
+                });
+            } catch (e) {}
             window.location.href = "index.php?act=dethi";
         }
     };
