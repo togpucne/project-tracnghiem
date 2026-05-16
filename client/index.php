@@ -67,9 +67,9 @@ switch ($act) {
         $id_baithi = (int)($_GET['id'] ?? 0);
         $user_id = $_SESSION['user']['id'];
         
-        // SERVER-SIDE SECURITY: Prevent multiple exams or dual sessions
+        // SERVER-SIDE SECURITY: Prevent multiple different exams at once
         $conn = Database::connect();
-        $sql = "SELECT id_baithi, last_active FROM lanthi WHERE id_nguoidung = ? AND trangthai = 'ongoing' LIMIT 1";
+        $sql = "SELECT id_baithi FROM lanthi WHERE id_nguoidung = ? AND trangthai = 'ongoing' LIMIT 1";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -77,21 +77,11 @@ switch ($act) {
         
         if ($ongoing) {
             $ongoing_id = (int)$ongoing['id_baithi'];
-            $last_active = $ongoing['last_active'];
             
-            // 1. Block if trying to start a DIFFERENT exam
+            // Block if trying to start a DIFFERENT exam while one is ongoing
             if ($ongoing_id !== $id_baithi) {
                 header("Location: index.php?act=dethi&error=ongoing_mismatch");
                 exit;
-            }
-            
-            // 2. Block if SAME exam is ACTIVE elsewhere (Heartbeat < 30s)
-            if ($last_active) {
-                $last_time = strtotime($last_active);
-                if ((time() - $last_time) < 30) {
-                    header("Location: index.php?act=dethi&error=session_active");
-                    exit;
-                }
             }
         }
 
