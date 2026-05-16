@@ -53,9 +53,9 @@ public class ExamScreen extends JFrame {
         flaggedQuestions.clear();
         selectedAnswers.clear();
 
-        setTitle("Làm bài thi");
-        setSize(1300, 800);
-        setLocationRelativeTo(null);
+        setUndecorated(true); // Remove title bar and buttons
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Full screen
+        setAlwaysOnTop(true); // Always on top of other windows
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
