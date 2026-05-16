@@ -9,11 +9,11 @@ function get_admin_dashboard_stats() {
     $totalUsers = $resUsers->fetch_assoc()['total'];
 
     // 2. Số tài khoản bị khóa
-    $resLocked = $conn->query("SELECT COUNT(*) as total FROM nguoidung WHERE trangthai = 'inactive'");
+    $resLocked = $conn->query("SELECT COUNT(*) as total FROM nguoidung WHERE trangthai != 'active'");
     $totalLocked = $resLocked->fetch_assoc()['total'];
 
-    // 3. Số cảnh báo bảo mật (401, 403, 429) trong 24h qua
-    $resAlerts = $conn->query("SELECT COUNT(*) as total FROM api_logs WHERE response_code >= 400 AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)");
+    // 3. Số cảnh báo bảo mật (401, 403, 429) trong 48h qua
+    $resAlerts = $conn->query("SELECT COUNT(*) as total FROM api_logs WHERE response_code >= 400 AND created_at > DATE_SUB(NOW(), INTERVAL 48 HOUR)");
     $totalAlerts = $resAlerts->fetch_assoc()['total'];
 
     // 4. Tổng số request API trong 24h qua

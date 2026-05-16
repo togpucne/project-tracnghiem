@@ -43,7 +43,7 @@
                     </div>
                     <div>
                         <div style="font-size: 24px; font-weight: 700; color: #1e293b; line-height: 1;"><?= $data['stats']['total_alerts'] ?></div>
-                        <div style="font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 600; text-transform: uppercase;">Cảnh báo 24h</div>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 600; text-transform: uppercase;">Cảnh báo 48h</div>
                     </div>
                 </div>
             </div>
