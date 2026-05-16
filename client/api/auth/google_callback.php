@@ -56,7 +56,7 @@ if ($stmt->fetch()) {
     
     $vaitro    = 'thisinh';
     $trangthai = 'active';
-    $matkhau   = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT); // Mật khẩu ngẫu nhiên cho Google login
+    $matkhau   = password_hash("User@123456", PASSWORD_DEFAULT); // Mật khẩu mặc định an toàn cho Google login
     
     $stmt = $conn->prepare("INSERT INTO nguoidung (email, ten, matkhau, vaitro, trangthai, avatar, ngaytao) VALUES (?, ?, ?, ?, ?, 'default.jpg', NOW())");
     $stmt->bind_param("sssss", $email, $name, $matkhau, $vaitro, $trangthai);
