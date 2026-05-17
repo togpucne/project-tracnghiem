@@ -47,7 +47,7 @@ return [
     ],
     "exam/sync-draft" => [
         "handler" => __DIR__ . "/../api/sync_draft.php",
-        "methods" => ["PUT"],
+        "methods" => ["PUT", "POST"],
         "auth" => true,
         "roles" => ["thisinh"],
     ],

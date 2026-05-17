@@ -61,6 +61,13 @@ if (!class_exists('Api')) {
                     $decoded = TokenManager::validateToken($token);
                     if ($decoded) {
                         $user = $decoded;
+                        // Synchronize state to PHP Session for subsequent stateless handlers
+                        $_SESSION["user"] = [
+                            "id" => $user["id"] ?? $user["id_nguoidung"] ?? 0,
+                            "email" => $user["email"] ?? "",
+                            "name" => $user["name"] ?? $user["hoten"] ?? "",
+                            "role" => $user["role"] ?? $user["vaitro"] ?? "",
+                        ];
                     }
                 }
             }
