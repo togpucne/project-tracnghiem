@@ -8,11 +8,11 @@ require_once __DIR__ . "/../core/Response.php";
 $data = Api::jsonInput();
 
 if (empty($data["fullname"]) || empty($data["email"]) || empty($data["password"])) {
-    Response::json(["error" => "Thieu thong tin"], 400);
+    Response::json(["error" => "Thiếu thông tin đăng ký"], 400);
 }
 
 if (!filter_var($data["email"], FILTER_VALIDATE_EMAIL)) {
-    Response::json(["error" => "Email khong hop le"], 400);
+    Response::json(["error" => "Email không hợp lệ"], 400);
 }
 
 // Password complexity validation (8+ chars, upper, lower, digit, special)
@@ -28,7 +28,7 @@ $stmt->execute();
 $stmt->store_result();
 
 if ($stmt->num_rows > 0) {
-    Response::json(["error" => "Email da ton tai"], 400);
+    Response::json(["error" => "Email đã tồn tại"], 400);
 }
 
 $passwordHash = password_hash($data["password"], PASSWORD_BCRYPT);
@@ -41,11 +41,11 @@ $stmt = $conn->prepare("
 $stmt->bind_param("sss", $data["email"], $passwordHash, $data["fullname"]);
 
 if (!$stmt->execute()) {
-    Response::json(["error" => "Loi he thong"], 500);
+    Response::json(["error" => "Lỗi hệ thống"], 500);
 }
 
 Response::json([
     "success" => true,
-    "message" => "Dang ky thanh cong",
+    "message" => "Đăng ký thành công",
 ]);
 

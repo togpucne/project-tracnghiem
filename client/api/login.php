@@ -7,7 +7,7 @@ require_once __DIR__ . "/../core/Response.php";
 $data = Api::jsonInput();
 
 if (empty($data["email"]) || empty($data["password"])) {
-    Response::json(["error" => "Thieu thong tin"], 400);
+    Response::json(["error" => "Thiếu thông tin đăng nhập"], 400);
 }
 
 $conn = Database::connect();
@@ -23,15 +23,15 @@ $stmt->execute();
 $stmt->bind_result($id, $ten, $hashedPassword, $ngaytao, $vaitro, $trangthai, $avatar);
 
 if (!$stmt->fetch()) {
-    Response::json(["error" => "Sai tai khoan hoac mat khau"], 401);
+    Response::json(["error" => "Sai tài khoản hoặc mật khẩu"], 401);
 }
 
 if (!password_verify($data["password"], $hashedPassword)) {
-    Response::json(["error" => "Sai tai khoan hoac mat khau"], 401);
+    Response::json(["error" => "Sai tài khoản hoặc mật khẩu"], 401);
 }
 
 if ($trangthai !== "active") {
-    Response::json(["error" => "Tai khoan da bi khoa"], 403);
+    Response::json(["error" => "Tài khoản đã bị khóa"], 403);
 }
 
 require_once __DIR__ . "/../core/TokenManager.php";
@@ -52,7 +52,7 @@ $token = TokenManager::generateToken([
 
 Response::json([
     "success" => true,
-    "message" => "Dang nhap thanh cong",
+    "message" => "Đăng nhập thành công",
     "token" => $token,
     "id" => $id,
     "id_nguoidung" => $id,

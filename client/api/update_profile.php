@@ -15,7 +15,7 @@ $email = trim($data["email"] ?? "");
 $matkhau = $data["matkhau"] ?? "";
 
 if ($ten === "" || $email === "") {
-    Response::json(["success" => false, "error" => "Ho ten va Email khong duoc de trong"], 400);
+    Response::json(["success" => false, "error" => "Họ tên và Email không được để trống"], 400);
 }
 
 // Xử lý upload avatar
@@ -56,7 +56,7 @@ if ($stmt->get_result()->num_rows > 0) {
     if ($avatarPath && file_exists(__DIR__ . '/../../server/public/imgs/avatars/' . $avatarPath)) {
         unlink(__DIR__ . '/../../server/public/imgs/avatars/' . $avatarPath);
     }
-    Response::json(["success" => false, "error" => "Email nay da duoc su dung boi nguoi khac"], 400);
+    Response::json(["success" => false, "error" => "Email này đã được sử dụng bởi người khác"], 400);
 }
 
 if ($matkhau !== "" && !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\\\|,.<>\/?]).{8,}$/', $matkhau)) {
@@ -110,10 +110,10 @@ if ($stmt->execute()) {
     if ($avatarPath !== null) {
         $_SESSION["user"]["avatar"] = $avatarPath;
     }
-    Response::json(["success" => true, "message" => "Cap nhat thong tin thanh cong", "avatar" => $avatarPath]);
+    Response::json(["success" => true, "message" => "Cập nhật thông tin thành công", "avatar" => $avatarPath]);
 }
 
 if ($avatarPath && file_exists(__DIR__ . '/../../server/public/imgs/avatars/' . $avatarPath)) {
     unlink(__DIR__ . '/../../server/public/imgs/avatars/' . $avatarPath);
 }
-Response::json(["success" => false, "error" => "Loi he thong khi cap nhat co so du lieu"], 500);
+Response::json(["success" => false, "error" => "Lỗi hệ thống khi cập nhật cơ sở dữ liệu"], 500);

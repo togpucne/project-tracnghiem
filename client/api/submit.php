@@ -12,7 +12,7 @@ $id_baithi = (int) ($data["id_baithi"] ?? 0);
 $answers = $data["answers"] ?? [];
 
 if ($id_lanthi === 0 || $id_baithi === 0 || !is_array($answers)) {
-    Response::json(["error" => "Du lieu khong hop le"], 400);
+    Response::json(["error" => "Dữ liệu không hợp lệ"], 400);
 }
 
 $conn = Database::connect();
