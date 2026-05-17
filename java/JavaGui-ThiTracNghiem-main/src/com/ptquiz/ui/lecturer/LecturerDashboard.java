@@ -8,6 +8,7 @@ import java.awt.*;
 
 public class LecturerDashboard extends JPanel {
     private JPanel statsGrid;
+    private JLabel welcomeLabel;
 
     public LecturerDashboard() {
         initComponents();
@@ -22,7 +23,13 @@ public class LecturerDashboard extends JPanel {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
 
-        JLabel welcomeLabel = new JLabel("Chào mừng, " + UserSession.ten + " (ID: " + UserSession.userId + ")!");
+        String welcomeText = "Chào mừng, ";
+        if (UserSession.ten.toLowerCase().contains("giảng viên") || UserSession.ten.toLowerCase().contains("giang vien")) {
+            welcomeText += UserSession.ten + "!";
+        } else {
+            welcomeText += "Giảng viên " + UserSession.ten + "!";
+        }
+        welcomeLabel = new JLabel(welcomeText);
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
         welcomeLabel.setForeground(new Color(31, 41, 55));
 
@@ -54,6 +61,19 @@ public class LecturerDashboard extends JPanel {
     }
 
     public void loadStats() {
+        String welcomeText = "Chào mừng, ";
+        if (UserSession.ten.toLowerCase().contains("giảng viên") || UserSession.ten.toLowerCase().contains("giang vien")) {
+            welcomeText += UserSession.ten + "!";
+        } else {
+            welcomeText += "Giảng viên " + UserSession.ten + "!";
+        }
+        final String finalWelcome = welcomeText;
+        SwingUtilities.invokeLater(() -> {
+            if (welcomeLabel != null) {
+                welcomeLabel.setText(finalWelcome);
+            }
+        });
+
         new Thread(() -> {
             String jsonResponse = APIHelper.sendGet("lecturer/stats");
             if (jsonResponse == null || jsonResponse.isEmpty() || jsonResponse.contains("\"error\"")) {
