@@ -27,6 +27,7 @@ public class Home extends JFrame {
     private LecturerDashboard dashboardPanel;
     private HistoryPanel historyPanel;
     private ExamLibraryPanel libraryPanel;
+    private ProfilePanel profilePanel;
 
     // Admin Panels
     private AdminDashboardPanel adminDashboardPanel;
@@ -85,7 +86,8 @@ public class Home extends JFrame {
         }
 
         // ------------- PROFILE CARD -------------
-        cards.add(new ProfilePanel(), "PROFILE");
+        profilePanel = new ProfilePanel();
+        cards.add(profilePanel, "PROFILE");
 
         // ------------- HISTORY CARD -------------
         historyPanel = new HistoryPanel();
@@ -140,6 +142,10 @@ public class Home extends JFrame {
                 break;
             case "HOME":
                 refreshExams();
+                break;
+            case "PROFILE":
+                if (profilePanel != null)
+                    profilePanel.refresh();
                 break;
 
             // Admin Views

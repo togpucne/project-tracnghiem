@@ -246,4 +246,57 @@ public class ProfilePanel extends JPanel {
             });
         }).start();
     }
+
+    public void refresh() {
+        new Thread(() -> {
+            String jsonResponse = APIHelper.sendGet("profile/detail");
+            if (jsonResponse == null || jsonResponse.isEmpty() || jsonResponse.contains("\"error\"")) {
+                return;
+            }
+
+            try {
+                // Parse response: {"success":true,"data":{"email":"...","ten":"...","ngaytao":"...","avatar":"..."}}
+                int dataIndex = jsonResponse.indexOf("\"data\":");
+                if (dataIndex == -1) return;
+                String dataPart = jsonResponse.substring(dataIndex);
+
+                String email = APIHelper.extractJsonValue(dataPart, "email");
+                String ten = APIHelper.extractJsonValue(dataPart, "ten");
+                String ngaytao = APIHelper.extractJsonValue(dataPart, "ngaytao");
+                String avatar = APIHelper.extractJsonValue(dataPart, "avatar");
+
+                if (ngaytao.contains(" ")) {
+                    ngaytao = ngaytao.split(" ")[0];
+                }
+
+                UserSession.ten = ten;
+                UserSession.email = email;
+                UserSession.ngaythamgia = ngaytao;
+                UserSession.avatar = avatar;
+
+                SwingUtilities.invokeLater(() -> {
+                    if (nameField != null) nameField.setText(UserSession.ten);
+                    if (emailField != null) emailField.setText(UserSession.email);
+                    if (dateField != null) dateField.setText(UserSession.ngaythamgia);
+                    if (avatarLabel != null) avatarLabel.setText(UserSession.ten);
+                    
+                    // Reload avatar image
+                    if (imgLabel != null) {
+                        try {
+                            String avatarUrl = "http://localhost/project-tracnghiem/server/public/imgs/avatars/" + UserSession.avatar;
+                            java.net.URL url = new java.net.URI(avatarUrl).toURL();
+                            ImageIcon icon = new ImageIcon(url);
+                            Image img = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+                            imgLabel.setIcon(new ImageIcon(img));
+                        } catch (Exception e) {
+                            imgLabel.setIcon(null);
+                            imgLabel.setText("N/A");
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
 }

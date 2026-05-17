@@ -67,7 +67,7 @@ return [
         "handler" => __DIR__ . "/../api/get_profile.php",
         "methods" => ["GET"],
         "auth" => true,
-        "roles" => ["thisinh"],
+        "roles" => ["thisinh", "giangvien", "admin"],
     ],
     "profile/update" => [
         "handler" => __DIR__ . "/../api/update_profile.php",
