@@ -183,8 +183,12 @@ public class Home extends JFrame {
                         String id = APIHelper.extractJsonValue(raw, "id_baithi");
                         String title = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
                         String sub = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "tenmonhoc"));
+                        String timeVal = APIHelper.extractJsonValue(raw, "thoigianlam");
+                        String questionsVal = APIHelper.extractJsonValue(raw, "tongcauhoi");
+                        String time = (timeVal.isEmpty() || timeVal.equals("null")) ? "60 phút" : timeVal + " phút";
+                        String questions = (questionsVal.isEmpty() || questionsVal.equals("null")) ? "10 câu" : questionsVal + " câu";
                         boolean ongoing = "1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"));
-                        gridPanel.add(createExamCard(id, title, sub, "60 phút", "10 câu", ongoing));
+                        gridPanel.add(createExamCard(id, title, sub, time, questions, ongoing));
                         count++;
                     }
                     gridPanel.revalidate();
@@ -345,8 +349,12 @@ public class Home extends JFrame {
                     String id = APIHelper.extractJsonValue(raw, "id_baithi");
                     String title = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "ten_baithi"));
                     String sub = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "tenmonhoc"));
+                    String timeVal = APIHelper.extractJsonValue(raw, "thoigianlam");
+                    String questionsVal = APIHelper.extractJsonValue(raw, "tongcauhoi");
+                    String time = (timeVal.isEmpty() || timeVal.equals("null")) ? "60 phút" : timeVal + " phút";
+                    String questions = (questionsVal.isEmpty() || questionsVal.equals("null")) ? "10 câu" : questionsVal + " câu";
                     boolean ongoing = "1".equals(APIHelper.extractJsonValue(raw, "is_ongoing"));
-                    gridPanel.add(createExamCard(id, title, sub, "60 phút", "10 câu", ongoing));
+                    gridPanel.add(createExamCard(id, title, sub, time, questions, ongoing));
                     count++;
                 }
                 gridPanel.revalidate();
