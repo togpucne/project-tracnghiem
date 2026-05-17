@@ -73,7 +73,7 @@ return [
         "handler" => __DIR__ . "/../api/update_profile.php",
         "methods" => ["POST", "PATCH"],
         "auth" => true,
-        "roles" => ["thisinh", "giangvien"],
+        "roles" => ["thisinh", "giangvien", "admin"],
     ],
     "lecturer/stats" => [
         "handler" => __DIR__ . "/../api/get_lecturer_stats.php",
