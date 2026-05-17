@@ -13,7 +13,14 @@ if (!isset($data["id_lanthi"])) {
 
 $id_lanthi = (int) $data["id_lanthi"];
 $thoigianconlai = isset($data["thoigianconlai"]) ? (int) $data["thoigianconlai"] : null;
-$answers = isset($data["answers"]) ? json_encode($data["answers"]) : null;
+$answers_data = isset($data["answers"]) ? $data["answers"] : [];
+$flags_data = isset($data["flags"]) ? $data["flags"] : (isset($data["flagged_questions"]) ? $data["flagged_questions"] : []);
+
+$draft_payload = [
+    "answers" => $answers_data,
+    "flags" => $flags_data
+];
+$answers = json_encode($draft_payload, JSON_UNESCAPED_UNICODE);
 
 $conn = Database::connect();
 

@@ -114,14 +114,28 @@ if ($res->num_rows > 0) {
 }
 
 $cautraloi_tam_str = "";
+$flagged_questions_str = "";
 if (!empty($cautraloi_tam)) {
     $arr = json_decode($cautraloi_tam, true);
     if (is_array($arr)) {
+        $answers_map = [];
+        $flags_list = [];
+        if (isset($arr["answers"]) && is_array($arr["answers"])) {
+            $answers_map = $arr["answers"];
+            $flags_list = isset($arr["flags"]) ? $arr["flags"] : [];
+        } else {
+            // Backward compatibility
+            $answers_map = $arr;
+        }
+
         $pairs = [];
-        foreach ($arr as $k => $v) {
-            $pairs[] = $k . ":" . $v;
+        foreach ($answers_map as $k => $v) {
+            if (!is_array($v)) {
+                $pairs[] = $k . ":" . $v;
+            }
         }
         $cautraloi_tam_str = implode("|", $pairs);
+        $flagged_questions_str = implode(",", $flags_list);
     }
 }
 
@@ -181,6 +195,7 @@ Response::json([
     "elapsed_seconds" => $elapsed_seconds,
     "thoigianconlai" => $thoigianconlai,
     "cautraloi_tam" => $cautraloi_tam_str,
+    "flagged_questions" => $flagged_questions_str,
     "cauhoi" => $cauhoi,
 ]);
 

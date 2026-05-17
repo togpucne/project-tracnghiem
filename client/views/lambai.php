@@ -227,6 +227,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (saved) answers = JSON.parse(saved);
         }
 
+        // Handle flags (Priority: Server > LocalStorage)
+        if (data.flagged_questions) {
+            flags = {};
+            data.flagged_questions.split(",").forEach(qId => {
+                if (qId.trim()) flags[qId.trim()] = true;
+            });
+            localStorage.setItem(`flags_${userId}_${id_baithi}`, JSON.stringify(flags));
+        } else {
+            const savedFlags = localStorage.getItem(`flags_${userId}_${id_baithi}`);
+            if (savedFlags) flags = JSON.parse(savedFlags);
+        }
+
         // Handle Time
         const savedTime = localStorage.getItem(`exam_time_${userId}_${id_baithi}`);
         remainingSeconds = data.thoigianconlai !== null ? data.thoigianconlai : (savedTime ? parseInt(savedTime) : data.thoigianlam * 60);
@@ -426,6 +438,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     id_lanthi: id_lanthi, 
                     thoigianconlai: remainingSeconds, 
                     answers, 
+                    flags: Object.keys(flags), 
                     token: "WEB_<?= session_id() ?>" 
                 }),
                 keepalive: true
@@ -472,6 +485,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         id_lanthi: id_lanthi, 
                         thoigianconlai: remainingSeconds, 
                         answers, 
+                        flags: Object.keys(flags), 
                         token: "WEB_<?= session_id() ?>",
                         release: true 
                     })

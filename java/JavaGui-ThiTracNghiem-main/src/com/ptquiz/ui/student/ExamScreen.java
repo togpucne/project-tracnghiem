@@ -227,6 +227,17 @@ public class ExamScreen extends JFrame {
                     }
                 }
 
+                String flaggedQuestionsStr = extractBasic(jsonResponse, "flagged_questions");
+                if (!flaggedQuestionsStr.isEmpty() && !flaggedQuestionsStr.equals("null")) {
+                    flaggedQuestions.clear();
+                    for (String qId : flaggedQuestionsStr.split(",")) {
+                        if (!qId.trim().isEmpty()) {
+                            flaggedQuestions.add(qId.trim());
+                        }
+                    }
+                    saveFlagState();
+                }
+
                 if (remainingSeconds <= 0) {
                     SwingUtilities.invokeLater(() -> {
                         JOptionPane.showMessageDialog(this, "Thời gian làm bài đã hết! Hệ thống sẽ tự động nộp bài.");
