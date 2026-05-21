@@ -24,15 +24,16 @@
 <!-- Modal Import Word -->
 <div id="importWordModalBank" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
     <div style="width:100%; max-width:520px; background:#fff; border-radius:20px; box-shadow:0 25px 60px rgba(0,0,0,0.2); padding:35px; position:relative;">
-        <h4 style="margin:0 0 8px; color:#1e293b; font-weight:700;">Import Câu Hỏi Từ File Word</h4>
-        <p style="color:#64748b; font-size:13.5px; margin-bottom:20px;">File Word <strong>.docx</strong></p>
+        <h4 style="margin:0 0 8px; color:#1e293b; font-weight:700;">Import Câu Hỏi Từ File Word / Excel / PDF</h4>
+        <p style="color:#64748b; font-size:13.5px; margin-bottom:20px;">Hỗ trợ định dạng <strong>.docx, .xlsx</strong> hoặc <strong>.pdf</strong></p>
         <form id="bankImportWordForm">
             <div style="margin-bottom:20px;">
-                <input type="file" class="form-control" id="bankWordFile" accept=".docx" required style="padding:10px; border-radius:8px;">
+                <input type="file" class="form-control" id="bankWordFile" accept=".docx, .xlsx, .pdf" required style="padding:10px; border-radius:8px;">
             </div>
             
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:25px; font-size:13px; color:#475569; line-height:1.6;">
-                <div style="font-weight:600; color:#1e293b; margin-bottom:6px;">Import hỗ trợ định dạng:</div>
+                <div style="font-weight:600; color:#1e293b; margin-bottom:6px;">Quy tắc nội dung (Word, Excel, PDF):</div>
+                <div style="margin-bottom:8px; color:#6366f1; font-style:italic;">* File PDF & Word: Soạn nội dung theo từng dòng.<br>* File Excel: Soạn nội dung lần lượt vào từng ô của một cột.</div>
                 <div>`Câu 1: ...`</div>
                 <div>`A. ...`</div>
                 <div>`B. ...`</div>
@@ -46,7 +47,7 @@
             <div style="display:flex; justify-content:flex-end; gap:12px;">
                 <button type="button" class="btn" onclick="closeImportWordModal()" style="background:#f1f5f9; color:#64748b; font-weight:600; padding:10px 25px; border-radius:8px; border:none;">Hủy</button>
                 <button type="submit" class="btn" style="background:#3b82f6; color:white; font-weight:700; padding:10px 35px; border-radius:8px; border:none; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">
-                    Import
+                    Bắt đầu Import
                 </button>
             </div>
         </form>

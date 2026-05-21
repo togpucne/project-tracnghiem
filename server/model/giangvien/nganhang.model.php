@@ -301,7 +301,7 @@ function getQuestionBankQuestions($id_nganhang, $id_monhoc, $id_nguoidung, $vait
 function getBankAnswersByQuestionIdWithConnection($conn, $id_cauhoi_nganhang)
 {
     // Use the base dapan table
-    $stmt = $conn->prepare("SELECT id_dapan AS id_dapan_nganhang, noidungdapan, dapandung 
+    $stmt = $conn->prepare("SELECT id_dapan AS id_dapan_nganhang, noidungdapan, dapandung, loigiai_chitiet 
                             FROM dapan 
                             WHERE id_cauhoi = ? 
                             ORDER BY id_dapan ASC");
@@ -380,9 +380,10 @@ function createQuestionBankQuestion($id_nganhang, $id_monhoc, $noidungcauhoi, $d
         $stmt->close();
 
         foreach ($answers as $answer) {
-            $stmtAnswer = $conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung)
-                                          VALUES (?, ?, ?)");
-            $stmtAnswer->bind_param("isi", $id_cauhoi, $answer['noidung'], $answer['dapandung']);
+            $stmtAnswer = $conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung, loigiai_chitiet)
+                                          VALUES (?, ?, ?, ?)");
+            $loigiai = !empty($answer['loigiai_chitiet']) ? $answer['loigiai_chitiet'] : null;
+            $stmtAnswer->bind_param("isis", $id_cauhoi, $answer['noidung'], $answer['dapandung'], $loigiai);
             $stmtAnswer->execute();
             $stmtAnswer->close();
         }
@@ -416,9 +417,10 @@ function updateQuestionBankQuestion($id_cauhoi_nganhang, $id_monhoc, $noidungcau
         $stmtDelete->close();
 
         foreach ($answers as $answer) {
-            $stmtAnswer = $conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung)
-                                          VALUES (?, ?, ?)");
-            $stmtAnswer->bind_param("isi", $id_cauhoi_nganhang, $answer['noidung'], $answer['dapandung']);
+            $stmtAnswer = $conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung, loigiai_chitiet)
+                                          VALUES (?, ?, ?, ?)");
+            $loigiai = !empty($answer['loigiai_chitiet']) ? $answer['loigiai_chitiet'] : null;
+            $stmtAnswer->bind_param("isis", $id_cauhoi_nganhang, $answer['noidung'], $answer['dapandung'], $loigiai);
             $stmtAnswer->execute();
             $stmtAnswer->close();
         }
@@ -487,9 +489,10 @@ function createManyInBank($id_nhch, $questions)
             $stmt->close();
 
             foreach ($q['dapan_list'] as $dapan) {
-                $stmtAnswer = $conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung)
-                                              VALUES (?, ?, ?)");
-                $stmtAnswer->bind_param("isi", $id_cauhoi, $dapan['noidung'], $dapan['dapandung']);
+                $stmtAnswer = $conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung, loigiai_chitiet)
+                                              VALUES (?, ?, ?, ?)");
+                $loigiai = !empty($dapan['loigiai_chitiet']) ? $dapan['loigiai_chitiet'] : null;
+                $stmtAnswer->bind_param("isis", $id_cauhoi, $dapan['noidung'], $dapan['dapandung'], $loigiai);
                 $stmtAnswer->execute();
                 $stmtAnswer->close();
             }
