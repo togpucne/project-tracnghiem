@@ -23,18 +23,30 @@
 
 <!-- Modal Import Word -->
 <div id="importWordModalBank" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
-    <div style="width:100%;max-width:520px;background:#fff;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.2);padding:35px;position:relative;">
-        <h4 style="margin:0 0 10px; color:#1e293b; font-weight:700;">Import câu hỏi từ Word</h4>
-        <p style="color:#64748b; font-size:14px; margin-bottom:25px; line-height:1.6;">Định dạng file: <strong>Câu 1: [Nội dung]... A. [Đáp án]... Đáp án: [A-D]... Độ khó: [Dễ]... Lời giải: [Nội dung giải thích]</strong></p>
+    <div style="width:100%; max-width:520px; background:#fff; border-radius:20px; box-shadow:0 25px 60px rgba(0,0,0,0.2); padding:35px; position:relative;">
+        <h4 style="margin:0 0 8px; color:#1e293b; font-weight:700;">Import Câu Hỏi Từ File Word</h4>
+        <p style="color:#64748b; font-size:13.5px; margin-bottom:20px;">File Word <strong>.docx</strong></p>
         <form id="bankImportWordForm">
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Chọn file .docx</label>
-                <input type="file" class="form-control" id="bankWordFile" accept=".docx" required>
+            <div style="margin-bottom:20px;">
+                <input type="file" class="form-control" id="bankWordFile" accept=".docx" required style="padding:10px; border-radius:8px;">
             </div>
-            <div style="display:flex;justify-content:flex-end;gap:12px;">
-                <button type="button" class="btn btn-light" onclick="closeImportWordModal()">Đóng</button>
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-upload me-2"></i>Bắt đầu Import
+            
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:25px; font-size:13px; color:#475569; line-height:1.6;">
+                <div style="font-weight:600; color:#1e293b; margin-bottom:6px;">Import hỗ trợ định dạng:</div>
+                <div>`Câu 1: ...`</div>
+                <div>`A. ...`</div>
+                <div>`B. ...`</div>
+                <div>`C. ...`</div>
+                <div>`D. ...`</div>
+                <div>`Đáp án: A`</div>
+                <div>`Độ khó: Dễ`</div>
+                <div>`Lời giải: (Nội dung giải thích chi tiết ở đây)`</div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button type="button" class="btn" onclick="closeImportWordModal()" style="background:#f1f5f9; color:#64748b; font-weight:600; padding:10px 25px; border-radius:8px; border:none;">Hủy</button>
+                <button type="submit" class="btn" style="background:#3b82f6; color:white; font-weight:700; padding:10px 35px; border-radius:8px; border:none; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">
+                    Import
                 </button>
             </div>
         </form>
