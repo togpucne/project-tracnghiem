@@ -159,8 +159,25 @@ if (isset($_SESSION['user'])) {
     $stmt->execute();
     $premiumInfo = $stmt->get_result()->fetch_assoc();
     if ($premiumInfo) {
-        $_SESSION['user']['premium_status'] = $premiumInfo['premium_status'];
-        $_SESSION['user']['premium_expire'] = $premiumInfo['premium_expire'];
+        $premium_status = $premiumInfo['premium_status'];
+        $premium_expire = $premiumInfo['premium_expire'];
+
+        // Tự động vô hiệu hóa nếu gói premium đã hết hạn
+        if ($premium_status == 1 && !empty($premium_expire)) {
+            $expireDate = new DateTime($premium_expire);
+            $now = new DateTime();
+            if ($expireDate < $now) {
+                $premium_status = 0;
+                $premium_expire = null;
+                // Cập nhật lại vào Database để hạ cấp người dùng về tài khoản thường
+                $updateStmt = $conn->prepare("UPDATE nguoidung SET premium_status = 0, premium_expire = NULL WHERE id_nguoidung = ?");
+                $updateStmt->bind_param("i", $_SESSION['user']['id']);
+                $updateStmt->execute();
+            }
+        }
+
+        $_SESSION['user']['premium_status'] = $premium_status;
+        $_SESSION['user']['premium_expire'] = $premium_expire;
         
         // Tính số lượt làm bài thực tế trong ngày hôm nay
         $stmt_attempts = $conn->prepare("SELECT COUNT(*) as attempts FROM lanthi WHERE id_nguoidung = ? AND DATE(thoigianbatdau) = CURDATE()");
