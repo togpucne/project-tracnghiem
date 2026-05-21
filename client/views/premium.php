@@ -136,31 +136,55 @@ async function createPayment(amount, packageType) {
 
         if (data.success) {
             resultDiv.innerHTML = `
-                <div class="alert alert-success text-left mt-4 animate__animated animate__fadeIn" style="border-left: 5px solid #28a745;">
-                    <div class="row">
-                        <div class="col-md-7 border-right">
-                            <h3 class="h5 mb-3 text-success font-weight-bold">✅ Đơn thanh toán đã tạo thành công</h3>
-                            <div class="mb-2"><strong>Mã đơn:</strong> <span class="badge badge-light text-dark border">${data.order_code}</span></div>
-                            <div class="mb-2"><strong>Số tiền:</strong> <span class="text-danger font-weight-bold h5">${data.amount.toLocaleString('vi-VN')}đ</span></div>
-                            <div class="p-3 bg-light rounded border mb-3">
-                                <p class="mb-2"><strong>Nội dung chuyển khoản:</strong></p>
-                                <div class="d-flex align-items-center">
-                                    <span id="copy-content" class="h4 text-danger font-weight-bold mb-0">${data.qr_content}</span>
-                                    <button onclick="copyToClipboard('${data.qr_content}')" class="btn btn-sm btn-outline-secondary ml-3">Co-ppy</button>
+                <div class="card shadow-sm border mt-4 animate__animated animate__fadeIn" style="border-radius: 8px; background: #fff;">
+                    <div class="row g-0">
+                        <!-- Left Info -->
+                        <div class="col-md-7 p-4 p-md-5 d-flex flex-column justify-content-center" style="border-right: 1px solid #e2e8f0;">
+                            
+                            <!-- Header with Timer -->
+                            <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 1px solid #e2e8f0;">
+                                <h3 class="h5 mb-0 fw-bold text-dark">Chi tiết thanh toán</h3>
+                                <div class="text-danger fw-bold" style="font-size: 1.1rem;">
+                                    Hết hạn sau: <span id="countdown">15:00</span>
                                 </div>
                             </div>
-                            <p class="text-danger"><i class="fas fa-clock mr-2"></i>Thời gian thanh toán còn lại: <span id="countdown">15:00</span></p>
-                            <p class="small text-muted mb-0">Hệ thống sẽ tự động cập nhật premium sau khi nhận được tiền (thường 5-10 giây).</p>
-                        </div>
-                        <div class="col-md-5 text-center d-flex flex-column align-items-center justify-content-center">
-                            <p class="font-weight-bold mb-2">Quét mã VietQR để thanh toán</p>
-                            <div class="bg-white p-2 border rounded">
-                                <img src="https://img.vietqr.io/image/mbbank-0343635667-compact2.png?amount=${data.amount}&addInfo=${encodeURIComponent(data.qr_content)}&accountName=NGUYEN%20TRONG%20PHUC" alt="Mã QR Thanh Toán" class="img-fluid" style="max-height: 250px;">
+                            
+                            <!-- Info table-like -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-secondary">Trạng thái:</span>
+                                <span class="text-primary fw-bold">Đang chờ thanh toán...</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-secondary">Mã đơn hàng:</span>
+                                <span class="fw-bold text-dark">${data.order_code}</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <span class="text-secondary">Tổng tiền:</span>
+                                <span class="fw-bold text-dark h5 mb-0">${data.amount.toLocaleString('vi-VN')} đ</span>
+                            </div>
+                            
+                            <!-- Copy section -->
+                            <div class="p-3" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+                                <p class="text-secondary mb-2" style="font-size: 0.85rem;">Nội dung chuyển khoản (Bắt buộc ghi chính xác)</p>
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <span id="copy-content" class="h4 fw-bold text-dark mb-0">${data.qr_content}</span>
+                                    <button onclick="copyToClipboard('${data.qr_content}')" class="btn btn-outline-dark btn-sm px-3 border-secondary fw-bold" style="white-space: nowrap;">
+                                        Sao chép
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="text-center mt-3 pt-3 border-top">
-                        <p class="mb-0 text-muted">Vui lòng chuyển khoản chính xác số tiền và nội dung trên.</p>
+                        
+                        <!-- Right QR -->
+                        <div class="col-md-5 p-4 p-md-5 d-flex flex-column align-items-center justify-content-center bg-white">
+                            <p class="fw-bold text-dark mb-3 text-center">Quét mã QR để thanh toán</p>
+                            <div class="p-2 mb-3 text-center" style="border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; max-width: 260px;">
+                                <img src="https://img.vietqr.io/image/mbbank-0343635667-compact2.png?amount=${data.amount}&addInfo=${encodeURIComponent(data.qr_content)}&accountName=NGUYEN%20TRONG%20PHUC" alt="Mã QR Thanh Toán" class="img-fluid" style="width: 100%; object-fit: contain;">
+                            </div>
+                            <p class="small text-muted text-center mb-0" style="line-height: 1.5;">Hệ thống tự động kích hoạt<br>sau khi nhận được tiền.</p>
+                        </div>
                     </div>
                 </div>
             `;

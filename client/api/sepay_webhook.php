@@ -86,6 +86,8 @@ try {
     // Tính ngày hết hạn: Nếu đang là premium thì cộng dồn, nếu không thì tính từ NOW
     $stmt = $conn->prepare("SELECT premium_expire, premium_status FROM nguoidung WHERE id_nguoidung = ?");
     $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
     // Tính ngày hết hạn: 
     // - Nếu ĐANG LÀ PREMIUM (chưa hết hạn): Lấy ngày hết hạn cũ + số ngày của gói mới (Cộng dồn)
     // - Nếu ĐÃ HẾT HẠN hoặc CHƯA TỪNG MUA: Lấy ngày hiện tại + số ngày của gói mới
