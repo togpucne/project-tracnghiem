@@ -86,10 +86,21 @@ try {
     // Tính ngày hết hạn: Nếu đang là premium thì cộng dồn, nếu không thì tính từ NOW
     $stmt = $conn->prepare("SELECT premium_expire, premium_status FROM nguoidung WHERE id_nguoidung = ?");
     $stmt->bind_param("i", $user_id);
-    // Tính ngày hết hạn: Lấy ngày hiện tại cộng với số ngày của gói (theo đúng yêu cầu)
+    // Tính ngày hết hạn: 
+    // - Nếu ĐANG LÀ PREMIUM (chưa hết hạn): Lấy ngày hết hạn cũ + số ngày của gói mới (Cộng dồn)
+    // - Nếu ĐÃ HẾT HẠN hoặc CHƯA TỪNG MUA: Lấy ngày hiện tại + số ngày của gói mới
     $now = new DateTime();
-    $now->modify("+$days days");
-    $expireStr = $now->format('Y-m-d H:i:s');
+    $expireDate = new DateTime();
+    
+    if ($user['premium_status'] == 1 && !empty($user['premium_expire'])) {
+        $currentExpire = new DateTime($user['premium_expire']);
+        if ($currentExpire > $now) {
+            $expireDate = clone $currentExpire; // Giữ lại những ngày còn dư
+        }
+    }
+    
+    $expireDate->modify("+$days days");
+    $expireStr = $expireDate->format('Y-m-d H:i:s');
 
     $stmt = $conn->prepare("UPDATE nguoidung SET premium_status = 1, premium_expire = ? WHERE id_nguoidung = ?");
     $stmt->bind_param("si", $expireStr, $user_id);
