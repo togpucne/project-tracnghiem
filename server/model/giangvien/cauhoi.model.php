@@ -192,8 +192,9 @@ class CauHoiModel
         $this->conn->begin_transaction();
         try {
             foreach ($validQuestions as $question) {
-                $stmt = $this->conn->prepare("INSERT INTO cauhoi (id_baithi, noidungcauhoi, dokho, ngaytao) VALUES (?, ?, ?, NOW())");
-                $stmt->bind_param("iss", $id_baithi, $question['noidungcauhoi'], $question['dokho']);
+                $stmt = $this->conn->prepare("INSERT INTO cauhoi (id_baithi, noidungcauhoi, dokho, loai_cauhoi, ngaytao) VALUES (?, ?, ?, ?, NOW())");
+                $loai = !empty($question['loai_cauhoi']) ? (int)$question['loai_cauhoi'] : 1;
+                $stmt->bind_param("issi", $id_baithi, $question['noidungcauhoi'], $question['dokho'], $loai);
                 $stmt->execute();
                 $id_cauhoi = $this->conn->insert_id;
 

@@ -176,25 +176,59 @@ function parse_questions_from_lines($lines)
     $current = null;
     $flushCurrent = static function (&$current, &$questions) {
         if (!$current) return;
-        if (empty($current['noidungcauhoi']) || count($current['options']) < 2 || empty($current['answer_letter'])) {
-            throw new Exception("Định dạng file chưa đúng ở câu: " . ($current['noidungcauhoi'] ?? 'unknown'));
+        
+        // Xác định loại câu hỏi
+        $isFillInBlank = empty($current['options']);
+
+        if (empty($current['noidungcauhoi'])) {
+             return;
         }
+
         if (empty($current['loigiai_chitiet'])) {
-            throw new Exception("Câu hỏi sau đây chưa có 'Lời giải:': " . ($current['noidungcauhoi'] ?? ''));
+            throw new Exception("Câu hỏi sau đây chưa có 'Lời giải:': " . $current['noidungcauhoi']);
         }
-        $answerIndex = ord($current['answer_letter']) - 65;
-        if (!isset($current['options'][$answerIndex])) {
-            throw new Exception("Đáp án đúng không khớp với danh sách A/B/C/D của câu: " . $current['noidungcauhoi']);
-        }
+
         $dapan_list = [];
-        foreach ($current['options'] as $index => $optionText) {
-            $dapan_list[] = [
-                'noidung' => $optionText, 
-                'dapandung' => $index === $answerIndex ? 1 : 0,
-                'loigiai_chitiet' => ($index === $answerIndex) ? $current['loigiai_chitiet'] : null
-            ];
+        $loai_cauhoi = 1; // Mặc định trắc nghiệm
+
+        if ($isFillInBlank) {
+            $loai_cauhoi = 2; // Điền từ
+            if (empty($current['answer_raw'])) {
+                throw new Exception("Câu hỏi điền từ thiếu đáp án: " . $current['noidungcauhoi']);
+            }
+            
+            // Tách các đáp án bằng dấu |
+            $rawAnswers = explode('|', $current['answer_raw']);
+            foreach ($rawAnswers as $idx => $rawAns) {
+                $dapan_list[] = [
+                    'noidung' => trim($rawAns),
+                    'dapandung' => 1,
+                    'loigiai_chitiet' => ($idx === 0) ? $current['loigiai_chitiet'] : null
+                ];
+            }
+        } else {
+            if (empty($current['answer_letter'])) {
+                throw new Exception("Câu hỏi trắc nghiệm thiếu 'Đáp án: [Chữ cái]': " . $current['noidungcauhoi']);
+            }
+            $answerIndex = ord($current['answer_letter']) - 65;
+            if (!isset($current['options'][$answerIndex])) {
+                throw new Exception("Đáp án đúng '{$current['answer_letter']}' không khớp với danh sách A/B/C/D của câu: " . $current['noidungcauhoi']);
+            }
+            foreach ($current['options'] as $index => $optionText) {
+                $dapan_list[] = [
+                    'noidung' => $optionText,
+                    'dapandung' => $index === $answerIndex ? 1 : 0,
+                    'loigiai_chitiet' => ($index === $answerIndex) ? $current['loigiai_chitiet'] : null
+                ];
+            }
         }
-        $questions[] = ['noidungcauhoi' => $current['noidungcauhoi'], 'dokho' => $current['dokho'] ?: 'Dễ', 'dapan_list' => $dapan_list];
+
+        $questions[] = [
+            'noidungcauhoi' => $current['noidungcauhoi'], 
+            'dokho' => $current['dokho'] ?: 'Dễ', 
+            'loai_cauhoi' => $loai_cauhoi,
+            'dapan_list' => $dapan_list
+        ];
         $current = null;
     };
 
@@ -202,7 +236,7 @@ function parse_questions_from_lines($lines)
         // Hỗ trợ cả "Câu 1:" và "Câu 1."
         if (preg_match('/^Câu\s*\d+\s*[:\.]\s*(.+)$/iu', $line, $matches)) {
             $flushCurrent($current, $questions);
-            $current = ['noidungcauhoi' => trim($matches[1]), 'options' => [], 'answer_letter' => '', 'dokho' => 'Dễ', 'loigiai_chitiet' => null];
+            $current = ['noidungcauhoi' => trim($matches[1]), 'options' => [], 'answer_letter' => '', 'answer_raw' => '', 'dokho' => 'Dễ', 'loigiai_chitiet' => null];
             continue;
         }
         if (!$current) continue;
@@ -210,8 +244,12 @@ function parse_questions_from_lines($lines)
             $current['options'][ord($matches[1]) - 65] = trim($matches[2]);
             continue;
         }
-        if (preg_match('/^Đáp án\s*[:\.]\s*([A-D])$/iu', $line, $matches)) {
-            $current['answer_letter'] = strtoupper($matches[1]);
+        if (preg_match('/^Đáp án\s*[:\.]\s*(.+)$/iu', $line, $matches)) {
+            $val = trim($matches[1]);
+            if (strlen($val) === 1 && preg_match('/^[A-D]$/i', $val)) {
+                $current['answer_letter'] = strtoupper($val);
+            }
+            $current['answer_raw'] = $val;
             continue;
         }
         if (preg_match('/^Độ khó\s*[:\.]\s*(Dễ|Trung bình|Khó)$/iu', $line, $matches)) {

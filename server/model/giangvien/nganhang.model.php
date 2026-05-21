@@ -481,9 +481,10 @@ function createManyInBank($id_nhch, $questions)
             }
             $stmtCheck->close();
 
-            $stmt = $conn->prepare("INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, ngaytao)
-                                    VALUES (NULL, ?, ?, ?, NOW())");
-            $stmt->bind_param("iss", $id_nhch, $q['noidungcauhoi'], $q['dokho']);
+            $stmt = $conn->prepare("INSERT INTO cauhoi (id_baithi, id_nhch, noidungcauhoi, dokho, loai_cauhoi, ngaytao)
+                                    VALUES (NULL, ?, ?, ?, ?, NOW())");
+            $loai = !empty($q['loai_cauhoi']) ? (int)$q['loai_cauhoi'] : 1;
+            $stmt->bind_param("issi", $id_nhch, $q['noidungcauhoi'], $q['dokho'], $loai);
             $stmt->execute();
             $id_cauhoi = (int) $conn->insert_id;
             $stmt->close();
