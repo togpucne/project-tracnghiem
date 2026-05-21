@@ -78,9 +78,10 @@
                                 
                                 if ($daysLeft <= 2 && $daysLeft >= 0): ?>
                                     <li class="nav-item me-2">
-                                        <div class="alert alert-warning py-1 px-2 mb-0 small animate__animated animate__pulse animate__infinite">
-                                            <i class="fas fa-exclamation-triangle mr-1"></i>Gói sắp hết hạn (<?= $daysLeft ?> ngày) 
-                                            <a href="index.php?act=premium" class="alert-link">Gia hạn ngay</a>
+                                        <div class="alert alert-warning py-1 px-2 mb-0 small animate__animated animate__pulse animate__infinite d-flex align-items-center">
+                                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                                            <span>Gói Premium sắp hết hạn (<?= $daysLeft ?> ngày). Quý khách có muốn gia hạn không?</span>
+                                            <a href="index.php?act=premium" class="btn btn-sm btn-warning ms-2" style="font-size:0.75rem; padding: 0.1rem 0.4rem;">Gia hạn ngay</a>
                                         </div>
                                     </li>
                                 <?php endif;

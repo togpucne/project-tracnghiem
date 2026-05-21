@@ -74,24 +74,22 @@ try {
 
     // 2. Cập nhật premium cho user
     $user_id = $order['user_id'];
-    $package_type = $order['package_type'];
-    $days = ($package_type === 'year') ? 365 : 30;
+    $package_type = $order['package_type']; // đang lưu tên gói
+
+    // Truy xuất số ngày thực tế của gói từ bảng goi_premium
+    $stmt = $conn->prepare("SELECT thoihan_ngay FROM goi_premium WHERE ten_goi = ?");
+    $stmt->bind_param("s", $package_type);
+    $stmt->execute();
+    $goi_info = $stmt->get_result()->fetch_assoc();
+    $days = $goi_info ? (int)$goi_info['thoihan_ngay'] : 30; // Mặc định 30 nếu lỗi
 
     // Tính ngày hết hạn: Nếu đang là premium thì cộng dồn, nếu không thì tính từ NOW
     $stmt = $conn->prepare("SELECT premium_expire, premium_status FROM nguoidung WHERE id_nguoidung = ?");
     $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $user = $stmt->get_result()->fetch_assoc();
-
+    // Tính ngày hết hạn: Lấy ngày hiện tại cộng với số ngày của gói (theo đúng yêu cầu)
     $now = new DateTime();
-    $expireDate = new DateTime();
-    
-    if ($user['premium_status'] == 1 && $user['premium_expire'] && new DateTime($user['premium_expire']) > $now) {
-        $expireDate = new DateTime($user['premium_expire']);
-    }
-    
-    $expireDate->modify("+$days days");
-    $expireStr = $expireDate->format('Y-m-d H:i:s');
+    $now->modify("+$days days");
+    $expireStr = $now->format('Y-m-d H:i:s');
 
     $stmt = $conn->prepare("UPDATE nguoidung SET premium_status = 1, premium_expire = ? WHERE id_nguoidung = ?");
     $stmt->bind_param("si", $expireStr, $user_id);

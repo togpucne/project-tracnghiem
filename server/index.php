@@ -191,6 +191,16 @@ switch ($act) {
         $data = $result['data'];
         break;
 
+    case 'quanly-goi-premium':
+        if ($user_role !== 'admin') {
+            $title = "404 - Không tìm thấy";
+            $view = "views/404.php";
+            break;
+        }
+        $title = "Quản lý Gói Premium";
+        $view = "views/admin/goipremium/list.php";
+        break;
+
     default:
         $title = "404 - Không tìm thấy";
         $view = "views/404.php";

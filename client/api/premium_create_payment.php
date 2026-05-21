@@ -15,7 +15,14 @@ if ($user_id == 0) {
     exit;
 }
 
-if (!in_array($amount, [45000, 400000])) {
+$conn = Database::connect();
+$result = $conn->query("SELECT gia FROM goi_premium");
+$valid_amounts = [];
+while ($row = $result->fetch_assoc()) {
+    $valid_amounts[] = (int)$row['gia'];
+}
+
+if (!in_array($amount, $valid_amounts)) {
     echo json_encode(['success' => false, 'message' => 'Gói không hợp lệ']);
     exit;
 }

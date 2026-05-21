@@ -205,4 +205,10 @@ return [
         "auth" => true,
         "roles" => ["thisinh", "giangvien", "admin"],
     ],
+    "admin/goipremium" => [
+        "handler" => __DIR__ . "/../api/admin_goipremium.php",
+        "methods" => ["GET", "POST", "PATCH", "DELETE"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
 ];

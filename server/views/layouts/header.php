@@ -240,6 +240,9 @@
                     <li class="<?php echo ($act == 'quanly-logs') ? 'active' : ''; ?>">
                         <a href="index.php?act=quanly-logs"><i class="fas fa-shield-halved"></i> Giám sát Bảo mật</a>
                     </li>
+                    <li class="<?php echo ($act == 'quanly-goi-premium') ? 'active' : ''; ?>">
+                        <a href="index.php?act=quanly-goi-premium"><i class="fas fa-crown"></i> Gói Premium</a>
+                    </li>
                 <?php endif; ?>
 
             </ul>

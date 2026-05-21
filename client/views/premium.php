@@ -40,46 +40,53 @@ if ($is_premium && !empty($_SESSION['user']['premium_expire'])) {
             <?php endif; ?>
             
             <div class="row justify-content-center">
-            <!-- Gói 1 tháng -->
-            <div class="col-md-5 mb-4">
-                <div class="package-card border rounded p-4 h-100 hover-shadow transition">
-                    <div class="package-header mb-4">
-                        <i class="fas fa-crown text-warning fa-3x mb-3"></i>
-                        <h3 class="h4">Gói Tháng</h3>
-                        <h4 class="text-success display-6">45.000đ</h4>
+            <?php
+            $conn = Database::connect();
+            $result = $conn->query("SELECT * FROM goi_premium ORDER BY gia ASC");
+            while ($pkg = $result->fetch_assoc()):
+                $icon = ($pkg['gia'] >= 400000) ? 'fa-gem text-info' : 'fa-crown text-warning';
+                $isBestValue = ($pkg['thoihan_ngay'] >= 365);
+            ?>
+                <!-- Gói <?= $pkg['ten_goi'] ?> -->
+                <div class="col-md-5 mb-4">
+                    <div class="package-card border <?= $isBestValue ? 'border-warning' : '' ?> rounded p-4 h-100 hover-shadow transition position-relative">
+                        <?php if ($isBestValue): ?>
+                            <span class="badge badge-warning position-absolute p-2 px-3" style="top: -15px; left: 50%; transform: translateX(-50%); font-size: 0.9rem;">Tiết kiệm nhất</span>
+                        <?php endif; ?>
+                        
+                        <div class="package-header mb-4 text-center">
+                            <i class="fas <?= $icon ?> fa-3x mb-3"></i>
+                            <h3 class="h4"><?= htmlspecialchars($pkg['ten_goi']) ?></h3>
+                            <h4 class="text-success display-6"><?= number_format($pkg['gia'], 0, ',', '.') ?>đ</h4>
+                        </div>
+                        <ul class="list-unstyled text-left mb-4 px-3" style="min-height: 120px;">
+                            <?php 
+                            if (!empty($pkg['mieuta'])) {
+                                // Tách chuỗi tại vị trí trước mỗi chữ viết hoa (A-Z và các chữ có dấu in hoa)
+                                // Sử dụng Regex \p{Lu} để hỗ trợ chữ Tiếng Việt in hoa
+                                $lines = preg_split('/(?=\p{Lu})/u', $pkg['mieuta'], -1, PREG_SPLIT_NO_EMPTY);
+                                foreach ($lines as $line): 
+                                    if (trim($line) === '') continue;
+                            ?>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> <?= htmlspecialchars(trim($line)) ?></li>
+                            <?php 
+                                endforeach; 
+                            } else {
+                                // Mặc định nếu không có miêu tả
+                                echo '<li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> Làm trắc nghiệm không giới hạn</li>';
+                                echo '<li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> Xem lời giải chi tiết ngay lập tức</li>';
+                            }
+                            ?>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> Thời hạn sử dụng: <strong><?= $pkg['thoihan_ngay'] ?> ngày</strong></li>
+                        </ul>
+                        <button onclick="createPayment(<?= (int)$pkg['gia'] ?>, '<?= addslashes($pkg['ten_goi']) ?>')" 
+                            class="btn <?= $isBestValue ? 'btn-warning text-white' : 'btn-primary' ?> btn-lg btn-block rounded-pill">
+                            Chọn gói <?= htmlspecialchars($pkg['ten_goi']) ?>
+                        </button>
                     </div>
-                    <ul class="list-unstyled text-left mb-4 px-3">
-                        <li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> Làm trắc nghiệm không giới hạn</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> Xem lời giải chi tiết ngay lập tức</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> Dùng trong 30 ngày</li>
-                    </ul>
-                    <button onclick="createPayment(45000, 'month')" class="btn btn-primary btn-lg btn-block rounded-pill">
-                        Chọn gói 1 tháng
-                    </button>
                 </div>
+            <?php endwhile; ?>
             </div>
-
-            <!-- Gói 1 năm -->
-            <div class="col-md-5 mb-4">
-                <div class="package-card border border-warning rounded p-4 h-100 hover-shadow transition position-relative">
-                    <span class="badge badge-warning position-absolute p-2 px-3" style="top: -15px; left: 50%; transform: translateX(-50%); font-size: 0.9rem;">Tiết kiệm nhất</span>
-                    <div class="package-header mb-4">
-                        <i class="fas fa-gem text-info fa-3x mb-3"></i>
-                        <h3 class="h4">Gói Năm</h3>
-                        <h4 class="text-success display-6">400.000đ</h4>
-                    </div>
-                    <ul class="list-unstyled text-left mb-4 px-3">
-                        <li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> Làm trắc nghiệm không giới hạn</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> Xem lời giải chi tiết ngay lập tức</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-success mr-2"></i> Dùng trong 365 ngày</li>
-                        <li class="mb-2 text-primary font-weight-bold"><i class="fas fa-star mr-2"></i> Tiết kiệm 140.000đ mỗi năm</li>
-                    </ul>
-                    <button onclick="createPayment(400000, 'year')" class="btn btn-warning btn-lg btn-block rounded-pill text-white">
-                        Chọn gói 1 năm
-                    </button>
-                </div>
-            </div>
-        </div>
 
         <div id="payment-result" class="mt-4"></div>
         <?php endif; ?>
