@@ -27,6 +27,12 @@ if (!$lanthi) {
     Response::json(["error" => "Khong tim thay ket qua"], 404);
 }
 
+// Premium check
+$stmt = $conn->prepare("SELECT premium_status FROM nguoidung WHERE id_nguoidung = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$user_premium = $stmt->get_result()->fetch_assoc()['premium_status'] ?? 0;
+
 $id_baithi = (int) $lanthi["id_baithi"];
 
 $sql = "
@@ -37,6 +43,7 @@ $sql = "
         d.id_dapan,
         d.noidungdapan,
         d.dapandung,
+        d.loigiai_chitiet,
         ts.cautraloichon,
         ts.noidungtraloi
     FROM cauhoi c
@@ -63,11 +70,14 @@ while ($row = $res->fetch_assoc()) {
             "noidungcauhoi" => htmlspecialchars($row["noidungcauhoi"]),
             "loai_cauhoi" => (int)$row["loai_cauhoi"],
             "user_text_ans" => $row["noidungtraloi"],
+            "loigiai_chitiet" => $row["loigiai_chitiet"],
             "answers" => [],
         ];
+    } else if (empty($questions[$qid]["loigiai_chitiet"]) && !empty($row["loigiai_chitiet"])) {
+        $questions[$qid]["loigiai_chitiet"] = $row["loigiai_chitiet"];
     }
 
-    $can_see_answers = (int) ($lanthi["hien_dapan"] ?? 0) === 1;
+    $can_see_answers = ($user_premium == 1) || ((int) ($lanthi["hien_dapan"] ?? 0) === 1);
     $selected = false;
     if ($questions[$qid]["loai_cauhoi"] === 1) {
         $selected = ((string) $row["cautraloichon"] !== "" && (int) $row["cautraloichon"] === (int) $row["id_dapan"]);
@@ -83,6 +93,10 @@ while ($row = $res->fetch_assoc()) {
         "is_true_correct" => $is_true_correct, // Dùng nội bộ để tính status bên dưới
         "selected" => $selected,
     ];
+}
+// Update $lanthi["hien_dapan"] if user is premium to affect frontend logic
+if ($user_premium == 1) {
+    $lanthi["hien_dapan"] = 1;
 }
 
 $questions_arr = [];

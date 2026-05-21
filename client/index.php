@@ -85,6 +85,19 @@ switch ($act) {
             }
         }
 
+        // PREMIUM FEATURE: Daily attempt limit for free users
+        if (!isset($_SESSION['user']['premium_status']) || $_SESSION['user']['premium_status'] == 0) {
+            $stmt = $conn->prepare("SELECT COUNT(*) as attempts FROM lanthi WHERE id_nguoidung = ? AND DATE(thoigianbatdau) = CURDATE()");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $attemptCount = $stmt->get_result()->fetch_assoc()['attempts'];
+            
+            if ($attemptCount >= 30) {
+                header("Location: index.php?act=premium&error=limit_reached");
+                exit;
+            }
+        }
+
         $title = "Làm bài - PT QUIZ";
         $page_css = "lambai.css";
         $view = "views/lambai.php";
@@ -123,10 +136,38 @@ switch ($act) {
         $view = "views/lichsu.php";
         break;
 
+    case 'premium':
+        if (!isset($_SESSION['user'])) {
+            header("Location: index.php?act=dangnhap");
+            exit;
+        }
+        $title = "Nâng cấp Premium - PT QUIZ";
+        $view = "views/premium.php";
+        break;
+
     default:
         $title = "Trang chủ - PT QUIZ";
         $page_css = "trangchu.css";
         $view = "views/trangchu.php";
+}
+
+// Fetch latest premium info for session
+if (isset($_SESSION['user'])) {
+    $conn = Database::connect();
+    $stmt = $conn->prepare("SELECT premium_status, premium_expire, total_free_attempts FROM nguoidung WHERE id_nguoidung = ?");
+    $stmt->bind_param("i", $_SESSION['user']['id']);
+    $stmt->execute();
+    $premiumInfo = $stmt->get_result()->fetch_assoc();
+    if ($premiumInfo) {
+        $_SESSION['user']['premium_status'] = $premiumInfo['premium_status'];
+        $_SESSION['user']['premium_expire'] = $premiumInfo['premium_expire'];
+        
+        // Tính số lượt làm bài thực tế trong ngày hôm nay
+        $stmt_attempts = $conn->prepare("SELECT COUNT(*) as attempts FROM lanthi WHERE id_nguoidung = ? AND DATE(thoigianbatdau) = CURDATE()");
+        $stmt_attempts->bind_param("i", $_SESSION['user']['id']);
+        $stmt_attempts->execute();
+        $_SESSION['user']['total_free_attempts'] = $stmt_attempts->get_result()->fetch_assoc()['attempts'];
+    }
 }
 
 include "views/header.php";

@@ -74,6 +74,7 @@ foreach ($options as $index => $noidung) {
     $dapan_list[] = [
         "noidung" => $noidung,
         "dapandung" => ($loai_cauhoi === 2 || $index === $correctIndex) ? 1 : 0,
+        "loigiai_chitiet" => $data["explanations"][$index] ?? null,
     ];
 }
 

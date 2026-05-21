@@ -111,6 +111,16 @@ if ($res->num_rows > 0) {
     $stmt->execute();
     $id_lanthi = $conn->insert_id;
     $thoigianconlai = $thoigianlam * 60;
+
+    // Increment free attempt count if not premium
+    $stmt_status = $conn->prepare("SELECT premium_status FROM nguoidung WHERE id_nguoidung = ?");
+    $stmt_status->bind_param("i", $user_id);
+    $stmt_status->execute();
+    $status = $stmt_status->get_result()->fetch_assoc()["premium_status"] ?? 0;
+    
+    if ($status == 0) {
+        $conn->query("UPDATE nguoidung SET total_free_attempts = total_free_attempts + 1 WHERE id_nguoidung = $user_id");
+    }
 }
 
 $cautraloi_tam_str = "";

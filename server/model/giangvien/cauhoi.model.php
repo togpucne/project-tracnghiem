@@ -60,9 +60,10 @@ class CauHoiModel
             $id_cauhoi = $this->conn->insert_id;
 
             foreach ($dapan_list as $dapan) {
-                $sql_d = "INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung) VALUES (?, ?, ?)";
+                $sql_d = "INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung, loigiai_chitiet) VALUES (?, ?, ?, ?)";
                 $stmt_d = $this->conn->prepare($sql_d);
-                $stmt_d->bind_param("isi", $id_cauhoi, $dapan['noidung'], $dapan['dapandung']);
+                $loigiai = $dapan['loigiai_chitiet'] ?? null;
+                $stmt_d->bind_param("isis", $id_cauhoi, $dapan['noidung'], $dapan['dapandung'], $loigiai);
                 $stmt_d->execute();
             }
 
@@ -101,8 +102,9 @@ class CauHoiModel
             $stmt_del->execute();
 
             foreach ($dapan_list as $dapan) {
-                $stmt_ins = $this->conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung) VALUES (?, ?, ?)");
-                $stmt_ins->bind_param("isi", $id_cauhoi, $dapan['noidung'], $dapan['dapandung']);
+                $stmt_ins = $this->conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung, loigiai_chitiet) VALUES (?, ?, ?, ?)");
+                $loigiai = $dapan['loigiai_chitiet'] ?? null;
+                $stmt_ins->bind_param("isis", $id_cauhoi, $dapan['noidung'], $dapan['dapandung'], $loigiai);
                 $stmt_ins->execute();
             }
 
@@ -196,8 +198,9 @@ class CauHoiModel
                 $id_cauhoi = $this->conn->insert_id;
 
                 foreach ($question['dapan_list'] as $dapan) {
-                    $stmtAnswer = $this->conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung) VALUES (?, ?, ?)");
-                    $stmtAnswer->bind_param("isi", $id_cauhoi, $dapan['noidung'], $dapan['dapandung']);
+                    $stmtAnswer = $this->conn->prepare("INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung, loigiai_chitiet) VALUES (?, ?, ?, ?)");
+                    $loigiai = $dapan['loigiai_chitiet'] ?? null;
+                    $stmtAnswer->bind_param("isis", $id_cauhoi, $dapan['noidung'], $dapan['dapandung'], $loigiai);
                     $stmtAnswer->execute();
                 }
             }
@@ -322,9 +325,9 @@ class CauHoiModel
                     $stmt_ans->execute();
                     $res_ans = $stmt_ans->get_result();
                     while ($ans = $res_ans->fetch_assoc()) {
-                        $sql_ia = "INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung) VALUES (?, ?, ?)";
+                        $sql_ia = "INSERT INTO dapan (id_cauhoi, noidungdapan, dapandung, loigiai_chitiet) VALUES (?, ?, ?, ?)";
                         $stmt_ia = $this->conn->prepare($sql_ia);
-                        $stmt_ia->bind_param("isi", $id_new, $ans['noidungdapan'], $ans['dapandung']);
+                        $stmt_ia->bind_param("isis", $id_new, $ans['noidungdapan'], $ans['dapandung'], $ans['loigiai_chitiet']);
                         $stmt_ia->execute();
                     }
                     $importedCount++;

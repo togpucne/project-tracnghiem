@@ -24,6 +24,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -66,13 +68,59 @@
 
 
                             <?php if (isset($_SESSION['user'])): ?>
+                            <!-- Premium Expiration Alert -->
+                            <?php 
+                            if ($_SESSION['user']['premium_status'] == 1 && !empty($_SESSION['user']['premium_expire'])) {
+                                $expire = new DateTime($_SESSION['user']['premium_expire']);
+                                $now = new DateTime();
+                                $diff = $now->diff($expire);
+                                $daysLeft = $diff->invert ? 0 : $diff->days;
+                                
+                                if ($daysLeft <= 2 && $daysLeft >= 0): ?>
+                                    <li class="nav-item me-2">
+                                        <div class="alert alert-warning py-1 px-2 mb-0 small animate__animated animate__pulse animate__infinite">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>Gói sắp hết hạn (<?= $daysLeft ?> ngày) 
+                                            <a href="index.php?act=premium" class="alert-link">Gia hạn ngay</a>
+                                        </div>
+                                    </li>
+                                <?php endif;
+                            } ?>
+
+                            <li class="nav-item">
+                                <a class="nav-link position-relative d-flex align-items-center" href="index.php?act=premium" style="gap: 5px;">
+                                    <?php if ($_SESSION['user']['premium_status'] == 1): ?>
+                                        <div class="premium-status-badge d-flex align-items-center bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-pill border border-warning" style="font-size: 0.85rem;">
+                                            <i class="fa-solid fa-crown me-1 text-warning shadow-sm"></i>
+                                            <span class="fw-bold">PREMIUM</span>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="free-status-badge d-flex align-items-center bg-light text-secondary px-2 py-1 rounded-pill border" style="font-size: 0.85rem;">
+                                            <i class="fa-solid fa-bolt me-1 text-primary"></i>
+                                            <span>Lượt còn lại: <strong class="text-primary"><?= max(0, 30 - ($_SESSION['user']['total_free_attempts'] ?? 0)) ?></strong></span>
+                                        </div>
+                                    <?php endif; ?>
+                                </a>
+                            </li>
+
                             <li class="nav-item dropdown ms-3">
                                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
                                     role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="/project-tracnghiem/server/public/imgs/avatars/<?= htmlspecialchars($_SESSION['user']['avatar'] ?? 'default.jpg') ?>" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #e2e8f0;">
+                                    <div class="position-relative">
+                                        <img src="/project-tracnghiem/server/public/imgs/avatars/<?= htmlspecialchars($_SESSION['user']['avatar'] ?? 'default.jpg') ?>" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid <?= $_SESSION['user']['premium_status'] == 1 ? '#ffc107' : '#e2e8f0' ?>;">
+                                        <?php if ($_SESSION['user']['premium_status'] == 1): ?>
+                                            <i class="fas fa-check-circle text-warning position-absolute" style="bottom: -2px; right: 5px; font-size: 0.8rem; background: white; border-radius: 50%;"></i>
+                                        <?php endif; ?>
+                                    </div>
                                     <span class="fw-bold"><?= htmlspecialchars($_SESSION['user']['name']) ?></span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                                    <?php if ($_SESSION['user']['premium_status'] == 1): ?>
+                                        <li class="px-3 py-2 bg-light small">
+                                            <div class="text-warning font-weight-bold"><i class="fas fa-crown mr-1"></i>Thành viên Premium</div>
+                                            <div class="text-muted">Hết hạn: <?= date('d/m/Y', strtotime($_SESSION['user']['premium_expire'])) ?></div>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    <?php endif; ?>
                                     <li>
                                         <a class="dropdown-item py-2" href="index.php?act=thongtin">
                                             <i class="fa-solid fa-id-card me-2 text-primary"></i>Thông tin cá nhân
@@ -80,8 +128,12 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item py-2" href="index.php?act=lichsu">
-                                            <i class="fa-solid fa-clock-rotate-left me-2 text-success"></i>Lịch sử làm
-                                            bài
+                                            <i class="fa-solid fa-clock-rotate-left me-2 text-success"></i>Lịch sử làm bài
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" href="index.php?act=premium">
+                                            <i class="fa-solid fa-gem me-2 text-warning"></i>Nâng cấp Premium
                                         </a>
                                     </li>
                                     <li>
@@ -146,6 +198,8 @@
         </div>
         <script>
         const isLoggedIn = <?= isset($_SESSION['user']) ? 'true' : 'false' ?>;
+        const isPremium = <?= (isset($_SESSION['user']['premium_status']) && $_SESSION['user']['premium_status'] == 1) ? 'true' : 'false' ?>;
+        const remainingAttempts = <?= isset($_SESSION['user']['total_free_attempts']) ? max(0, 30 - $_SESSION['user']['total_free_attempts']) : 30 ?>;
 
         document.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -187,6 +241,13 @@
             if (!isLoggedIn) {
                 const loginModal = new bootstrap.Modal(document.getElementById('loginPromptModal'));
                 loginModal.show();
+                return;
+            }
+
+            if (!isOngoing && !isPremium && remainingAttempts <= 0) {
+                if (confirm("Lượt thi hôm nay của bạn đã hết (đã dùng 30 lượt)!\nNâng cấp Premium ngay để làm bài không giới hạn?")) {
+                    window.location.href = 'index.php?act=premium';
+                }
                 return;
             }
 

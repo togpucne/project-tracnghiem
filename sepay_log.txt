@@ -1,0 +1,36 @@
+2026-05-21 10:34:26 - IP: ::1
+Payload: {"gateway":"MBBank","transactionDate":"2026-05-21 15:34:00","accountNumber":"0343635667","subAccount":null,"code":"DH1779352425","content":"130105622114-CHUYEN TIEN DH1779352425276-CHUYEN TIEN-OQCH000C27zJ-MOMO130105622114MOMO","transferType":"in","description":"BankAPINotify 130105622114-CHUYEN TIEN DH1779352425276-CHUYEN TIEN-OQCH000C27zJ-MOMO130105622114MOMO","transferAmount":45000,"referenceCode":"FT26141323620809","accumulated":0,"id":59855512}
+GET: []
+Parsed Data: {"gateway":"MBBank","transactionDate":"2026-05-21 15:34:00","accountNumber":"0343635667","subAccount":null,"code":"DH1779352425","content":"130105622114-CHUYEN TIEN DH1779352425276-CHUYEN TIEN-OQCH000C27zJ-MOMO130105622114MOMO","transferType":"in","description":"BankAPINotify 130105622114-CHUYEN TIEN DH1779352425276-CHUYEN TIEN-OQCH000C27zJ-MOMO130105622114MOMO","transferAmount":45000,"referenceCode":"FT26141323620809","accumulated":0,"id":59855512}
+-------------------------
+Signature mismatch. Received: sha256=a5981c39f81d867c384b0f7794219b96f6b261aee7165950033cac7070677639 | Computed: e1d01f7a58d62fc6b256f66aa0a41352987486399dd1a95ed9cb3a78532f3473
+Error: Amount mismatch (received 0, expected 45000.00)
+2026-05-21 10:34:43 - IP: ::1
+Payload: 
+GET: []
+Error: No data parsed
+-------------------------
+2026-05-21 10:34:46 - IP: ::1
+Payload: 
+GET: []
+Error: No data parsed
+-------------------------
+2026-05-21 10:34:49 - IP: ::1
+Payload: 
+GET: []
+Error: No data parsed
+-------------------------
+2026-05-21 10:36:46 - IP: ::1
+Payload: {"gateway":"MBBank","transactionDate":"2026-05-21 14:41:00","accountNumber":"0343635667","subAccount":null,"code":"DH1779349266","content":"130100517992-CHUYEN TIEN DH1779349266822-CHUYEN TIEN-OQCH000C1yCT-MOMO130100517992MOMO","transferType":"in","description":"BankAPINotify 130100517992-CHUYEN TIEN DH1779349266822-CHUYEN TIEN-OQCH000C1yCT-MOMO130100517992MOMO","transferAmount":45000,"referenceCode":"FT26141546630604","accumulated":0,"id":59848782}
+GET: []
+Parsed Data: {"gateway":"MBBank","transactionDate":"2026-05-21 14:41:00","accountNumber":"0343635667","subAccount":null,"code":"DH1779349266","content":"130100517992-CHUYEN TIEN DH1779349266822-CHUYEN TIEN-OQCH000C1yCT-MOMO130100517992MOMO","transferType":"in","description":"BankAPINotify 130100517992-CHUYEN TIEN DH1779349266822-CHUYEN TIEN-OQCH000C1yCT-MOMO130100517992MOMO","transferAmount":45000,"referenceCode":"FT26141546630604","accumulated":0,"id":59848782}
+-------------------------
+Signature mismatch. Received: sha256=09b7bbf49ad8089a07b72e5c7dba43703492c5749ba10cc119bc439f37c6971b | Computed: 9b32a9ef016a639e87dc17de3dec12dfc6b8e47963ff7e1fe68458ccaac2d0bc
+Success: Premium activated for DH1779349266822
+2026-05-21 10:38:31 - IP: ::1
+Payload: {"gateway":"MBBank","transactionDate":"2026-05-21 15:38:00","accountNumber":"0343635667","subAccount":null,"code":"DH1779352676","content":"130106152407-CHUYEN TIEN DH1779352676653-CHUYEN TIEN-OQCH000C28k2-MOMO130106152407MOMO","transferType":"in","description":"BankAPINotify 130106152407-CHUYEN TIEN DH1779352676653-CHUYEN TIEN-OQCH000C28k2-MOMO130106152407MOMO","transferAmount":45000,"referenceCode":"FT26141834182930","accumulated":0,"id":59856059}
+GET: []
+Parsed Data: {"gateway":"MBBank","transactionDate":"2026-05-21 15:38:00","accountNumber":"0343635667","subAccount":null,"code":"DH1779352676","content":"130106152407-CHUYEN TIEN DH1779352676653-CHUYEN TIEN-OQCH000C28k2-MOMO130106152407MOMO","transferType":"in","description":"BankAPINotify 130106152407-CHUYEN TIEN DH1779352676653-CHUYEN TIEN-OQCH000C28k2-MOMO130106152407MOMO","transferAmount":45000,"referenceCode":"FT26141834182930","accumulated":0,"id":59856059}
+-------------------------
+Signature mismatch. Received: sha256=4f60c1dc833d2535fc59d000782f06af7d111eefc9d867ebceb854d30b5160f4 | Computed: 0feabe73962cfc28c15ed95f4b0700092b9d488a7cb2dd3680d982d884d027d6
+Success: Premium activated for DH1779352676653

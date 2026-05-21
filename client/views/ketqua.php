@@ -45,7 +45,7 @@ $id_lanthi = (int)($_GET['id'] ?? 0);
     }
     .question-item.correct { border-left-color: #22c55e; }
     .question-item.wrong { border-left-color: #ef4444; }
-    .question-item.empty { border-left-color: #f59e0b; }
+    .question-item.empty { border-left-color: #cbd5e1; }
     
     .ans-opt {
         padding: 10px 15px;
@@ -152,21 +152,44 @@ document.addEventListener("DOMContentLoaded", async () => {
                                          }
                                      } else {
                                          answersHtml = `
-                                             <div class="options">
-                                                 ${q.answers.map(ans => {
-                                                     let cls = "ans-opt";
+                                             <div class="options text-start">
+                                                 ${q.answers.map((ans, aIdx) => {
+                                                     const prefix = String.fromCharCode(65 + aIdx);
+                                                     let cls = "ans-opt d-flex align-items-start";
                                                      if (ans.dapandung) cls += " correct";
                                                      if (ans.selected && !ans.dapandung) cls += " selected-wrong";
-                                                     return `<div class="${cls}">${ans.noidungdapan} ${ans.selected ? '<strong>(Bạn chọn)</strong>' : ''}</div>`;
+                                                     return `<div class="${cls}">
+                                                                 <strong class="me-2">${prefix}.</strong> 
+                                                                 <span>${ans.noidungdapan}</span> 
+                                                                 ${ans.selected ? '<strong class="ms-2">(Bạn chọn)</strong>' : ''}
+                                                             </div>`;
                                                  }).join('')}
                                              </div>
                                          `;
                                      }
 
                                      return `
-                                         <div class="question-item ${typeCls}">
+                                         <div class="question-item text-start ${typeCls}">
                                              <p class="fw-bold mb-3">Câu ${i+1}: ${qContent}</p>
                                              ${answersHtml}
+                                             ${q.loigiai_chitiet ? (
+                                                <?php echo (isset($_SESSION['user']['premium_status']) && $_SESSION['user']['premium_status'] == 1) ? 'true' : 'false'; ?> 
+                                                ? `
+                                                 <details class="mt-3 border rounded shadow-sm" style="border-color: #e2e8f0; border-left: 4px solid #94a3b8 !important; background-color: #f8fafc;">
+                                                     <summary class="p-3 small fw-bold text-secondary" style="cursor: pointer; outline: none; list-style: none;">
+                                                         <i class="fas fa-book-open me-2 text-secondary"></i>Xem lời giải chi tiết
+                                                     </summary>
+                                                     <div class="p-3 pt-0 small text-dark border-top" style="border-color: #e2e8f0 !important; color: #334155 !important;">
+                                                        ${q.loigiai_chitiet}
+                                                     </div>
+                                                 </details>
+                                                ` : `
+                                                 <div class="mt-3 p-3 bg-light border-left-warning rounded" style="border-left: 4px solid #f59e0b;">
+                                                     <div class="small fw-bold text-warning mb-1"><i class="fas fa-lock me-1"></i>Tính năng cao cấp</div>
+                                                     <div class="small text-muted">Bạn cần <a href="index.php?act=premium" class="fw-bold text-warning text-decoration-none">Nâng cấp Premium</a> để có thể xem lời giải chi tiết cho câu hỏi này.</div>
+                                                 </div>
+                                                `
+                                             ) : ''}
                                          </div>
                                      `;
                                  }).join('')}

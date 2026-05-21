@@ -244,4 +244,17 @@ return [
         "auth" => true,
         "roles" => ["admin"],
     ],
+    "premium/create-payment" => [
+        "handler" => __DIR__ . "/../api/premium_create_payment.php",
+        "methods" => ["POST"],
+        "auth" => true,
+    ],
+    "premium/check-status" => [
+        "handler" => __DIR__ . "/../api/check_payment_status.php",
+        "methods" => ["GET"],
+    ],
+    "premium/webhook" => [
+        "handler" => __DIR__ . "/../api/sepay_webhook.php",
+        "methods" => ["POST"],
+    ],
 ];
