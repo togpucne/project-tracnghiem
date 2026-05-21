@@ -151,6 +151,16 @@ D. Programming HTML Page
                 <div id="optionsContainer" style="margin-top:10px;"></div>
             </div>
 
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-weight:bold; color: #1e293b;">
+                    Lời giải chi tiết:
+                </label>
+                <textarea name="loigiai_chitiet" id="loigiai_chitiet_input" rows="3" 
+                    placeholder="Bắt buộc: Giải thích tại sao đáp án này đúng..."
+                    required
+                    style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; font-size: 13.5px;"></textarea>
+            </div>
+
             <div style="margin-top:20px; text-align:right; border-top:1px solid #eee; padding-top:15px;">
                 <button type="button" onclick="closeModal()" style="padding:8px 20px; border:1px solid #ccc; border-radius:4px; cursor:pointer; background:white;">Hủy</button>
                 <button type="submit" style="background:#27ae60; color:white; border:none; padding:8px 25px; border-radius:4px; margin-left:10px; cursor:pointer;">Lưu câu hỏi</button>
@@ -177,6 +187,7 @@ D. Programming HTML Page
                 <br>`D. ...`
                 <br>`Đáp án: A`
                 <br>`Độ khó: Dễ`
+                <br>`Lời giải: (Nội dung giải thích chi tiết ở đây)`
             </div>
             <div style="text-align:right;">
                 <button type="button" onclick="closeImportModal()" style="padding:8px 20px; border:1px solid #ccc; border-radius:4px; cursor:pointer; background:white;">Hủy</button>
@@ -449,6 +460,11 @@ function openEditModal(data) {
     document.getElementById('dokho').value = data.dokho;
     document.getElementById('edit_id_cauhoi').value = data.id_cauhoi;
     document.getElementById('loai_cauhoi').value = data.loai_cauhoi || 1;
+    
+    // Extract loigiai_chitiet from answers
+    const loigiai = data.dapan ? (data.dapan.find(d => d.loigiai_chitiet)?.loigiai_chitiet || '') : '';
+    document.getElementById('loigiai_chitiet_input').value = loigiai;
+
     toggleAnswerType();
     document.getElementById('optionsContainer').innerHTML = '';
     (data.dapan || []).forEach(d => addOption(d.noidungdapan, Number(d.dapandung) === 1));
@@ -633,11 +649,13 @@ document.getElementById('questionForm').addEventListener('submit', async functio
             return;
         }
 
-        if (optionsValues.some(opt => opt === '')) {
-            showQuestionAlert('Vui lòng nhập đầy đủ nội dung cho các đáp án điền từ.', 'error');
-            return;
-        }
         selectedIndex = 0;
+    }
+
+    const loigiai = document.getElementById('loigiai_chitiet_input').value.trim();
+    if (loigiai === '') {
+        showQuestionAlert('Vui lòng nhập lời giải chi tiết cho câu hỏi này', 'error');
+        return;
     }
 
     const payload = {
@@ -647,7 +665,8 @@ document.getElementById('questionForm').addEventListener('submit', async functio
         dokho: document.getElementById('dokho').value,
         loai_cauhoi: loai_cauhoi,
         options: optionsValues,
-        correct_index: selectedIndex
+        correct_index: selectedIndex,
+        loigiai_chitiet: loigiai
     };
 
     try {

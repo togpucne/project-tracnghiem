@@ -179,6 +179,10 @@ function parse_questions_from_lines($lines)
             throw new Exception("Định dạng file Word chưa đúng ở câu: " . ($current['noidungcauhoi'] ?? ''));
         }
 
+        if (empty($current['loigiai_chitiet'])) {
+            throw new Exception("Câu hỏi sau đây chưa có 'Lời giải:': " . ($current['noidungcauhoi'] ?? ''));
+        }
+
         $answerIndex = ord($current['answer_letter']) - 65;
         if (!isset($current['options'][$answerIndex])) {
             throw new Exception("Đáp án đúng không khớp với danh sách A/B/C/D của câu: " . $current['noidungcauhoi']);
@@ -189,6 +193,7 @@ function parse_questions_from_lines($lines)
             $dapan_list[] = [
                 'noidung' => $optionText,
                 'dapandung' => $index === $answerIndex ? 1 : 0,
+                'loigiai_chitiet' => ($index === $answerIndex) ? ($current['loigiai_chitiet'] ?? null) : null
             ];
         }
 
@@ -209,6 +214,7 @@ function parse_questions_from_lines($lines)
                 'options' => [],
                 'answer_letter' => '',
                 'dokho' => 'Dễ',
+                'loigiai_chitiet' => null
             ];
             continue;
         }
@@ -230,6 +236,11 @@ function parse_questions_from_lines($lines)
 
         if (preg_match('/^Độ khó\s*:\s*(Dễ|Trung bình|Khó)$/iu', $line, $matches)) {
             $current['dokho'] = $matches[1];
+            continue;
+        }
+
+        if (preg_match('/^Lời giải\s*:\s*(.+)$/iu', $line, $matches)) {
+            $current['loigiai_chitiet'] = trim($matches[1]);
             continue;
         }
 

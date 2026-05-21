@@ -25,7 +25,7 @@
 <div id="importWordModalBank" style="display:none;position:fixed;z-index:10000;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
     <div style="width:100%;max-width:520px;background:#fff;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.2);padding:35px;position:relative;">
         <h4 style="margin:0 0 10px; color:#1e293b; font-weight:700;">Import câu hỏi từ Word</h4>
-        <p style="color:#64748b; font-size:14px; margin-bottom:25px; line-height:1.6;">Định dạng file: <strong>Câu 1: [Nội dung]... A. [Đáp án]... Đáp án: [A-D]... Độ khó: [Dễ/Trung bình/Khó]</strong></p>
+        <p style="color:#64748b; font-size:14px; margin-bottom:25px; line-height:1.6;">Định dạng file: <strong>Câu 1: [Nội dung]... A. [Đáp án]... Đáp án: [A-D]... Độ khó: [Dễ]... Lời giải: [Nội dung giải thích]</strong></p>
         <form id="bankImportWordForm">
             <div class="mb-4">
                 <label class="form-label fw-semibold">Chọn file .docx</label>
@@ -194,6 +194,10 @@
                             Ví dụ: "Học đi đôi với [...]" -> thêm 1 đáp án là "hành".
                         </p>
                         <div id="bankAnswerOptions" style="display:flex;flex-direction:column;gap:10px;margin-top:12px;"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Lời giải chi tiết</label>
+                        <textarea class="form-control" id="bankQuestionLoigiai" rows="3" placeholder="Bắt buộc: Giải thích tại sao đáp án này đúng..." required></textarea>
                     </div>
                 </div>
             </div>
@@ -591,6 +595,7 @@ function openQuestionModal(id = 0) {
 
     document.getElementById('bankQuestionForm').reset();
     document.getElementById('bankQuestionId').value = '';
+    document.getElementById('bankQuestionLoigiai').value = '';
     document.getElementById('bankQuestionModalTitle').textContent = 'Thêm câu hỏi ngân hàng';
     document.getElementById('bankAnswerOptions').innerHTML = '';
     fillQuestionSubjectOptions(document.getElementById('subjectFilter').value || '');
@@ -604,6 +609,7 @@ function openQuestionModal(id = 0) {
         document.getElementById('bankQuestionModalTitle').textContent = 'Cập nhật câu hỏi ngân hàng';
         document.getElementById('bankQuestionId').value = question.id_cauhoi_nganhang;
         document.getElementById('bankQuestionContent').value = question.noidungcauhoi || '';
+        document.getElementById('bankQuestionLoigiai').value = (question.dapan && question.dapan.find(d => d.loigiai_chitiet)?.loigiai_chitiet) || '';
         let diff = question.dokho || 'de';
         if (diff == '1' || diff.toLowerCase() === 'dễ') diff = 'de';
         if (diff == '2' || diff.toLowerCase() === 'trung bình') diff = 'trungbinh';
@@ -773,6 +779,12 @@ document.getElementById('bankQuestionForm').addEventListener('submit', async fun
         }
     }
 
+    const loigiai = document.getElementById('bankQuestionLoigiai').value.trim();
+    if (loigiai === '') {
+        showBankAlert('Vui lòng nhập lời giải chi tiết cho câu hỏi', 'danger');
+        return;
+    }
+
     const payload = {
         id_cauhoi_nganhang: Number(document.getElementById('bankQuestionId').value || 0),
         id_nganhang: Number(selectedBank?.id_nganhang || 0),
@@ -782,7 +794,8 @@ document.getElementById('bankQuestionForm').addEventListener('submit', async fun
         loai_cauhoi: loai_cauhoi,
         trangthai: document.getElementById('bankQuestionStatus').value,
         options,
-        correct_index: loai_cauhoi === 2 ? 0 : correctIndex
+        correct_index: loai_cauhoi === 2 ? 0 : correctIndex,
+        loigiai_chitiet: loigiai
     };
 
     try {

@@ -14,9 +14,10 @@ $dokho = $data["dokho"] ?? "Dễ";
 $loai_cauhoi = (int) ($data["loai_cauhoi"] ?? 1);
 $options = $data["options"] ?? [];
 $correctIndex = isset($data["correct_index"]) ? (int) $data["correct_index"] : -1;
+$loigiai_chitiet = trim((string)($data["loigiai_chitiet"] ?? ""));
 
-if ($id_baithi <= 0 || $noidungcauhoi === "") {
-    Api::json(["error" => "Dữ liệu câu hỏi không hợp lệ"], 400);
+if ($id_baithi <= 0 || $noidungcauhoi === "" || $loigiai_chitiet === "") {
+    Api::json(["error" => "Dữ liệu không hợp lệ: Cần nhập nội dung câu hỏi và lời giải chi tiết"], 400);
 }
 
 if ($loai_cauhoi === 1) {
@@ -71,10 +72,11 @@ foreach ($options as $index => $noidung) {
         $temp_check[] = $normalized;
     }
 
+    $isCorrect = ($loai_cauhoi === 2 || $index === $correctIndex) ? 1 : 0;
     $dapan_list[] = [
         "noidung" => $noidung,
-        "dapandung" => ($loai_cauhoi === 2 || $index === $correctIndex) ? 1 : 0,
-        "loigiai_chitiet" => $data["explanations"][$index] ?? null,
+        "dapandung" => $isCorrect,
+        "loigiai_chitiet" => ($isCorrect && !empty($data["loigiai_chitiet"])) ? $data["loigiai_chitiet"] : null,
     ];
 }
 

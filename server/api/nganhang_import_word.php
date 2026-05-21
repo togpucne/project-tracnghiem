@@ -98,13 +98,20 @@ function parse_questions_from_lines($lines)
         if (empty($current['noidungcauhoi']) || count($current['options']) < 2 || empty($current['answer_letter'])) {
             throw new Exception("Định dạng file Word chưa đúng ở câu: " . ($current['noidungcauhoi'] ?? ''));
         }
+        if (empty($current['loigiai_chitiet'])) {
+            throw new Exception("Câu hỏi sau đây chưa có 'Lời giải:': " . ($current['noidungcauhoi'] ?? ''));
+        }
         $answerIndex = ord($current['answer_letter']) - 65;
         if (!isset($current['options'][$answerIndex])) {
             throw new Exception("Đáp án đúng không khớp với danh sách A/B/C/D của câu: " . $current['noidungcauhoi']);
         }
         $dapan_list = [];
         foreach ($current['options'] as $index => $optionText) {
-            $dapan_list[] = ['noidung' => $optionText, 'dapandung' => $index === $answerIndex ? 1 : 0];
+            $dapan_list[] = [
+                'noidung' => $optionText, 
+                'dapandung' => $index === $answerIndex ? 1 : 0,
+                'loigiai_chitiet' => ($index === $answerIndex) ? $current['loigiai_chitiet'] : null
+            ];
         }
         $questions[] = ['noidungcauhoi' => $current['noidungcauhoi'], 'dokho' => $current['dokho'] ?: 'Dễ', 'dapan_list' => $dapan_list];
         $current = null;
@@ -113,7 +120,7 @@ function parse_questions_from_lines($lines)
     foreach ($lines as $line) {
         if (preg_match('/^Câu\s*\d+\s*:\s*(.+)$/iu', $line, $matches)) {
             $flushCurrent($current, $questions);
-            $current = ['noidungcauhoi' => trim($matches[1]), 'options' => [], 'answer_letter' => '', 'dokho' => 'Dễ'];
+            $current = ['noidungcauhoi' => trim($matches[1]), 'options' => [], 'answer_letter' => '', 'dokho' => 'Dễ', 'loigiai_chitiet' => null];
             continue;
         }
         if (!$current) continue;
@@ -127,6 +134,10 @@ function parse_questions_from_lines($lines)
         }
         if (preg_match('/^Độ khó\s*:\s*(Dễ|Trung bình|Khó)$/iu', $line, $matches)) {
             $current['dokho'] = $matches[1];
+            continue;
+        }
+        if (preg_match('/^Lời giải\s*:\s*(.+)$/iu', $line, $matches)) {
+            $current['loigiai_chitiet'] = trim($matches[1]);
             continue;
         }
         $current['noidungcauhoi'] .= ' ' . trim($line);

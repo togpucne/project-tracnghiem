@@ -16,8 +16,10 @@ $trangthai = trim((string)($data["trangthai"] ?? "active"));
 $options = $data["options"] ?? [];
 $correctIndex = isset($data["correct_index"]) ? (int) $data["correct_index"] : -1;
 
-if ($noidungcauhoi === "") {
-    Api::json(["error" => "Nội dung câu hỏi không được để trống"], 400);
+$loigiai_chitiet = trim((string)($data["loigiai_chitiet"] ?? ""));
+
+if ($noidungcauhoi === "" || $loigiai_chitiet === "") {
+    Api::json(["error" => "Nội dung câu hỏi và lời giải chi tiết không được để trống"], 400);
 }
 
 if ($loai_cauhoi === 1) {
@@ -55,9 +57,11 @@ foreach ($options as $index => $noidung) {
         $temp_check[] = $normalized;
     }
 
+    $isCorrect = ($loai_cauhoi === 2 || $index === $correctIndex) ? 1 : 0;
     $answers[] = [
         "noidung" => $noidung,
-        "dapandung" => ($loai_cauhoi === 2 || $index === $correctIndex) ? 1 : 0,
+        "dapandung" => $isCorrect,
+        "loigiai_chitiet" => $isCorrect ? $loigiai_chitiet : null,
     ];
 }
 
