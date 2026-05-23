@@ -185,13 +185,30 @@ public class APIHelper {
                 }
             }
             return "";
+        } else if (json.charAt(afterColon) == '{') {
+            // Object value: Take until the matching closing bracket
+            int start = afterColon;
+            int depth = 0;
+            for (int i = start; i < json.length(); i++) {
+                char c = json.charAt(i);
+                if (c == '{') depth++;
+                else if (c == '}') {
+                    depth--;
+                    if (depth == 0) return json.substring(start, i + 1);
+                }
+            }
+            return "";
         } else {
             // Numeric, Boolean, or Null value
             int end = afterColon;
-            while (end < json.length() && json.charAt(end) != ',' && json.charAt(end) != '}' && !Character.isWhitespace(json.charAt(end))) {
+            while (end < json.length() && json.charAt(end) != ',' && json.charAt(end) != '}' && json.charAt(end) != ']' && !Character.isWhitespace(json.charAt(end))) {
                 end++;
             }
-            return json.substring(afterColon, end).trim();
+            String value = json.substring(afterColon, end).trim();
+            // Xử lý trường hợp nếu giá trị dính vào dấu ngoặc }
+            if (value.endsWith("}")) value = value.substring(0, value.length() - 1).trim();
+            if (value.endsWith("]")) value = value.substring(0, value.length() - 1).trim();
+            return value;
         }
     }
 

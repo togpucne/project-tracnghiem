@@ -28,11 +28,48 @@ public class Home extends JFrame {
     private HistoryPanel historyPanel;
     private ExamLibraryPanel libraryPanel;
     private ProfilePanel profilePanel;
+    private PremiumPanel premiumPanel;
 
     // Admin Panels
     private AdminDashboardPanel adminDashboardPanel;
     private UserManagementPanel userManagementPanel;
     private SecurityMonitoringPanel securityMonitoringPanel;
+
+    private JPanel sidebar;
+    private static JLabel attemptsLbl;
+
+    public void refreshSidebar() {
+        new Thread(() -> {
+            try { Thread.sleep(500); } catch (Exception e) {} // Đợi Server cập nhật xong Database
+
+            String today = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
+            String res = APIHelper.sendGet("profile/detail?date=" + today);
+            System.out.println("DEBUG PROFILE API: " + res); // Dòng này giúp kiểm tra lỗi
+            if (res != null && res.contains("\"success\":true")) {
+                String data = APIHelper.extractJsonValue(res, "data");
+                
+                // Cập nhật UserSession từ dữ liệu mới nhất trên Server
+                String premStr = APIHelper.extractJsonValue(data, "premium_status");
+                String attemptStr = APIHelper.extractJsonValue(data, "attempts_today");
+                
+                UserSession.premiumStatus = (premStr.isEmpty() || premStr.equals("null")) ? 0 : Integer.parseInt(premStr);
+                UserSession.premiumExpire = APIHelper.extractJsonValue(data, "premium_expire");
+                UserSession.attemptsToday = (attemptStr.isEmpty() || attemptStr.equals("null")) ? 0 : Integer.parseInt(attemptStr);
+                
+                SwingUtilities.invokeLater(() -> {
+                    if (sidebar != null) {
+                        // CHỈ THAY ĐỔI SIDEBAR, KHÔNG RESET TOÀN BỘ APP
+                        JPanel mainWrapper = (JPanel) getContentPane().getComponent(0);
+                        mainWrapper.remove(sidebar);
+                        mainWrapper.add(createSidebar(), BorderLayout.WEST);
+                        
+                        mainWrapper.revalidate();
+                        mainWrapper.repaint();
+                    }
+                });
+            }
+        }).start();
+    }
 
     public Home() {
         setTitle("Trang chủ - Trắc Nghiệm");
@@ -92,6 +129,10 @@ public class Home extends JFrame {
         // ------------- HISTORY CARD -------------
         historyPanel = new HistoryPanel();
         cards.add(historyPanel, "HISTORY");
+
+        // ------------- PREMIUM CARD -------------
+        premiumPanel = new PremiumPanel(this);
+        cards.add(premiumPanel, "PREMIUM");
 
         wrapper.add(cards, BorderLayout.CENTER);
 
@@ -370,7 +411,7 @@ public class Home extends JFrame {
     }
 
     private JPanel createSidebar() {
-        JPanel sidebar = new JPanel();
+        this.sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setBackground(new Color(31, 41, 55)); // Gray-800
         sidebar.setPreferredSize(new Dimension(260, 0));
@@ -415,6 +456,12 @@ public class Home extends JFrame {
             sidebar.add(createMenuButton("Trang chủ", true, "HOME"));
             sidebar.add(createMenuButton("Đề bài", false, "LIBRARY"));
             sidebar.add(createMenuButton("Lịch sử làm bài", false, "HISTORY"));
+            
+            if (UserSession.premiumStatus == 0) {
+                JButton premBtn = createMenuButton("Nâng cấp Premium", false, "PREMIUM");
+                premBtn.setForeground(new Color(251, 191, 36)); // Amber-400
+                sidebar.add(premBtn);
+            }
         }
 
         sidebar.add(createMenuButton("Thông tin cá nhân", false, "PROFILE"));
@@ -429,6 +476,41 @@ public class Home extends JFrame {
             dispose();
         });
         sidebar.add(logoutBtn);
+        sidebar.add(Box.createVerticalStrut(20));
+
+        // Premium Info at bottom of sidebar
+        if (UserSession.userId > 0) {
+            JPanel infoPnl = new JPanel(new GridLayout(2, 1));
+            infoPnl.setBackground(new Color(17, 24, 39)); // Darker background
+            infoPnl.setMaximumSize(new Dimension(220, 70));
+            // Golden Border for Premium
+            if (UserSession.premiumStatus == 1) {
+                infoPnl.setBorder(BorderFactory.createCompoundBorder(
+                    new LineBorder(new Color(251, 191, 36), 1, true),
+                    new EmptyBorder(10, 20, 10, 10)
+                ));
+            } else {
+                infoPnl.setBorder(new EmptyBorder(10, 20, 10, 10));
+            }
+            
+            JLabel statusLbl = new JLabel(UserSession.premiumStatus == 1 ? "PREMIUM ACCOUNT" : "FREE ACCOUNT");
+            statusLbl.setForeground(UserSession.premiumStatus == 1 ? new Color(251, 191, 36) : Color.LIGHT_GRAY);
+            statusLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            
+            String subText = UserSession.premiumStatus == 1 ? "Hết hạn: " + (UserSession.premiumExpire != null ? UserSession.premiumExpire.split(" ")[0] : "N/A") : "Giới hạn: " + UserSession.attemptsToday + "/30";
+            attemptsLbl = new JLabel(subText);
+            attemptsLbl.setForeground(new Color(156, 163, 175));
+            attemptsLbl.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+            
+            infoPnl.add(statusLbl);
+            infoPnl.add(attemptsLbl);
+            
+            JPanel wrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+            wrapper.setOpaque(false);
+            wrapper.add(infoPnl);
+            sidebar.add(wrapper);
+        }
+        
         sidebar.add(Box.createVerticalStrut(30));
 
         return sidebar;

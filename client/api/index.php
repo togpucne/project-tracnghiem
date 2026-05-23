@@ -23,7 +23,7 @@ if ($route === "") {
 
 if (!isset($routes[$route])) {
     Response::json([
-        "error" => "API route not found",
+        "error" => "API route not found: " . $route,
         "route" => $route,
     ], 404);
 }

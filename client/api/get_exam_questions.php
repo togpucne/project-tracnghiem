@@ -5,12 +5,58 @@ require_once __DIR__ . "/../core/Database.php";
 require_once __DIR__ . "/../core/Response.php";
 
 
-$conn = Database::connect();
-$user_id = $_SESSION["user"]["id"];
+require_once __DIR__ . "/../core/TokenManager.php";
+
+$user = null;
+$headers = getallheaders();
+$authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+
+if (str_starts_with($authHeader, 'Bearer ')) {
+    $token = substr($authHeader, 7);
+    $user = TokenManager::validateToken($token);
+} elseif (isset($_SESSION["user"])) {
+    $user = $_SESSION["user"];
+}
+
+if (!$user) {
+    Response::json(["error" => "Unauthorized - Cần đăng nhập"], 401);
+}
+
+$user_id = $user["id"] ?? $user["id_nguoidung"] ?? 0;
 $id_baithi = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
 if ($id_baithi === 0) {
-    Response::json(["error" => "Thieu ID bai thi"], 400);
+    Response::json(["error" => "Thiếu ID bài thi"], 400);
+}
+
+$conn = Database::connect();
+
+// --- PREMIUM CHECK: Limit 30 attempts per day for free users ---
+$stmt_status = $conn->prepare("SELECT premium_status FROM nguoidung WHERE id_nguoidung = ?");
+$stmt_status->bind_param("i", $user_id);
+$stmt_status->execute();
+$userData = $stmt_status->get_result()->fetch_assoc();
+$is_premium = ($userData['premium_status'] ?? 0) == 1;
+
+if (!$is_premium) {
+    // Count attempts TODAY
+    $stmt_count = $conn->prepare("SELECT COUNT(*) as count FROM lanthi WHERE id_nguoidung = ? AND DATE(thoigianbatdau) = CURDATE()");
+    $stmt_count->bind_param("i", $user_id);
+    $stmt_count->execute();
+    $attempts = $stmt_count->get_result()->fetch_assoc()['count'];
+    
+    // Check if user is ALREADY in an ongoing attempt of THIS exam (allow resume)
+    $stmt_check = $conn->prepare("SELECT id_lanthi FROM lanthi WHERE id_nguoidung = ? AND id_baithi = ? AND trangthai = 'ongoing'");
+    $stmt_check->bind_param("ii", $user_id, $id_baithi);
+    $stmt_check->execute();
+    $hasOngoing = $stmt_check->get_result()->num_rows > 0;
+
+    if ($attempts >= 30 && !$hasOngoing) {
+        Response::json([
+            "error" => "limit_reached",
+            "message" => "Bạn đã hết lượt làm bài miễn phí trong hôm nay (30 lượt). Vui lòng nâng cấp Premium để làm bài không giới hạn!"
+        ], 403);
+    }
 }
 
 $stmt = $conn->prepare("SELECT ten_baithi, thoigianlam, IFNULL(xao_tron, 0) AS xao_tron FROM baithi WHERE id_baithi = ?");

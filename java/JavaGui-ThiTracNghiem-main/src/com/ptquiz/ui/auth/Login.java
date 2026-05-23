@@ -162,6 +162,14 @@ public class Login extends JFrame {
                     UserSession.token = APIHelper.extractJsonValue(response.rawData, "token");
                     UserSession.matkhau = password;
                     
+                    // Parse Premium info
+                    String pStatusStr = APIHelper.extractJsonValue(response.rawData, "premium_status");
+                    UserSession.premiumStatus = pStatusStr.isEmpty() ? 0 : Integer.parseInt(pStatusStr);
+                    UserSession.premiumExpire = APIHelper.extractJsonValue(response.rawData, "premium_expire");
+                    
+                    String attemptsStr = APIHelper.extractJsonValue(response.rawData, "attempts_today");
+                    UserSession.attemptsToday = attemptsStr.isEmpty() ? 0 : Integer.parseInt(attemptsStr);
+                    
                     if (UserSession.ngaythamgia.contains(" ")) {
                         UserSession.ngaythamgia = UserSession.ngaythamgia.split(" ")[0];
                     }

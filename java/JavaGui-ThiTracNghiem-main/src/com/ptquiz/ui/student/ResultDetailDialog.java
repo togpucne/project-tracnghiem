@@ -5,32 +5,38 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResultDetailDialog extends JDialog {
+public class ResultDetailDialog extends JFrame {
     private String idLanthi;
     private JPanel contentPanel;
 
     public ResultDetailDialog(JFrame parent, String idLanthi, String tenBaithi) {
-        super(parent, "Chi tiết bài thi: " + tenBaithi, true);
+        setTitle("Chi tiết kết quả: " + tenBaithi);
         this.idLanthi = idLanthi;
 
-        setSize(1000, 700);
+        setSize(1200, 900);
         setLocationRelativeTo(parent);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); 
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         contentPanel = new JPanel();
+        // Dùng FlowLayout với căn trái nhưng sẽ ép chiều rộng Card sau
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        contentPanel.setBackground(new Color(249, 250, 251));
+        contentPanel.setBackground(new Color(243, 244, 246));
 
         JScrollPane scrollPane = new JScrollPane(contentPanel);
         scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(25);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         setLayout(new BorderLayout());
         add(scrollPane, BorderLayout.CENTER);
 
         loadDetails();
+        setVisible(true);
     }
 
     private void loadDetails() {
@@ -45,7 +51,6 @@ public class ResultDetailDialog extends JDialog {
             }
 
             try {
-                // Parse questions mechanically (simulating a JSON library)
                 List<QuestionResult> qList = new ArrayList<>();
                 int questionsStart = jsonResponse.indexOf("\"questions\":[");
                 if (questionsStart != -1) {
@@ -56,7 +61,7 @@ public class ResultDetailDialog extends JDialog {
                         QuestionResult qr = new QuestionResult();
                         qr.noidung = APIHelper.unescapeUnicode(extractBasic("{\"id_cauhoi\":" + qRaw, "noidungcauhoi"));
                         qr.status = extractBasic("{\"id_cauhoi\":" + qRaw, "status");
-                        qr.userTextAns = APIHelper.unescapeUnicode(extractBasic("{\"id_cauhoi\":" + qRaw, "user_text_ans"));
+                        qr.loigiaiChitiet = APIHelper.unescapeUnicode(extractBasic("{\"id_cauhoi\":" + qRaw, "loigiai_chitiet"));
 
                         String[] aBlocks = qRaw.split("\"id_dapan\":");
                         for (int j = 1; j < aBlocks.length; j++) {
@@ -71,10 +76,7 @@ public class ResultDetailDialog extends JDialog {
                     }
                 }
 
-                SwingUtilities.invokeLater(() -> {
-                    renderUI(qList);
-                });
-
+                SwingUtilities.invokeLater(() -> renderUI(qList));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -83,62 +85,133 @@ public class ResultDetailDialog extends JDialog {
 
     private void renderUI(List<QuestionResult> qList) {
         contentPanel.removeAll();
-        contentPanel.add(Box.createVerticalStrut(20));
+        contentPanel.setBorder(new EmptyBorder(30, 60, 30, 60)); // Tăng padding bên ngoài cho thoáng
 
-        int stt = 1;
-        for (QuestionResult qr : qList) {
-            JPanel card = new JPanel();
-            card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-            card.setBackground(Color.WHITE);
-            card.setBorder(BorderFactory.createCompoundBorder(
-                new EmptyBorder(0, 40, 20, 40),
-                BorderFactory.createCompoundBorder(
-                    new LineBorder(getStatusColor(qr.status), 2, true),
-                    new EmptyBorder(20, 20, 20, 20)
-                )
-            ));
+        for (int i = 0; i < qList.size(); i++) {
+            QuestionResult qr = qList.get(i);
+            int stt = i + 1;
+            Color accentColor = getStatusColor(qr.status);
+            
+            // Card chính
+            JPanel card = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(Color.WHITE);
+                    // Tăng độ bo lên 30px cho mềm mại
+                    g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
+                    
+                    // Vạch màu chỉ thị bên trái
+                    g2.setColor(accentColor);
+                    g2.fill(new RoundRectangle2D.Double(0, 0, 10, getHeight(), 30, 30));
+                    g2.fillRect(5, 0, 5, getHeight());
+                    g2.dispose();
+                }
+            };
+            card.setLayout(new BorderLayout());
+            card.setOpaque(false);
+            card.setAlignmentX(Component.CENTER_ALIGNMENT);
+            // Ép card rộng 95% diện tích màn hình để ĐỀU NHAU
+            card.setMaximumSize(new Dimension(1400, Integer.MAX_VALUE));
+            card.setBorder(new EmptyBorder(30, 40, 30, 30));
 
-            JLabel qLabel = new JLabel("<html><p style='width: 800px'><b>Câu " + stt + ":</b> " + qr.noidung + "</p></html>");
-            qLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-            card.add(qLabel);
-            card.add(Box.createVerticalStrut(15));
+            JPanel inner = new JPanel();
+            inner.setLayout(new BoxLayout(inner, BoxLayout.Y_AXIS));
+            inner.setOpaque(false);
+            inner.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+            // Nội dung câu hỏi
+            JLabel qLabel = new JLabel("<html><body style='width: 1000px'><b>Câu " + stt + ":</b> " + qr.noidung + "</body></html>");
+            qLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            qLabel.setForeground(new Color(17, 24, 39));
+            qLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            inner.add(qLabel);
+            inner.add(Box.createVerticalStrut(25));
+
+            // Danh sách đáp án
+            char labelChar = 'A';
             for (AnswerResult ar : qr.answers) {
-                JLabel aLabel = new JLabel("<html><p style='width: 750px'>" + ar.noidung + "</p></html>");
-                aLabel.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-                aLabel.setBorder(new EmptyBorder(5, 10, 5, 10));
-                aLabel.setOpaque(true);
+                JPanel optionRow = new JPanel(new BorderLayout(15, 0));
+                optionRow.setOpaque(true);
+                optionRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+                optionRow.setBorder(BorderFactory.createCompoundBorder(
+                    new LineBorder(new Color(229, 231, 235), 1, true),
+                    new EmptyBorder(12, 18, 12, 18)
+                ));
 
-                if (ar.selected && ar.isCorrect) {
-                    aLabel.setBackground(new Color(220, 252, 231)); // Green-100
-                    aLabel.setForeground(new Color(22, 101, 52)); // Green-800
-                    aLabel.setText("<html>&#10004; " + aLabel.getText() + " (Đúng)</html>");
+                String text = "<html><b>" + labelChar + ".</b> " + ar.noidung;
+                if (ar.selected) text += " <i style='color: #6B7280'>(Bạn chọn)</i>";
+                text += "</html>";
+                
+                JLabel aLabel = new JLabel(text);
+                aLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+
+                if (ar.isCorrect) {
+                    optionRow.setBackground(new Color(236, 253, 245));
+                    optionRow.setBorder(new LineBorder(new Color(16, 185, 129), 1, true));
+                    aLabel.setForeground(new Color(6, 95, 70));
                 } else if (ar.selected && !ar.isCorrect) {
-                    aLabel.setBackground(new Color(254, 226, 226)); // Red-100
-                    aLabel.setForeground(new Color(153, 27, 27)); // Red-800
-                    aLabel.setText("<html>&#10008; " + aLabel.getText() + " (Sai)</html>");
-                } else if (ar.isCorrect) {
-                    aLabel.setBackground(new Color(240, 249, 255)); // Blue-50
-                    aLabel.setForeground(new Color(30, 64, 175)); // Blue-800
-                    aLabel.setText("<html>&#9679; " + aLabel.getText() + " (Đáp án đúng)</html>");
+                    optionRow.setBackground(new Color(254, 242, 242));
+                    optionRow.setBorder(new LineBorder(new Color(239, 68, 68), 1, true));
+                    aLabel.setForeground(new Color(153, 27, 27));
                 } else {
-                    aLabel.setBackground(Color.WHITE);
+                    optionRow.setBackground(Color.WHITE);
                 }
 
-                card.add(aLabel);
-                card.add(Box.createVerticalStrut(5));
+                optionRow.add(aLabel, BorderLayout.CENTER);
+                inner.add(optionRow);
+                inner.add(Box.createVerticalStrut(12));
+                labelChar++;
             }
 
+            // Lời giải chi tiết
+            if (qr.loigiaiChitiet != null && !qr.loigiaiChitiet.isEmpty() && !qr.loigiaiChitiet.equals("null")) {
+                inner.add(Box.createVerticalStrut(20));
+                
+                JPanel solBox = new JPanel(new BorderLayout(10, 8));
+                solBox.setBackground(new Color(249, 250, 251));
+                solBox.setBorder(new EmptyBorder(20, 25, 20, 25));
+                solBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+                
+                String formattedSol = qr.loigiaiChitiet.replace("\\n", "<br>").replace("\n", "<br>");
+                JLabel solTitle = new JLabel("<html><b>(!) GIẢI THÍCH CHI TIẾT</b></html>");
+                solTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+                solTitle.setForeground(new Color(75, 85, 99));
+
+                JLabel solText = new JLabel("<html><body style='width: 900px'>" + formattedSol + "</body></html>");
+                solText.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+                solText.setForeground(new Color(31, 41, 55));
+                
+                solBox.add(solTitle, BorderLayout.NORTH);
+                solBox.add(solText, BorderLayout.CENTER);
+                
+                JPanel solWrapper = new JPanel(new BorderLayout()) {
+                   @Override protected void paintComponent(Graphics g) {
+                       Graphics2D g2 = (Graphics2D) g.create();
+                       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                       g2.setColor(new Color(243, 244, 246));
+                       g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
+                       g2.dispose();
+                   }
+                };
+                solWrapper.setOpaque(false);
+                solWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+                solWrapper.add(solBox);
+                inner.add(solWrapper);
+            }
+
+            card.add(inner, BorderLayout.CENTER);
             contentPanel.add(card);
-            stt++;
+            contentPanel.add(Box.createVerticalStrut(40)); // Khoảng cách giữa các card
         }
         contentPanel.revalidate();
         contentPanel.repaint();
     }
 
     private Color getStatusColor(String status) {
-        if ("correct".equals(status)) return new Color(34, 197, 94);
-        if ("wrong".equals(status)) return new Color(239, 68, 68);
+        if ("correct".equals(status)) return new Color(16, 185, 129); // Modern Green
+        if ("wrong".equals(status)) return new Color(239, 68, 68); // Modern Red
         return new Color(209, 213, 219);
     }
 
@@ -150,14 +223,14 @@ public class ResultDetailDialog extends JDialog {
         return "";
     }
 
-    class QuestionResult {
+    static class QuestionResult {
         String noidung;
         String status;
-        String userTextAns;
+        String loigiaiChitiet;
         List<AnswerResult> answers = new ArrayList<>();
     }
 
-    class AnswerResult {
+    static class AnswerResult {
         String noidung;
         boolean selected;
         boolean isCorrect;

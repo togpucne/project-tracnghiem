@@ -5,12 +5,29 @@ require_once __DIR__ . "/../core/Database.php";
 require_once __DIR__ . "/../core/Response.php";
 
 
+require_once __DIR__ . "/../core/TokenManager.php";
+
+$user = null;
+$headers = getallheaders();
+$authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+
+if (str_starts_with($authHeader, 'Bearer ')) {
+    $token = substr($authHeader, 7);
+    $user = TokenManager::validateToken($token);
+} elseif (isset($_SESSION["user"])) {
+    $user = $_SESSION["user"];
+}
+
+if (!$user) {
+    Response::json(["success" => false, "error" => "Unauthorized"], 401);
+}
+
+$user_id = $user["id"] ?? $user["id_nguoidung"] ?? 0;
 $conn = Database::connect();
-$user_id = $_SESSION["user"]["id"];
 $id_lanthi = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
 if ($id_lanthi === 0) {
-    Response::json(["error" => "Thieu ID lan thi"], 400);
+    Response::json(["error" => "Thiếu ID lần thi"], 400);
 }
 
 $stmt = $conn->prepare("
@@ -170,6 +187,10 @@ foreach ($questions as $qid => $q) {
         $q["status"] = "wrong";
     }
 
+    if ($user_premium == 0) {
+        $q["loigiai_chitiet"] = "Tính năng này chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để xem lời giải chi tiết!";
+    }
+    
     $questions_arr[] = $q;
 }
 

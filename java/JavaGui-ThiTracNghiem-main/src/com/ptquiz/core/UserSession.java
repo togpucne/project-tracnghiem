@@ -8,5 +8,8 @@ public class UserSession {
     public static String matkhau = "";
     public static String role = "student";
     public static String avatar = "default.jpg";
+    public static int premiumStatus = 0;
+    public static String premiumExpire = null;
+    public static int attemptsToday = 0;
     public static String token = "";
 }

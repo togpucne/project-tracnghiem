@@ -254,7 +254,9 @@ public class ExamScreen extends JFrame {
                     String[] questionsRaw = cauhoiStr.split("\"id_cauhoi\":");
                     for (int i = 1; i < questionsRaw.length; i++) {
                         String qRaw = questionsRaw[i];
-                        String idCauhoi = qRaw.substring(0, qRaw.indexOf(",")).trim().replace("\"", "");
+                        int idEnd = qRaw.indexOf(",");
+                        if (idEnd == -1) idEnd = qRaw.indexOf("}");
+                        String idCauhoi = qRaw.substring(0, idEnd).trim().replace("\"", "");
                         String noiDung = extractBasic("{\"id_cauhoi\":" + qRaw, "noidung");
 
                         Question q = new Question();
@@ -264,7 +266,9 @@ public class ExamScreen extends JFrame {
                         String[] dapanBlocks = qRaw.split("\"id_dapan\":");
                         for (int j = 1; j < dapanBlocks.length; j++) {
                             String dRaw = dapanBlocks[j];
-                            String idDapan = dRaw.substring(0, dRaw.indexOf(",")).trim().replace("\"", "");
+                            int dIdEnd = dRaw.indexOf(",");
+                            if (dIdEnd == -1) dIdEnd = dRaw.indexOf("}");
+                            String idDapan = dRaw.substring(0, dIdEnd).trim().replace("\"", "");
                             String dNoidung = extractBasic("{\"id_dapan\":" + dRaw, "noidungdapan");
 
                             Answer ans = new Answer();
@@ -610,6 +614,7 @@ public class ExamScreen extends JFrame {
         if (parentFrame != null) {
             if (parentFrame instanceof Home) {
                 ((Home) parentFrame).refreshExams();
+                ((Home) parentFrame).refreshSidebar();
             }
             parentFrame.setVisible(true);
         }
