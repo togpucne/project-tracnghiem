@@ -199,8 +199,8 @@ public class PremiumPanel extends JPanel {
 
         // VietQR
         String bankId = "MB";
-        String accountNo = "0356501726";
-        String accountName = "PT QUIZ PREMIUM";
+        String accountNo = "0343635667";
+        String accountName = "NGUYEN TRONG PHUC";
         String memo = orderCode;
         
         try {
@@ -218,10 +218,34 @@ public class PremiumPanel extends JPanel {
             qrSide.add(new JLabel("Đang tải mã QR...", SwingConstants.CENTER));
         }
         
-        JLabel qrHint = new JLabel("Quét mã QR để thanh toán", SwingConstants.CENTER);
-        qrHint.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        qrHint.setBorder(new EmptyBorder(15, 0, 0, 0));
-        qrSide.add(qrHint, BorderLayout.SOUTH);
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
+
+        JLabel nameLbl = new JLabel(accountName.toUpperCase());
+        nameLbl.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        nameLbl.setForeground(new Color(55, 65, 81));
+        nameLbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JLabel accLbl = new JLabel(accountNo);
+        accLbl.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        accLbl.setForeground(new Color(107, 114, 128));
+        accLbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        String formattedAmount = String.format("%,d", Long.parseLong(amount)).replace(",", ".");
+        JLabel amtLbl = new JLabel("Số tiền: " + formattedAmount + " VND");
+        amtLbl.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        amtLbl.setForeground(new Color(55, 65, 81));
+        amtLbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        bottomPanel.add(nameLbl);
+        bottomPanel.add(Box.createVerticalStrut(5));
+        bottomPanel.add(accLbl);
+        bottomPanel.add(Box.createVerticalStrut(5));
+        bottomPanel.add(amtLbl);
+
+        qrSide.add(bottomPanel, BorderLayout.SOUTH);
 
         container.add(infoSide);
         container.add(qrSide);
@@ -263,13 +287,22 @@ public class PremiumPanel extends JPanel {
 
     private void refreshGlobalStatus() {
         new Thread(() -> {
+            try { Thread.sleep(500); } catch (Exception e) {}
             String res = APIHelper.sendGet("profile/detail");
-            if (res.contains("\"success\":true")) {
+            if (res != null && res.contains("\"success\":true")) {
                 String data = APIHelper.extractJsonValue(res, "data");
-                UserSession.premiumStatus = Integer.parseInt(APIHelper.extractJsonValue(data, "premium_status"));
+                
+                String premStr = APIHelper.extractJsonValue(data, "premium_status");
+                String attemptStr = APIHelper.extractJsonValue(data, "attempts_today");
+                
+                UserSession.premiumStatus = (premStr.isEmpty() || premStr.equals("null")) ? 0 : Integer.parseInt(premStr);
                 UserSession.premiumExpire = APIHelper.extractJsonValue(data, "premium_expire");
-                UserSession.attemptsToday = Integer.parseInt(APIHelper.extractJsonValue(data, "attempts_today"));
-                SwingUtilities.invokeLater(() -> homeFrame.refreshSidebar());
+                UserSession.attemptsToday = (attemptStr.isEmpty() || attemptStr.equals("null")) ? 0 : Integer.parseInt(attemptStr);
+                
+                SwingUtilities.invokeLater(() -> {
+                    homeFrame.refreshSidebar();
+                    homeFrame.switchView("HOME"); // Rời về trang chủ sau khi mua thành công
+                });
             }
         }).start();
     }

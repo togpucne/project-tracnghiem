@@ -20,8 +20,22 @@ $payment = $stmt->get_result()->fetch_assoc();
 
 // 2. Kiểm tra trạng thái Premium tổng thể của user (đề phòng user đã thanh toán mã khác)
 $is_premium = false;
-if (session_status() === PHP_SESSION_NONE) session_start();
-$user_id = $_SESSION['user']['id'] ?? $_SESSION['user']['id_nguoidung'] ?? 0;
+$user_id = 0;
+
+$headers = getallheaders();
+$authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+
+if (str_starts_with($authHeader, 'Bearer ')) {
+    require_once __DIR__ . "/../core/TokenManager.php";
+    $token = substr($authHeader, 7);
+    $user = TokenManager::validateToken($token);
+    if ($user) {
+        $user_id = $user["id"] ?? $user["id_nguoidung"] ?? 0;
+    }
+} else {
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    $user_id = $_SESSION['user']['id'] ?? $_SESSION['user']['id_nguoidung'] ?? 0;
+}
 
 if ($user_id > 0) {
     $stmt = $conn->prepare("SELECT premium_status FROM nguoidung WHERE id_nguoidung = ?");
