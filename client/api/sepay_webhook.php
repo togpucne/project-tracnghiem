@@ -77,10 +77,13 @@ try {
     $package_type = $order['package_type']; // đang lưu tên gói
 
     // Truy xuất số ngày thực tế của gói từ bảng goi_premium
-    $stmt = $conn->prepare("SELECT thoihan_ngay FROM goi_premium WHERE ten_goi = ?");
+    $stmt = $conn->prepare("SELECT thoihan_ngay FROM goi_premium WHERE ten_goi = ? AND trangthai = 'active'");
     $stmt->bind_param("s", $package_type);
     $stmt->execute();
     $goi_info = $stmt->get_result()->fetch_assoc();
+    if (!$goi_info) {
+        throw new Exception('Gói premium không còn hoạt động');
+    }
     $days = $goi_info ? (int)$goi_info['thoihan_ngay'] : 30; // Mặc định 30 nếu lỗi
 
     // Tính ngày hết hạn: Nếu đang là premium thì cộng dồn, nếu không thì tính từ NOW

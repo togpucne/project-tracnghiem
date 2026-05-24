@@ -42,7 +42,7 @@ if ($is_premium && !empty($_SESSION['user']['premium_expire'])) {
             <div class="row justify-content-center">
             <?php
             $conn = Database::connect();
-            $result = $conn->query("SELECT * FROM goi_premium ORDER BY gia ASC");
+            $result = $conn->query("SELECT * FROM goi_premium WHERE trangthai = 'active' ORDER BY gia ASC");
             while ($pkg = $result->fetch_assoc()):
                 $icon = ($pkg['gia'] >= 400000) ? 'fa-gem text-info' : 'fa-crown text-warning';
                 $isBestValue = ($pkg['thoihan_ngay'] >= 365);

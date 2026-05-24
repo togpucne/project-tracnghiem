@@ -3,79 +3,113 @@ require_once __DIR__ . '/../core/Api.php';
 require_once __DIR__ . '/../model/Database.php';
 require_once __DIR__ . '/../model/admin/goipremium.model.php';
 
-// Đảm bảo không có output thừa làm hỏng JSON
 if (ob_get_level() > 0) ob_clean();
 
 $db = Database::connect();
 $model = new GoiPremiumModel($db);
-
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     if ($method === 'GET') {
         $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
         if ($id > 0) {
-            $data = $model->getById($id);
-            Api::json(['success' => true, 'data' => $data]);
-        } else {
-            $data = $model->getAll();
-            // DEBUG: Nếu mảng rỗng, ta vẫn trả về success true nhưng data rỗng
-            Api::json(['success' => true, 'data' => $data]);
+            Api::json(['success' => true, 'data' => $model->getById($id)]);
         }
-    } 
-    elseif ($method === 'POST') {
+
+        $status = $_GET['status'] ?? 'active';
+        if (!in_array($status, ['active', 'inactive', 'all'], true)) {
+            $status = 'active';
+        }
+
+        Api::json(['success' => true, 'data' => $model->getAll($status)]);
+    }
+
+    if ($method === 'POST') {
         $input = Api::jsonInput();
-        if (isset($input['copy_id']) && $input['copy_id'] > 0) {
-            $success = $model->copy($input['copy_id']);
-            Api::json(['success' => $success, 'message' => $success ? 'Sao chép gói thành công' : 'Không thể sao chép gói']);
-        } else {
-            // Validation cho thêm mới
-            if (empty($input['ten_goi']) || empty($input['gia']) || empty($input['thoihan_ngay']) || empty($input['mieuta'])) {
-                Api::json(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin (Tên, Giá, Thời hạn, Miêu tả)']);
-            }
-            if ($input['gia'] < 10000) {
-                Api::json(['success' => false, 'message' => 'Giá gói phải lớn hơn hoặc bằng 10.000 VNĐ']);
-            }
-            if ($input['thoihan_ngay'] <= 1) {
-                Api::json(['success' => false, 'message' => 'Thời hạn phải lớn hơn 1 ngày']);
-            }
-            if (!$model->checkUniqueName($input['ten_goi'])) {
-                Api::json(['success' => false, 'message' => 'Tên gói này đã tồn tại, vui lòng chọn tên khác']);
-            }
 
-            $success = $model->save($input);
-            Api::json(['success' => $success, 'message' => $success ? 'Lưu gói thành công' : 'Không thể lưu gói']);
+        if (isset($input['copy_id']) && (int)$input['copy_id'] > 0) {
+            $success = $model->copy((int)$input['copy_id']);
+            Api::json([
+                'success' => $success,
+                'message' => $success ? 'Sao chép gói thành công' : 'Không thể sao chép gói'
+            ]);
         }
-    } 
-    elseif ($method === 'PATCH') {
+
+        if (empty($input['ten_goi']) || empty($input['gia']) || empty($input['thoihan_ngay']) || empty($input['mieuta'])) {
+            Api::json(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin gói premium'], 400);
+        }
+        if ((float)$input['gia'] < 10000) {
+            Api::json(['success' => false, 'message' => 'Giá gói phải lớn hơn hoặc bằng 10.000 VNĐ'], 400);
+        }
+        if ((int)$input['thoihan_ngay'] <= 1) {
+            Api::json(['success' => false, 'message' => 'Thời hạn phải lớn hơn 1 ngày'], 400);
+        }
+        if (!$model->checkUniqueName($input['ten_goi'])) {
+            Api::json(['success' => false, 'message' => 'Tên gói này đã tồn tại, vui lòng chọn tên khác'], 409);
+        }
+
+        $success = $model->save($input);
+        Api::json([
+            'success' => $success,
+            'message' => $success ? 'Lưu gói thành công' : 'Không thể lưu gói'
+        ]);
+    }
+
+    if ($method === 'PATCH') {
         $data = Api::jsonInput();
+
+        if (($data['action'] ?? '') === 'restore') {
+            $id = isset($data['id_goi']) ? (int)$data['id_goi'] : 0;
+            if ($id <= 0) {
+                Api::json(['success' => false, 'message' => 'Mã gói không hợp lệ'], 400);
+            }
+
+            $success = $model->restore($id);
+            Api::json([
+                'success' => $success,
+                'message' => $success ? 'Khôi phục gói premium thành công' : 'Không thể khôi phục gói này'
+            ]);
+        }
+
         if (empty($data['ten_goi']) || empty($data['gia']) || empty($data['thoihan_ngay']) || empty($data['mieuta'])) {
-            Api::json(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin (Tên, Giá, Thời hạn, Miêu tả)']);
+            Api::json(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin gói premium'], 400);
         }
-
-        if ($data['gia'] < 10000) {
-            Api::json(['success' => false, 'message' => 'Giá gói phải lớn hơn hoặc bằng 10.000 VNĐ']);
+        if ((float)$data['gia'] < 10000) {
+            Api::json(['success' => false, 'message' => 'Giá gói phải lớn hơn hoặc bằng 10.000 VNĐ'], 400);
         }
-
-        if ($data['thoihan_ngay'] <= 1) {
-            Api::json(['success' => false, 'message' => 'Thời hạn phải lớn hơn 1 ngày']);
+        if ((int)$data['thoihan_ngay'] <= 1) {
+            Api::json(['success' => false, 'message' => 'Thời hạn phải lớn hơn 1 ngày'], 400);
         }
 
         $id = isset($data['id_goi']) ? (int)$data['id_goi'] : 0;
         if (!$model->checkUniqueName($data['ten_goi'], $id)) {
-            Api::json(['success' => false, 'message' => 'Tên gói này đã tồn tại, vui lòng chọn tên khác']);
+            Api::json(['success' => false, 'message' => 'Tên gói này đã tồn tại, vui lòng chọn tên khác'], 409);
         }
 
         $success = $model->save($data);
-        Api::json(['success' => $success, 'message' => $success ? 'Cập nhật thành công' : 'Không thể cập nhật']);
-    } 
-    elseif ($method === 'DELETE') {
+        Api::json([
+            'success' => $success,
+            'message' => $success ? 'Cập nhật thành công' : 'Không thể cập nhật'
+        ]);
+    }
+
+    if ($method === 'DELETE') {
         $input = Api::jsonInput();
         $id = isset($input['id_goi']) ? (int)$input['id_goi'] : 0;
+        if ($id <= 0) {
+            Api::json(['success' => false, 'message' => 'Mã gói không hợp lệ'], 400);
+        }
+
         $success = $model->delete($id);
-        Api::json(['success' => $success, 'message' => $success ? 'Xóa thành công' : 'Không thể xóa']);
-    } 
+        Api::json([
+            'success' => $success,
+            'message' => $success ? 'Đã chuyển gói premium vào thùng rác' : 'Không thể xóa gói này hoặc gói đã nằm trong thùng rác'
+        ]);
+    }
+
+    Api::json(['success' => false, 'message' => 'Phương thức không được hỗ trợ'], 405);
 } catch (Exception $e) {
-    Api::json(['success' => false, 'error' => $e->getMessage()], 500);
+    Api::json(['success' => false, 'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'], 500);
 }
 ?>

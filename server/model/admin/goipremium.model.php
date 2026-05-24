@@ -6,14 +6,25 @@ class GoiPremiumModel {
         $this->db = $db;
     }
 
-    public function getAll() {
-        $sql = "SELECT * FROM goi_premium ORDER BY gia ASC";
-        $result = $this->db->query($sql);
+    public function getAll($status = 'active') {
+        if ($status === 'all') {
+            $sql = "SELECT * FROM goi_premium ORDER BY trangthai ASC, gia ASC";
+            $result = $this->db->query($sql);
+        } else {
+            $stmt = $this->db->prepare("SELECT * FROM goi_premium WHERE trangthai = ? ORDER BY gia ASC");
+            $stmt->bind_param("s", $status);
+            $stmt->execute();
+            $result = $stmt->get_result();
+        }
+
         $data = [];
         if ($result) {
             while ($row = $result->fetch_assoc()) {
                 $data[] = $row;
             }
+        }
+        if (isset($stmt)) {
+            $stmt->close();
         }
         return $data;
     }
@@ -33,7 +44,7 @@ class GoiPremiumModel {
             $stmt->bind_param("sdisi", $data['ten_goi'], $data['gia'], $data['thoihan_ngay'], $data['mieuta'], $data['id_goi']);
         } else {
             // Insert
-            $stmt = $this->db->prepare("INSERT INTO goi_premium (ten_goi, gia, thoihan_ngay, mieuta) VALUES (?, ?, ?, ?)");
+            $stmt = $this->db->prepare("INSERT INTO goi_premium (ten_goi, gia, thoihan_ngay, mieuta, trangthai) VALUES (?, ?, ?, ?, 'active')");
             $stmt->bind_param("sdis", $data['ten_goi'], $data['gia'], $data['thoihan_ngay'], $data['mieuta']);
         }
         $success = $stmt->execute();
@@ -42,11 +53,21 @@ class GoiPremiumModel {
     }
 
     public function delete($id) {
-        $stmt = $this->db->prepare("DELETE FROM goi_premium WHERE id_goi = ?");
+        $stmt = $this->db->prepare("UPDATE goi_premium SET trangthai = 'inactive' WHERE id_goi = ? AND trangthai = 'active'");
         $stmt->bind_param("i", $id);
         $success = $stmt->execute();
+        $affected = $stmt->affected_rows;
         $stmt->close();
-        return $success;
+        return $success && $affected > 0;
+    }
+
+    public function restore($id) {
+        $stmt = $this->db->prepare("UPDATE goi_premium SET trangthai = 'active' WHERE id_goi = ? AND trangthai = 'inactive'");
+        $stmt->bind_param("i", $id);
+        $success = $stmt->execute();
+        $affected = $stmt->affected_rows;
+        $stmt->close();
+        return $success && $affected > 0;
     }
 
     public function copy($id) {
@@ -54,7 +75,7 @@ class GoiPremiumModel {
         if (!$goi) return false;
 
         $new_name = $goi['ten_goi'] . " (Copy)";
-        $stmt = $this->db->prepare("INSERT INTO goi_premium (ten_goi, gia, thoihan_ngay, mieuta) VALUES (?, ?, ?, ?)");
+        $stmt = $this->db->prepare("INSERT INTO goi_premium (ten_goi, gia, thoihan_ngay, mieuta, trangthai) VALUES (?, ?, ?, ?, 'active')");
         $stmt->bind_param("sdis", $new_name, $goi['gia'], $goi['thoihan_ngay'], $goi['mieuta']);
         $success = $stmt->execute();
         $stmt->close();
@@ -62,7 +83,7 @@ class GoiPremiumModel {
     }
 
     public function checkUniqueName($name, $excludeId = 0) {
-        $sql = "SELECT id_goi FROM goi_premium WHERE ten_goi = ? AND id_goi != ?";
+        $sql = "SELECT id_goi FROM goi_premium WHERE ten_goi = ? AND id_goi != ? AND trangthai = 'active'";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("si", $name, $excludeId);
         $stmt->execute();
