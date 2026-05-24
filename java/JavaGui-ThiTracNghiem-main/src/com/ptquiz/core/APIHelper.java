@@ -38,6 +38,54 @@ public class APIHelper {
         }
     }
 
+    public static APIResponse sendPatch(String endpoint, String jsonInputString) {
+        try {
+            URL url = new java.net.URI(BASE_URL + endpoint).toURL();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("PATCH");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setRequestProperty("Accept", "application/json");
+            if (UserSession.token != null && !UserSession.token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + UserSession.token);
+            }
+            conn.setDoOutput(true);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            return getResponse(conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new APIResponse(false, "Lỗi kết nối: " + e.getMessage(), "");
+        }
+    }
+
+    public static APIResponse sendDelete(String endpoint, String jsonInputString) {
+        try {
+            URL url = new java.net.URI(BASE_URL + endpoint).toURL();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("DELETE");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setRequestProperty("Accept", "application/json");
+            if (UserSession.token != null && !UserSession.token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + UserSession.token);
+            }
+            conn.setDoOutput(true);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            return getResponse(conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new APIResponse(false, "Lỗi kết nối: " + e.getMessage(), "");
+        }
+    }
+
     public static APIResponse sendMultipartPost(String endpoint, java.util.Map<String, String> fields, String fileKey, java.io.File file) {
         String boundary = "---" + System.currentTimeMillis() + "---";
         String LINE_FEED = "\r\n";

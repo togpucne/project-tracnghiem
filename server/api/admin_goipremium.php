@@ -33,11 +33,11 @@ try {
             if (empty($input['ten_goi']) || empty($input['gia']) || empty($input['thoihan_ngay']) || empty($input['mieuta'])) {
                 Api::json(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin (Tên, Giá, Thời hạn, Miêu tả)']);
             }
-            if ($input['gia'] <= 10000) {
-                Api::json(['success' => false, 'message' => 'Giá gói phải lớn hơn 10.000 VNĐ']);
+            if ($input['gia'] < 10000) {
+                Api::json(['success' => false, 'message' => 'Giá gói phải lớn hơn hoặc bằng 10.000 VNĐ']);
             }
-            if ($input['thoihan_ngay'] <= 0) {
-                Api::json(['success' => false, 'message' => 'Thời hạn phải lớn hơn 0 ngày']);
+            if ($input['thoihan_ngay'] <= 1) {
+                Api::json(['success' => false, 'message' => 'Thời hạn phải lớn hơn 1 ngày']);
             }
             if (!$model->checkUniqueName($input['ten_goi'])) {
                 Api::json(['success' => false, 'message' => 'Tên gói này đã tồn tại, vui lòng chọn tên khác']);
@@ -53,12 +53,12 @@ try {
             Api::json(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin (Tên, Giá, Thời hạn, Miêu tả)']);
         }
 
-        if ($data['gia'] <= 10000) {
-            Api::json(['success' => false, 'message' => 'Giá gói phải lớn hơn 10.000 VNĐ']);
+        if ($data['gia'] < 10000) {
+            Api::json(['success' => false, 'message' => 'Giá gói phải lớn hơn hoặc bằng 10.000 VNĐ']);
         }
 
-        if ($data['thoihan_ngay'] <= 0) {
-            Api::json(['success' => false, 'message' => 'Thời hạn phải lớn hơn 0 ngày']);
+        if ($data['thoihan_ngay'] <= 1) {
+            Api::json(['success' => false, 'message' => 'Thời hạn phải lớn hơn 1 ngày']);
         }
 
         $id = isset($data['id_goi']) ? (int)$data['id_goi'] : 0;

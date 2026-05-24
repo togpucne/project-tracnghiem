@@ -34,6 +34,7 @@ public class Home extends JFrame {
     private AdminDashboardPanel adminDashboardPanel;
     private UserManagementPanel userManagementPanel;
     private SecurityMonitoringPanel securityMonitoringPanel;
+    private PremiumPackageManagementPanel premiumPackagePanel;
 
     private JPanel sidebar;
     private static JLabel attemptsLbl;
@@ -116,9 +117,11 @@ public class Home extends JFrame {
             adminDashboardPanel = new AdminDashboardPanel();
             userManagementPanel = new UserManagementPanel();
             securityMonitoringPanel = new SecurityMonitoringPanel();
+            premiumPackagePanel = new PremiumPackageManagementPanel();
 
             cards.add(adminDashboardPanel, "ADMIN_DASHBOARD");
             cards.add(userManagementPanel, "MANAGE_USERS");
+            cards.add(premiumPackagePanel, "MANAGE_PREMIUM");
             cards.add(securityMonitoringPanel, "SECURITY_MONITOR");
         }
 
@@ -197,6 +200,10 @@ public class Home extends JFrame {
             case "MANAGE_USERS":
                 if (userManagementPanel != null)
                     userManagementPanel.loadData();
+                break;
+            case "MANAGE_PREMIUM":
+                if (premiumPackagePanel != null)
+                    premiumPackagePanel.loadData();
                 break;
             case "SECURITY_MONITOR":
                 if (securityMonitoringPanel != null)
@@ -449,6 +456,7 @@ public class Home extends JFrame {
         } else if ("admin".equals(UserSession.role)) {
             sidebar.add(createMenuButton("Tổng quan", true, "ADMIN_DASHBOARD"));
             sidebar.add(createMenuButton("Quản lý người dùng", false, "MANAGE_USERS"));
+            sidebar.add(createMenuButton("Gói Premium", false, "MANAGE_PREMIUM"));
             sidebar.add(createMenuButton("Giám sát bảo mật", false, "SECURITY_MONITOR"));
 
             sidebar.add(Box.createVerticalStrut(20));

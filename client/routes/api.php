@@ -238,6 +238,12 @@ return [
         "auth" => true,
         "roles" => ["admin"],
     ],
+    "admin/goipremium" => [
+        "handler" => __DIR__ . "/../../server/api/admin_goipremium.php",
+        "methods" => ["GET", "POST", "PATCH", "DELETE"],
+        "auth" => true,
+        "roles" => ["admin"],
+    ],
     "admin/logs/list" => [
         "handler" => __DIR__ . "/../../server/api/admin_logs.php",
         "methods" => ["GET"],
