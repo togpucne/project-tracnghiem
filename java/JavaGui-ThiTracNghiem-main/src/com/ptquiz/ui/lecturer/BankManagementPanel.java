@@ -50,6 +50,7 @@ public class BankManagementPanel extends JPanel {
         int loai_cauhoi;
         String dokho;
         String trangthai;
+        String loigiai_chitiet = "";
         List<Answer> dapan = new ArrayList<>();
     }
 
@@ -72,6 +73,8 @@ public class BankManagementPanel extends JPanel {
         String id, name, lecturer;
     }
 
+    private javax.swing.Timer autoRefreshTimer;
+
     public BankManagementPanel() {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
@@ -79,6 +82,13 @@ public class BankManagementPanel extends JPanel {
 
         initComponents();
         loadBanks();
+
+        // Auto-refresh mỗi 30 giây để real-time sync với Web
+        autoRefreshTimer = new javax.swing.Timer(30000, e -> {
+            loadBanks();
+            if (selectedBank != null) loadBankQuestions();
+        });
+        autoRefreshTimer.start();
     }
 
     private void initComponents() {
@@ -476,6 +486,8 @@ public class BankManagementPanel extends JPanel {
                             q.loai_cauhoi = Integer.parseInt(APIHelper.extractJsonValue(raw, "loai_cauhoi"));
                             q.dokho = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "dokho"));
                             q.trangthai = APIHelper.extractJsonValue(raw, "trangthai");
+                            String lg = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "loigiai_chitiet"));
+                            q.loigiai_chitiet = (lg == null || lg.equals("null")) ? "" : lg;
 
                             int dStart = raw.indexOf("\"dapan\":[");
                             if (dStart != -1) {
@@ -733,7 +745,7 @@ public class BankManagementPanel extends JPanel {
         Window parent = SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parent, q == null ? "Thêm câu hỏi" : "Sửa câu hỏi",
                 Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setSize(850, 650);
+        dialog.setSize(850, 780);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout());
 
@@ -861,9 +873,35 @@ public class BankManagementPanel extends JPanel {
         formPanel.add(ansHeader);
         formPanel.add(Box.createVerticalStrut(10));
         JScrollPane ansScroll = new JScrollPane(ansContainer);
-        ansScroll.setPreferredSize(new Dimension(650, 300));
+        ansScroll.setPreferredSize(new Dimension(650, 200));
         ansScroll.setBorder(BorderFactory.createLineBorder(COLOR_BORDER));
         formPanel.add(ansScroll);
+        formPanel.add(Box.createVerticalStrut(15));
+
+        // --- Lời giải chi tiết (BẮT BUỘC) ---
+        JPanel loigiaiWrapper = new JPanel(new BorderLayout(0, 5));
+        loigiaiWrapper.setBackground(Color.WHITE);
+        loigiaiWrapper.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
+        JLabel lblLoiGiai = new JLabel("\u26A0 Lời giải chi tiết (Bắt buộc):");
+        lblLoiGiai.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblLoiGiai.setForeground(new Color(220, 38, 38));
+        loigiaiWrapper.add(lblLoiGiai, BorderLayout.NORTH);
+        final JTextArea txtLoiGiai = new JTextArea(3, 40);
+        txtLoiGiai.setLineWrap(true);
+        txtLoiGiai.setWrapStyleWord(true);
+        txtLoiGiai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtLoiGiai.setBackground(new Color(255, 251, 235));
+        txtLoiGiai.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(253, 186, 116), 1),
+            BorderFactory.createEmptyBorder(6, 8, 6, 8)
+        ));
+        txtLoiGiai.setToolTipText("Bắt buộc: Giải thích tại sao đáp án này đúng...");
+        if (q != null && q.loigiai_chitiet != null && !q.loigiai_chitiet.isEmpty())
+            txtLoiGiai.setText(q.loigiai_chitiet);
+        JScrollPane scrollLoiGiai = new JScrollPane(txtLoiGiai);
+        scrollLoiGiai.setBorder(BorderFactory.createLineBorder(new Color(253, 186, 116)));
+        loigiaiWrapper.add(scrollLoiGiai, BorderLayout.CENTER);
+        formPanel.add(loigiaiWrapper);
 
         cbType.addActionListener(e -> refresh[0].run());
 
@@ -883,7 +921,11 @@ public class BankManagementPanel extends JPanel {
             refresh[0].run();
         }
 
-        dialog.add(formPanel, BorderLayout.CENTER);
+        JScrollPane formScroll = new JScrollPane(formPanel);
+        formScroll.setBorder(null);
+        formScroll.getVerticalScrollBar().setUnitIncrement(16);
+        dialog.add(formScroll, BorderLayout.CENTER);
+
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton save = createButton("Lưu", COLOR_SUCCESS);
         save.addActionListener(e -> {
@@ -894,6 +936,14 @@ public class BankManagementPanel extends JPanel {
             }
             if (txtContent.getText().trim().isEmpty()) {
                 JOptionPane.showMessageDialog(dialog, "Vui lòng nhập nội dung!");
+                return;
+            }
+            // --- Validate lời giải chi tiết (BẮT BUỘC) ---
+            if (txtLoiGiai.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(dialog,
+                    "\u26A0 Lời giải chi tiết không được bỏ trống!\n\nVui lòng giải thích đáp án để học sinh hiểu rõ.",
+                    "Thiếu lời giải", JOptionPane.WARNING_MESSAGE);
+                txtLoiGiai.requestFocus();
                 return;
             }
 
@@ -917,21 +967,20 @@ public class BankManagementPanel extends JPanel {
                 return;
             }
             if (correct == -1)
-                correct = 0; // Fallback for 'fill in' or if no RB exists
+                correct = 0;
 
-            // Validation for "Điền từ" (Fill-in-the-blank)
-            if (cbType.getSelectedIndex() == 1) { // 1 is "Điền từ"
+            // Validation for "Điền từ"
+            if (cbType.getSelectedIndex() == 1) {
                 String content = txtContent.getText();
                 int placeholders = 0;
                 java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\[\\.\\.\\.\\]").matcher(content);
                 while (m.find()) placeholders++;
-
                 if (placeholders == 0) {
                     JOptionPane.showMessageDialog(dialog, "Câu hỏi điền từ phải có ít nhất một ký hiệu [...] để sinh viên điền vào!");
                     return;
                 }
                 if (placeholders != tfs.size()) {
-                    JOptionPane.showMessageDialog(dialog, "Số lượng ký hiệu [...] (" + placeholders + ") không khớp với số lượng đáp án bạn đã nhập (" + tfs.size() + ")!\nVui lòng kiểm tra lại.");
+                    JOptionPane.showMessageDialog(dialog, "Số lượng [...] (" + placeholders + ") không khớp với số đáp án (" + tfs.size() + ")!\nVui lòng kiểm tra lại.");
                     return;
                 }
             }
@@ -939,13 +988,14 @@ public class BankManagementPanel extends JPanel {
             String selSubId = selectedBank.subjects.get(subIdx).id;
             String status = (cbStatus.getSelectedIndex() == 0) ? "active" : "inactive";
             String payload = String.format(
-                    "{\"id_nganhang\":\"%s\", \"id_monhoc\":\"%s\", \"id_cauhoi_nganhang\":\"%s\", \"noidungcauhoi\":\"%s\", \"dokho\":\"%s\", \"trangthai\":\"%s\", \"loai_cauhoi\":\"%d\", \"options\":%s, \"correct_index\":\"%d\"}",
+                    "{\"id_nganhang\":\"%s\", \"id_monhoc\":\"%s\", \"id_cauhoi_nganhang\":\"%s\", \"noidungcauhoi\":\"%s\", \"dokho\":\"%s\", \"trangthai\":\"%s\", \"loai_cauhoi\":\"%d\", \"options\":%s, \"correct_index\":\"%d\", \"loigiai_chitiet\":\"%s\"}",
                     (selectedBank.id == null || selectedBank.id.isEmpty() ? "0" : selectedBank.id),
                     selSubId, (q == null ? "0" : String.valueOf(q.id_cauhoi)),
                     APIHelper.escapeJSON(txtContent.getText()),
                     cbDiff.getSelectedItem().toString().toLowerCase().replace("trung bình", "trungbinh")
                             .replace("dễ", "de").replace("khó", "kho"),
-                    status, cbType.getSelectedIndex() + 1, opts.toString(), correct);
+                    status, cbType.getSelectedIndex() + 1, opts.toString(), correct,
+                    APIHelper.escapeJSON(txtLoiGiai.getText()));
 
             new Thread(() -> {
                 APIHelper.APIResponse res = APIHelper.sendPost("lecturer/nganhang/cauhoi/save", payload);

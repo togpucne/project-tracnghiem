@@ -56,8 +56,11 @@ public class QuestionManagementFrame extends JFrame {
         String noidungcauhoi;
         int loai_cauhoi;
         String dokho;
+        String loigiai_chitiet = "";
         List<Answer> dapan = new ArrayList<>();
     }
+
+    private javax.swing.Timer autoRefreshTimer;
 
     public QuestionManagementFrame(int examId, String examTitle) {
         this.examId = examId;
@@ -71,6 +74,15 @@ public class QuestionManagementFrame extends JFrame {
 
         initComponents();
         loadQuestions();
+
+        // Auto-refresh mỗi 30 giây để đồng bộ với Web
+        autoRefreshTimer = new javax.swing.Timer(30000, e -> loadQuestions());
+        autoRefreshTimer.start();
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override public void windowClosed(java.awt.event.WindowEvent e) {
+                if (autoRefreshTimer != null) autoRefreshTimer.stop();
+            }
+        });
     }
 
     private void initComponents() {
@@ -308,6 +320,8 @@ public class QuestionManagementFrame extends JFrame {
                             q.noidungcauhoi = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "noidungcauhoi"));
                             q.loai_cauhoi = Integer.parseInt(APIHelper.extractJsonValue(raw, "loai_cauhoi"));
                             q.dokho = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "dokho"));
+                            String lg = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(raw, "loigiai_chitiet"));
+                            q.loigiai_chitiet = (lg == null || lg.equals("null")) ? "" : lg;
                             int dapanStart = raw.indexOf("\"dapan\":[");
                             if (dapanStart != -1) {
                                 String dapanArray = raw.substring(dapanStart + 8);
@@ -367,83 +381,173 @@ public class QuestionManagementFrame extends JFrame {
         if (isLocked) { JOptionPane.showMessageDialog(this, "Bài thi đã bị khóa!"); return; }
         if (q == null && questions.size() >= maxQuestions) { JOptionPane.showMessageDialog(this, "Đã đạt giới hạn câu hỏi!"); return; }
         JDialog dialog = new JDialog(this, q == null ? "Thêm câu hỏi mới" : "Sửa câu hỏi", true);
-        dialog.setSize(750, 650); dialog.setLocationRelativeTo(this); dialog.setLayout(new BorderLayout());
-        JPanel formPanel = new JPanel(); formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS)); formPanel.setBorder(new EmptyBorder(25, 25, 25, 25)); formPanel.setBackground(Color.WHITE);
-        JLabel lblContent = new JLabel("Nội dung câu hỏi:"); lblContent.setFont(new Font("Segoe UI", Font.BOLD, 14)); formPanel.add(lblContent); formPanel.add(Box.createVerticalStrut(8));
-        JTextArea txtContent = new JTextArea(4, 40); txtContent.setLineWrap(true); txtContent.setWrapStyleWord(true); txtContent.setFont(new Font("Segoe UI", Font.PLAIN, 14)); txtContent.setBorder(new EmptyBorder(5, 5, 5, 5)); if (q != null) txtContent.setText(q.noidungcauhoi);
-        JScrollPane scrollContent = new JScrollPane(txtContent); scrollContent.setBorder(BorderFactory.createLineBorder(COLOR_BORDER)); formPanel.add(scrollContent); formPanel.add(Box.createVerticalStrut(20));
-        JPanel optionsRow = new JPanel(new GridLayout(1, 2, 20, 0)); optionsRow.setBackground(Color.WHITE);
+        dialog.setSize(750, 780); dialog.setLocationRelativeTo(this); dialog.setLayout(new BorderLayout());
+
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
+        formPanel.setBackground(Color.WHITE);
+
+        // --- Nội dung câu hỏi ---
+        JLabel lblContent = new JLabel("Nội dung câu hỏi:");
+        lblContent.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        formPanel.add(lblContent);
+        formPanel.add(Box.createVerticalStrut(8));
+        JTextArea txtContent = new JTextArea(4, 40);
+        txtContent.setLineWrap(true); txtContent.setWrapStyleWord(true);
+        txtContent.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtContent.setBorder(new EmptyBorder(5, 5, 5, 5));
+        if (q != null) txtContent.setText(q.noidungcauhoi);
+        JScrollPane scrollContent = new JScrollPane(txtContent);
+        scrollContent.setBorder(BorderFactory.createLineBorder(COLOR_BORDER));
+        formPanel.add(scrollContent);
+        formPanel.add(Box.createVerticalStrut(15));
+
+        // --- Loại + Độ khó ---
+        JPanel optionsRow = new JPanel(new GridLayout(1, 2, 20, 0));
+        optionsRow.setBackground(Color.WHITE);
         JPanel typeSub = new JPanel(new BorderLayout(0, 5)); typeSub.setBackground(Color.WHITE);
         JLabel lblType = new JLabel("Loại câu hỏi:"); lblType.setFont(new Font("Segoe UI", Font.BOLD, 14)); typeSub.add(lblType, BorderLayout.NORTH);
-        JComboBox<String> cbType = new JComboBox<>(new String[]{"Trắc nghiệm", "Điền từ"}); if (q != null && q.loai_cauhoi == 2) cbType.setSelectedIndex(1); typeSub.add(cbType, BorderLayout.CENTER);
+        JComboBox<String> cbType = new JComboBox<>(new String[]{"Trắc nghiệm", "Điền từ"});
+        if (q != null && q.loai_cauhoi == 2) cbType.setSelectedIndex(1);
+        typeSub.add(cbType, BorderLayout.CENTER);
         JPanel diffSub = new JPanel(new BorderLayout(0, 5)); diffSub.setBackground(Color.WHITE);
         JLabel lblDiff = new JLabel("Độ khó:"); lblDiff.setFont(new Font("Segoe UI", Font.BOLD, 14)); diffSub.add(lblDiff, BorderLayout.NORTH);
-        JComboBox<String> cbDiff = new JComboBox<>(new String[]{"Dễ", "Trung bình", "Khó"}); if (q != null) cbDiff.setSelectedItem(q.dokho); diffSub.add(cbDiff, BorderLayout.CENTER);
-        optionsRow.add(typeSub); optionsRow.add(diffSub); formPanel.add(optionsRow); formPanel.add(Box.createVerticalStrut(20));
-        JPanel answersHeader = new JPanel(new BorderLayout()); answersHeader.setBackground(Color.WHITE);
+        JComboBox<String> cbDiff = new JComboBox<>(new String[]{"Dễ", "Trung bình", "Khó"});
+        if (q != null) cbDiff.setSelectedItem(q.dokho);
+        diffSub.add(cbDiff, BorderLayout.CENTER);
+        optionsRow.add(typeSub); optionsRow.add(diffSub);
+        formPanel.add(optionsRow);
+        formPanel.add(Box.createVerticalStrut(15));
+
+        // --- Danh sách đáp án ---
+        JPanel answersHeader = new JPanel(new BorderLayout());
+        answersHeader.setBackground(Color.WHITE);
         answersHeader.setMaximumSize(new Dimension(1000, 40));
-        JLabel lblAns = new JLabel("Danh sách đáp án:"); lblAns.setFont(new Font("Segoe UI", Font.BOLD, 15)); answersHeader.add(lblAns, BorderLayout.WEST);
-        
-        JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0)); btnWrapper.setBackground(Color.WHITE);
+        JLabel lblAns = new JLabel("Danh sách đáp án:");
+        lblAns.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        answersHeader.add(lblAns, BorderLayout.WEST);
+        JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        btnWrapper.setBackground(Color.WHITE);
         JButton btnAddAnswer = createButton("+ Thêm đáp án", COLOR_PRIMARY);
         btnAddAnswer.setPreferredSize(new Dimension(150, 35));
         btnWrapper.add(btnAddAnswer);
-        answersHeader.add(btnWrapper, BorderLayout.EAST); 
-        
-        formPanel.add(answersHeader); formPanel.add(Box.createVerticalStrut(10));
-        
-        JPanel answersContainer = new JPanel(); answersContainer.setLayout(new BoxLayout(answersContainer, BoxLayout.Y_AXIS)); answersContainer.setBackground(Color.WHITE);
-        JScrollPane scrollAnswers = new JScrollPane(answersContainer); 
-        scrollAnswers.setPreferredSize(new Dimension(650, 300)); 
-        scrollAnswers.setBorder(BorderFactory.createLineBorder(COLOR_BORDER)); 
+        answersHeader.add(btnWrapper, BorderLayout.EAST);
+        formPanel.add(answersHeader);
+        formPanel.add(Box.createVerticalStrut(10));
+
+        JPanel answersContainer = new JPanel();
+        answersContainer.setLayout(new BoxLayout(answersContainer, BoxLayout.Y_AXIS));
+        answersContainer.setBackground(Color.WHITE);
+        JScrollPane scrollAnswers = new JScrollPane(answersContainer);
+        scrollAnswers.setPreferredSize(new Dimension(650, 220));
+        scrollAnswers.setBorder(BorderFactory.createLineBorder(COLOR_BORDER));
         formPanel.add(scrollAnswers);
-        
-        List<JRadioButton> radios = new ArrayList<>(); List<JTextField> textFields = new ArrayList<>(); ButtonGroup group = new ButtonGroup();
+        formPanel.add(Box.createVerticalStrut(15));
+
+        // --- Lời giải chi tiết (BẮT BUỘC) ---
+        JPanel loigiaiWrapper = new JPanel(new BorderLayout(0, 5));
+        loigiaiWrapper.setBackground(Color.WHITE);
+        loigiaiWrapper.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
+        JLabel lblLoiGiai = new JLabel("\u26A0 Lời giải chi tiết (Bắt buộc):");
+        lblLoiGiai.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblLoiGiai.setForeground(new Color(220, 38, 38));
+        loigiaiWrapper.add(lblLoiGiai, BorderLayout.NORTH);
+        JTextArea txtLoiGiai = new JTextArea(3, 40);
+        txtLoiGiai.setLineWrap(true); txtLoiGiai.setWrapStyleWord(true);
+        txtLoiGiai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtLoiGiai.setBackground(new Color(255, 251, 235));
+        txtLoiGiai.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(253, 186, 116), 1),
+            BorderFactory.createEmptyBorder(6, 8, 6, 8)
+        ));
+        txtLoiGiai.setToolTipText("Bắt buộc: Giải thích tại sao đáp án này đúng...");
+        if (q != null && q.loigiai_chitiet != null && !q.loigiai_chitiet.isEmpty())
+            txtLoiGiai.setText(q.loigiai_chitiet);
+        JScrollPane scrollLoiGiai = new JScrollPane(txtLoiGiai);
+        scrollLoiGiai.setBorder(BorderFactory.createLineBorder(new Color(253, 186, 116)));
+        loigiaiWrapper.add(scrollLoiGiai, BorderLayout.CENTER);
+        formPanel.add(loigiaiWrapper);
+
+        // --- Answers refresh logic ---
+        List<JRadioButton> radios = new ArrayList<>();
+        List<JTextField> textFields = new ArrayList<>();
+        ButtonGroup group = new ButtonGroup();
         Runnable[] refreshUIRef = new Runnable[1];
         refreshUIRef[0] = () -> {
-            answersContainer.removeAll(); radios.clear(); boolean isMulti = cbType.getSelectedIndex() == 0;
+            answersContainer.removeAll(); radios.clear();
+            boolean isMulti = cbType.getSelectedIndex() == 0;
             for (int i = 0; i < textFields.size(); i++) {
-                JPanel row = new JPanel(new BorderLayout(15, 0)); row.setBackground(Color.WHITE); 
+                JPanel row = new JPanel(new BorderLayout(15, 0));
+                row.setBackground(Color.WHITE);
                 row.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(243, 244, 246)),
-                    new EmptyBorder(10, 10, 10, 10)
-                ));
+                    new EmptyBorder(10, 10, 10, 10)));
                 row.setMaximumSize(new Dimension(1000, 60));
-                
-                JTextField tf = textFields.get(i); 
+                JTextField tf = textFields.get(i);
                 tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
                 row.add(tf, BorderLayout.CENTER);
-                
-                JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0)); right.setBackground(Color.WHITE);
-                if (isMulti) { 
-                    JRadioButton rb = new JRadioButton("Đúng"); rb.setBackground(Color.WHITE); 
+                JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+                right.setBackground(Color.WHITE);
+                if (isMulti) {
+                    JRadioButton rb = new JRadioButton("Đúng");
+                    rb.setBackground(Color.WHITE);
                     rb.setFont(new Font("Segoe UI", Font.BOLD, 13));
-                    group.add(rb); radios.add(rb); right.add(rb); 
+                    group.add(rb); radios.add(rb); right.add(rb);
                 }
-                JButton btnRem = new JButton("Xóa"); btnRem.setForeground(COLOR_DANGER); btnRem.setFont(new Font("Segoe UI", Font.BOLD, 13)); 
-                btnRem.setContentAreaFilled(false); btnRem.setBorderPainted(false); btnRem.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                int idx = i; btnRem.addActionListener(e -> { textFields.remove(idx); refreshUIRef[0].run(); }); right.add(btnRem);
-                row.add(right, BorderLayout.EAST); answersContainer.add(row);
+                JButton btnRem = new JButton("Xóa");
+                btnRem.setForeground(COLOR_DANGER);
+                btnRem.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                btnRem.setContentAreaFilled(false); btnRem.setBorderPainted(false);
+                btnRem.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                int idx = i;
+                btnRem.addActionListener(e -> { textFields.remove(idx); refreshUIRef[0].run(); });
+                right.add(btnRem);
+                row.add(right, BorderLayout.EAST);
+                answersContainer.add(row);
             }
             answersContainer.revalidate(); answersContainer.repaint();
         };
         cbType.addActionListener(e -> refreshUIRef[0].run());
         btnAddAnswer.addActionListener(e -> { textFields.add(new JTextField()); refreshUIRef[0].run(); });
-        if (q != null) { 
-            for (Answer a : q.dapan) { textFields.add(new JTextField(a.noidungdapan)); } 
-            refreshUIRef[0].run(); 
+        if (q != null) {
+            for (Answer a : q.dapan) textFields.add(new JTextField(a.noidungdapan));
+            refreshUIRef[0].run();
             if (cbType.getSelectedIndex() == 0) {
-                for (int i = 0; i < q.dapan.size(); i++) { if (q.dapan.get(i).dapandung == 1 && i < radios.size()) radios.get(i).setSelected(true); }
+                for (int i = 0; i < q.dapan.size(); i++) {
+                    if (q.dapan.get(i).dapandung == 1 && i < radios.size()) radios.get(i).setSelected(true);
+                }
             }
         } else {
-            for(int i=0; i<4; i++) textFields.add(new JTextField());
+            for (int i = 0; i < 4; i++) textFields.add(new JTextField());
             refreshUIRef[0].run();
         }
-        dialog.add(formPanel, BorderLayout.CENTER);
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15)); bottom.setBackground(COLOR_BG_LIGHT);
-        JButton btnCancel = createButton("Hủy", Color.WHITE); btnCancel.addActionListener(e -> dialog.dispose());
-        JButton btnSave = createButton("Lưu câu hỏi", COLOR_SUCCESS); btnSave.setForeground(Color.BLACK);
+
+        JScrollPane formScroll = new JScrollPane(formPanel);
+        formScroll.setBorder(null);
+        formScroll.getVerticalScrollBar().setUnitIncrement(16);
+        dialog.add(formScroll, BorderLayout.CENTER);
+
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
+        bottom.setBackground(COLOR_BG_LIGHT);
+        JButton btnCancel = createButton("Hủy", Color.WHITE);
+        btnCancel.addActionListener(e -> dialog.dispose());
+        JButton btnSave = createButton("Lưu câu hỏi", COLOR_SUCCESS);
+        btnSave.setForeground(Color.BLACK);
         btnSave.addActionListener(e -> {
+            // --- Validate nội dung ---
+            if (txtContent.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Vui lòng nhập nội dung câu hỏi!");
+                return;
+            }
+            // --- Validate lời giải chi tiết (BẮT BUỘC) ---
+            if (txtLoiGiai.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(dialog,
+                    "\u26A0 Lời giải chi tiết không được bỏ trống!\n\nVui lòng giải thích đáp án để học sinh hiểu rõ.",
+                    "Thiếu lời giải", JOptionPane.WARNING_MESSAGE);
+                txtLoiGiai.requestFocus();
+                return;
+            }
             boolean isMulti = cbType.getSelectedIndex() == 0;
             StringBuilder optionsJson = new StringBuilder("[");
             int correctIndex = -1;
@@ -453,35 +557,46 @@ public class QuestionManagementFrame extends JFrame {
                 if (isMulti && radios.get(i).isSelected()) correctIndex = i;
             }
             optionsJson.append("]");
-            
             if (!isMulti && textFields.size() > 0) correctIndex = 0;
 
-            // Validation for "Điền từ" (Fill-in-the-blank)
+            // Validation for "Điền từ"
             if (!isMulti) {
                 String content = txtContent.getText();
                 int placeholders = 0;
                 java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\[\\.\\.\\.\\]").matcher(content);
                 while (m.find()) placeholders++;
-
                 if (placeholders == 0) {
                     JOptionPane.showMessageDialog(dialog, "Câu hỏi điền từ phải có ít nhất một ký hiệu [...] để sinh viên điền vào!");
                     return;
                 }
                 if (placeholders != textFields.size()) {
-                    JOptionPane.showMessageDialog(dialog, "Số lượng ký hiệu [...] (" + placeholders + ") không khớp với số lượng đáp án bạn đã nhập (" + textFields.size() + ")!\nVui lòng kiểm tra lại.");
+                    JOptionPane.showMessageDialog(dialog, "Số lượng [...] (" + placeholders + ") không khớp với đáp án (" + textFields.size() + ")!");
                     return;
                 }
             }
 
-            String payload = String.format("{\"id_baithi\":%d, \"id_cauhoi\":%d, \"noidungcauhoi\":\"%s\", \"dokho\":\"%s\", \"loai_cauhoi\":%d, \"options\":%s, \"correct_index\":%d}", 
-                examId, q==null?0:q.id_cauhoi, APIHelper.escapeJSON(txtContent.getText()), APIHelper.escapeJSON(cbDiff.getSelectedItem().toString()), cbType.getSelectedIndex()+1, optionsJson.toString(), correctIndex);
-            
-            new Thread(() -> { 
-                APIHelper.APIResponse res = APIHelper.sendPost("lecturer/cauhoi/save", payload); 
-                SwingUtilities.invokeLater(() -> { if(res.success) { dialog.dispose(); loadQuestions(); } else { JOptionPane.showMessageDialog(dialog, res.message); } }); 
+            String payload = String.format(
+                "{\"id_baithi\":%d, \"id_cauhoi\":%d, \"noidungcauhoi\":\"%s\", \"dokho\":\"%s\", \"loai_cauhoi\":%d, \"options\":%s, \"correct_index\":%d, \"loigiai_chitiet\":\"%s\"}",
+                examId, q == null ? 0 : q.id_cauhoi,
+                APIHelper.escapeJSON(txtContent.getText()),
+                APIHelper.escapeJSON(cbDiff.getSelectedItem().toString()),
+                cbType.getSelectedIndex() + 1,
+                optionsJson.toString(),
+                correctIndex,
+                APIHelper.escapeJSON(txtLoiGiai.getText())
+            );
+
+            new Thread(() -> {
+                APIHelper.APIResponse res = APIHelper.sendPost("lecturer/cauhoi/save", payload);
+                SwingUtilities.invokeLater(() -> {
+                    if (res.success) { dialog.dispose(); loadQuestions(); }
+                    else { JOptionPane.showMessageDialog(dialog, res.message); }
+                });
             }).start();
         });
-        bottom.add(btnCancel); bottom.add(btnSave); dialog.add(bottom, BorderLayout.SOUTH); dialog.setVisible(true);
+        bottom.add(btnCancel); bottom.add(btnSave);
+        dialog.add(bottom, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 
     private void showImportWordDialog() {

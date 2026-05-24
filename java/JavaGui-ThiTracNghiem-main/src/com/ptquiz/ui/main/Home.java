@@ -478,8 +478,8 @@ public class Home extends JFrame {
         sidebar.add(logoutBtn);
         sidebar.add(Box.createVerticalStrut(20));
 
-        // Premium Info at bottom of sidebar
-        if (UserSession.userId > 0) {
+        // Premium Info at bottom of sidebar - CHỈ hiển thị cho thisinh (không phải giảng viên/admin)
+        if (UserSession.userId > 0 && "thisinh".equals(UserSession.role)) {
             JPanel infoPnl = new JPanel(new GridLayout(2, 1));
             infoPnl.setBackground(new Color(17, 24, 39)); // Darker background
             infoPnl.setMaximumSize(new Dimension(220, 70));
