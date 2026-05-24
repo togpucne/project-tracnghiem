@@ -10,6 +10,8 @@ import java.util.List;
 import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
 
 public class BankManagementPanel extends JPanel {
     private JPanel leftBankList;
@@ -176,9 +178,9 @@ public class BankManagementPanel extends JPanel {
         JPanel rBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         rBtns.setBackground(Color.WHITE);
         JButton btnAddQ = createButton("+ Thêm câu hỏi", COLOR_SUCCESS);
-        JButton btnImport = createButton("Import Word", COLOR_WARNING);
+        JButton btnImport = createButton("Import File", COLOR_WARNING);
         btnAddQ.addActionListener(e -> showAddEditQuestionDialog(null));
-        btnImport.addActionListener(e -> showImportDialog());
+        btnImport.addActionListener(e -> showImportFileDialog());
         rBtns.add(btnAddQ);
         rBtns.add(btnImport);
         rHeader.add(rBtns, BorderLayout.EAST);
@@ -1030,21 +1032,49 @@ public class BankManagementPanel extends JPanel {
         }).start();
     }
 
-    private void showImportDialog() {
+    private void showImportFileDialog() {
         JFileChooser jfc = new JFileChooser();
+        jfc.setDialogTitle("Chọn file câu hỏi (Word / Excel / PDF)");
+        jfc.setAcceptAllFileFilterUsed(false);
+        jfc.addChoosableFileFilter(new FileNameExtensionFilter(
+            "Tất cả định dạng hỗ trợ (.docx, .xlsx, .pdf)", "docx", "xlsx", "pdf"));
+        jfc.addChoosableFileFilter(new FileNameExtensionFilter("Word (.docx)", "docx"));
+        jfc.addChoosableFileFilter(new FileNameExtensionFilter("Excel (.xlsx)", "xlsx"));
+        jfc.addChoosableFileFilter(new FileNameExtensionFilter("PDF (.pdf)", "pdf"));
+
         if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = jfc.getSelectedFile();
+            String fileName = selectedFile.getName().toLowerCase();
+            if (!fileName.endsWith(".docx") && !fileName.endsWith(".xlsx") && !fileName.endsWith(".pdf")) {
+                JOptionPane.showMessageDialog(this,
+                    "Chỉ hỗ trợ file định dạng .docx, .xlsx hoặc .pdf!\n" +
+                    "File bạn chọn: " + selectedFile.getName(),
+                    "Định dạng không hỗ trợ", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            // Hiện progress dialog
+            Window parent = SwingUtilities.getWindowAncestor(this);
+            JOptionPane pane = new JOptionPane("Đang import file: " + selectedFile.getName() + "...",
+                JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
+            JDialog progressDialog = pane.createDialog(parent, "Đang xử lý");
+            progressDialog.setModal(false);
+            progressDialog.setVisible(true);
+
             new Thread(() -> {
                 Map<String, String> f = new HashMap<>();
                 if (selectedBank != null)
                     f.put("id_nhch", selectedBank.id);
                 APIHelper.APIResponse res = APIHelper.sendMultipartPost("lecturer/nganhang/import-word", f, "word_file",
-                        jfc.getSelectedFile());
+                        selectedFile);
                 SwingUtilities.invokeLater(() -> {
+                    progressDialog.dispose();
                     if (res.success) {
+                        JOptionPane.showMessageDialog(this, res.message, "Thành công", JOptionPane.INFORMATION_MESSAGE);
                         loadBankQuestions();
                         loadBanks();
+                    } else {
+                        JOptionPane.showMessageDialog(this, res.message, "Lỗi Import", JOptionPane.ERROR_MESSAGE);
                     }
-                    JOptionPane.showMessageDialog(this, res.message);
                 });
             }).start();
         }

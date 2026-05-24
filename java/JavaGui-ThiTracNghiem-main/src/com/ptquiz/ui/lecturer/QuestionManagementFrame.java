@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class QuestionManagementFrame extends JFrame {
     private int examId;
@@ -136,10 +137,10 @@ public class QuestionManagementFrame extends JFrame {
         buttonsPanel.setBackground(Color.WHITE);
         JButton btnBack = createButton("Quay lại", Color.WHITE);
         btnBack.addActionListener(e -> dispose());
-        btnImportWord = createButton("Import", COLOR_PRIMARY);
+        btnImportWord = createButton("Import File", COLOR_PRIMARY);
         btnImportBank = createButton("Ngân hàng", COLOR_PURPLE);
         btnAdd = createButton("Thêm câu hỏi", COLOR_SUCCESS);
-        btnImportWord.addActionListener(e -> showImportWordDialog());
+        btnImportWord.addActionListener(e -> showImportFileDialog());
         btnImportBank.addActionListener(e -> showImportBankDialog());
         btnAdd.addActionListener(e -> showAddEditDialog(null));
         buttonsPanel.add(btnBack);
@@ -181,11 +182,20 @@ public class QuestionManagementFrame extends JFrame {
             new EmptyBorder(15, 0, 20, 0),
             BorderFactory.createDashedBorder(COLOR_TEXT_LIGHT, 1, 3, 1, true)
         ));
-        JLabel lblSample = new JLabel("Mẫu Word hỗ trợ import");
+        JLabel lblSample = new JLabel("Mẫu hỗ trợ import (Word / Excel / PDF)");
         lblSample.setFont(new Font("Segoe UI", Font.BOLD, 15));
         lblSample.setBorder(new EmptyBorder(5, 10, 0, 10));
         JTextArea sampleText = new JTextArea(
-            "Câu 1: PHP là viết tắt của cụm từ nào?\nA. Personal Home Page\nB. Private Home Page\nC. Preprocessor Hypertext\nD. Programming HTML Page\nĐáp án: A\nĐộ khó: Dễ"
+            "* File PDF & Word: Soạn nội dung theo từng dòng.\n" +
+            "* File Excel: Soạn nội dung lần lượt vào từng ô của một cột.\n\n" +
+            "--- VÍ DỤ TRẮC NGHIỆM ---\n" +
+            "Câu 1: PHP là viết tắt của cụm từ nào?\n" +
+            "A. Personal Home Page\nB. Private Home Page\n" +
+            "C. Preprocessor Hypertext\nD. Programming HTML Page\n" +
+            "Đáp án: A\nĐộ khó: Dễ\nLời giải: PHP ban đầu là Personal Home Page\n\n" +
+            "--- VÍ DỤ ĐIỀN TỪ ---\n" +
+            "Câu 2: Có công mài [...], có ngày nên [...]\n" +
+            "Đáp án: sắt | kim\nĐộ khó: Dễ\nLời giải: Câu tục ngữ nói về sự kiên trì"
         );
         sampleText.setEditable(false);
         sampleText.setFont(new Font("Consolas", Font.PLAIN, 13));
@@ -599,12 +609,46 @@ public class QuestionManagementFrame extends JFrame {
         dialog.setVisible(true);
     }
 
-    private void showImportWordDialog() {
-        JFileChooser fc = new JFileChooser(); if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+    private void showImportFileDialog() {
+        JFileChooser fc = new JFileChooser();
+        fc.setDialogTitle("Chọn file câu hỏi (Word / Excel / PDF)");
+        fc.setAcceptAllFileFilterUsed(false);
+        fc.addChoosableFileFilter(new FileNameExtensionFilter(
+            "Tất cả định dạng hỗ trợ (.docx, .xlsx, .pdf)", "docx", "xlsx", "pdf"));
+        fc.addChoosableFileFilter(new FileNameExtensionFilter("Word (.docx)", "docx"));
+        fc.addChoosableFileFilter(new FileNameExtensionFilter("Excel (.xlsx)", "xlsx"));
+        fc.addChoosableFileFilter(new FileNameExtensionFilter("PDF (.pdf)", "pdf"));
+
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fc.getSelectedFile();
+            String fileName = selectedFile.getName().toLowerCase();
+            if (!fileName.endsWith(".docx") && !fileName.endsWith(".xlsx") && !fileName.endsWith(".pdf")) {
+                JOptionPane.showMessageDialog(this,
+                    "Chỉ hỗ trợ file định dạng .docx, .xlsx hoặc .pdf!\n" +
+                    "File bạn chọn: " + selectedFile.getName(),
+                    "Định dạng không hỗ trợ", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            // Hiện progress
+            JOptionPane pane = new JOptionPane("Đang import file: " + selectedFile.getName() + "...",
+                JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
+            JDialog progressDialog = pane.createDialog(this, "Đang xử lý");
+            progressDialog.setModal(false);
+            progressDialog.setVisible(true);
+
             new Thread(() -> {
-                Map<String, String> f = new HashMap<>(); f.put("id_baithi", String.valueOf(examId));
-                APIHelper.APIResponse res = APIHelper.sendMultipartPost("lecturer/cauhoi/import-word", f, "word_file", fc.getSelectedFile());
-                SwingUtilities.invokeLater(() -> { if (res.success) { JOptionPane.showMessageDialog(this, "Thành công!"); loadQuestions(); } });
+                Map<String, String> f = new HashMap<>();
+                f.put("id_baithi", String.valueOf(examId));
+                APIHelper.APIResponse res = APIHelper.sendMultipartPost("lecturer/cauhoi/import-word", f, "word_file", selectedFile);
+                SwingUtilities.invokeLater(() -> {
+                    progressDialog.dispose();
+                    if (res.success) {
+                        JOptionPane.showMessageDialog(this, res.message, "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                        loadQuestions();
+                    } else {
+                        JOptionPane.showMessageDialog(this, res.message, "Lỗi Import", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
             }).start();
         }
     }
