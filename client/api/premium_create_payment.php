@@ -8,6 +8,16 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $amount = isset($_POST['amount']) ? (int)$_POST['amount'] : 0;
 $package_type = trim($_POST['package_type'] ?? '');
+
+// Nếu không có POST data (trường hợp App gửi JSON), thử lấy từ php://input
+if (empty($package_type) && empty($amount)) {
+    $jsonData = json_decode(file_get_contents('php://input'), true);
+    if ($jsonData) {
+        $amount = (int)($jsonData['amount'] ?? 0);
+        $package_type = trim($jsonData['package_type'] ?? '');
+    }
+}
+
 $user_id = $_SESSION['user']['id'] ?? $_SESSION['user']['id_nguoidung'] ?? 0;
 
 if ($user_id == 0) {

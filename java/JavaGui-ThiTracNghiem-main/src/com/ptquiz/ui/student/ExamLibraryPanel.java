@@ -1,6 +1,7 @@
 package com.ptquiz.ui.student;
 
 import com.ptquiz.core.*;
+import com.ptquiz.ui.main.Home;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -225,6 +226,18 @@ public class ExamLibraryPanel extends JPanel {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btn.addActionListener(e -> {
+            // Check Daily Limit for Free Users
+            if (!item.isOngoing && UserSession.premiumStatus == 0 && UserSession.attemptsToday >= 30) {
+                int choice = JOptionPane.showConfirmDialog(this, 
+                    "Bạn đã hết lượt thi miễn phí hôm nay (30/30)!\n\nBạn có muốn nâng cấp lên PREMIUM để làm bài không giới hạn?",
+                    "Hết lượt thi", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (choice == JOptionPane.YES_OPTION) {
+                    JFrame top = (JFrame) SwingUtilities.getWindowAncestor(this);
+                    if (top instanceof Home) ((Home) top).switchView("PREMIUM");
+                }
+                return;
+            }
+
             JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             // If starting a NEW exam, check if another is already ongoing
             if (!item.isOngoing) {

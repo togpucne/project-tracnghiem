@@ -1,6 +1,7 @@
 package com.ptquiz.ui.student;
 
 import com.ptquiz.core.*;
+import com.ptquiz.ui.main.Home;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -174,17 +175,35 @@ public class ResultDetailDialog extends JFrame {
                 solBox.setBorder(new EmptyBorder(20, 25, 20, 25));
                 solBox.setAlignmentX(Component.LEFT_ALIGNMENT);
                 
-                String formattedSol = qr.loigiaiChitiet.replace("\\n", "<br>").replace("\n", "<br>");
                 JLabel solTitle = new JLabel("<html><b>(!) GIẢI THÍCH CHI TIẾT</b></html>");
                 solTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
                 solTitle.setForeground(new Color(75, 85, 99));
-
-                JLabel solText = new JLabel("<html><body style='width: 900px'>" + formattedSol + "</body></html>");
-                solText.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-                solText.setForeground(new Color(31, 41, 55));
-                
                 solBox.add(solTitle, BorderLayout.NORTH);
-                solBox.add(solText, BorderLayout.CENTER);
+
+                // SECURITY CHECK: Only premium users can see detailed solutions
+                if (UserSession.premiumStatus == 1) {
+                    String formattedSol = qr.loigiaiChitiet.replace("\\n", "<br>").replace("\n", "<br>");
+                    JLabel solText = new JLabel("<html><body style='width: 900px'>" + formattedSol + "</body></html>");
+                    solText.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+                    solText.setForeground(new Color(31, 41, 55));
+                    solBox.add(solText, BorderLayout.CENTER);
+                } else {
+                    JLabel lockLabel = new JLabel("<html><body style='width: 900px; color: #DC2626;'><i>Tính năng này chỉ dành cho tài khoản <b>PREMIUM</b>. Vui lòng nâng cấp để xem lời giải chi tiết.</i></body></html>");
+                    lockLabel.setFont(new Font("Segoe UI", Font.ITALIC, 15));
+                    solBox.add(lockLabel, BorderLayout.CENTER);
+                    
+                    JButton upgradeBtn = new JButton("Nâng cấp ngay");
+                    upgradeBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                    upgradeBtn.setBackground(new Color(251, 191, 36));
+                    upgradeBtn.addActionListener(e -> {
+                        Window parent = SwingUtilities.getWindowAncestor(ResultDetailDialog.this);
+                        dispose();
+                        if (parent instanceof Home) {
+                            ((Home) parent).switchView("PREMIUM");
+                        }
+                    });
+                    solBox.add(upgradeBtn, BorderLayout.SOUTH);
+                }
                 
                 JPanel solWrapper = new JPanel(new BorderLayout()) {
                    @Override protected void paintComponent(Graphics g) {

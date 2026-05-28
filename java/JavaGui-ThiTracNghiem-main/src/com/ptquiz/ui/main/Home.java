@@ -470,6 +470,44 @@ public class Home extends JFrame {
                 premBtn.setForeground(new Color(251, 191, 36)); // Amber-400
                 sidebar.add(premBtn);
             }
+            
+            // Premium Expiration Alert in Sidebar
+            if (UserSession.premiumStatus == 1 && UserSession.premiumExpire != null) {
+                try {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    java.util.Date expireDate = sdf.parse(UserSession.premiumExpire);
+                    java.util.Date now = new java.util.Date();
+                    long diff = expireDate.getTime() - now.getTime();
+                    long daysLeft = diff / (24 * 60 * 60 * 1000);
+                    
+                    if (daysLeft >= 0 && daysLeft <= 2) {
+                        JPanel alertPnl = new JPanel(new BorderLayout());
+                        alertPnl.setBackground(new Color(251, 191, 36)); // Amber color
+                        alertPnl.setMaximumSize(new Dimension(240, 60));
+                        alertPnl.setBorder(new EmptyBorder(5, 10, 5, 10));
+                        
+                        JLabel alertMsg = new JLabel("<html><b>Sắp hết hạn!</b><br>Còn " + daysLeft + " ngày sử dụng.</html>");
+                        alertMsg.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                        alertMsg.setForeground(Color.BLACK);
+                        
+                        JButton renewBtn = new JButton("Gia hạn");
+                        renewBtn.setFont(new Font("Segoe UI", Font.BOLD, 10));
+                        renewBtn.setFocusPainted(false);
+                        renewBtn.addActionListener(e -> switchView("PREMIUM"));
+                        
+                        alertPnl.add(alertMsg, BorderLayout.CENTER);
+                        alertPnl.add(renewBtn, BorderLayout.EAST);
+                        
+                        sidebar.add(Box.createVerticalStrut(10));
+                        JPanel wrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+                        wrapper.setOpaque(false);
+                        wrapper.add(alertPnl);
+                        sidebar.add(wrapper);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
 
         sidebar.add(createMenuButton("Thông tin cá nhân", false, "PROFILE"));
@@ -609,6 +647,17 @@ public class Home extends JFrame {
         button.setPreferredSize(new Dimension(150, 40));
 
         button.addActionListener(e -> {
+            // Check Daily Limit for Free Users
+            if (!isOngoing && UserSession.premiumStatus == 0 && UserSession.attemptsToday >= 30) {
+                int choice = JOptionPane.showConfirmDialog(Home.this, 
+                    "Bạn đã hết lượt thi miễn phí hôm nay (30/30)!\n\nBạn có muốn nâng cấp lên PREMIUM để làm bài không giới hạn?",
+                    "Hết lượt thi", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (choice == JOptionPane.YES_OPTION) {
+                    switchView("PREMIUM");
+                }
+                return;
+            }
+
             new Thread(() -> {
                 String json = APIHelper.sendGet("exam/list");
                 java.util.List<String> exams = APIHelper.splitJsonArray(json);

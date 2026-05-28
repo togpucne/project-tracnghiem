@@ -211,4 +211,10 @@ return [
         "auth" => true,
         "roles" => ["admin"],
     ],
+    "premium/packages" => [
+        "handler" => __DIR__ . "/../api/premium_packages.php",
+        "methods" => ["GET"],
+        "auth" => true,
+        "roles" => ["thisinh", "giangvien", "admin"],
+    ],
 ];

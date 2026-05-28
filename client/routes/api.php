@@ -263,4 +263,9 @@ return [
         "handler" => __DIR__ . "/../api/sepay_webhook.php",
         "methods" => ["POST"],
     ],
+    "premium/packages" => [
+        "handler" => __DIR__ . "/../../server/api/premium_packages.php",
+        "methods" => ["GET"],
+        "auth" => true,
+    ],
 ];

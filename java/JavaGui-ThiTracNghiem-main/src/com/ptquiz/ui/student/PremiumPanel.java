@@ -16,6 +16,7 @@ public class PremiumPanel extends JPanel {
     private String currentOrderCode;
     private Timer pollingTimer;
     private Home homeFrame;
+    private JPanel cardsContainer;
 
     public PremiumPanel(Home homeFrame) {
         this.homeFrame = homeFrame;
@@ -47,14 +48,70 @@ public class PremiumPanel extends JPanel {
         selectionPanel.add(header, BorderLayout.NORTH);
 
         // Cards Container
-        JPanel cardsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 30));
+        cardsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 30));
         cardsContainer.setBackground(selectionPanel.getBackground());
 
-        cardsContainer.add(createModernCard("Premium Tháng", "45.000", "30", "Gói phổ thông", new Color(59, 130, 246)));
-        cardsContainer.add(createModernCard("Premium Năm", "400.000", "365", "Gói tiết kiệm (Gợi ý)", new Color(245, 158, 11)));
+        selectionPanel.add(new JScrollPane(cardsContainer) {{
+            setBorder(null);
+            setBackground(selectionPanel.getBackground());
+            getViewport().setBackground(selectionPanel.getBackground());
+        }}, BorderLayout.CENTER);
 
-        selectionPanel.add(cardsContainer, BorderLayout.CENTER);
         add(selectionPanel, "SELECTION");
+        loadPackages();
+    }
+
+    private void loadPackages() {
+        cardsContainer.removeAll();
+        cardsContainer.add(new JLabel("Đang tải danh sách gói cước..."));
+        
+        new Thread(() -> {
+            String json = APIHelper.sendGet("premium/packages");
+            SwingUtilities.invokeLater(() -> {
+                cardsContainer.removeAll();
+                if (json == null || json.isEmpty()) {
+                    cardsContainer.add(new JLabel("Không thể lấy danh sách gói cước. Vui lòng thử lại sau."));
+                } else {
+                    try {
+                        String dataStr = APIHelper.extractJsonValue(json, "data");
+                        java.util.List<String> items = APIHelper.splitJsonArray(dataStr);
+                        
+                        if (items.isEmpty()) {
+                            cardsContainer.add(new JLabel("Hiện không có gói cước nào đang bán."));
+                        } else {
+                            for (String item : items) {
+                                String name = APIHelper.unescapeUnicode(APIHelper.extractJsonValue(item, "ten_goi"));
+                                String price = APIHelper.extractJsonValue(item, "gia");
+                                String days = APIHelper.extractJsonValue(item, "thoihan_ngay");
+                                
+                                // Logic định dạng thẻ dựa trên giá và thời gian
+                                double priceVal = Double.parseDouble(price);
+                                int daysVal = Integer.parseInt(days);
+                                
+                                String tag = "Gói phổ thông";
+                                Color accent = new Color(59, 130, 246); // Blue
+                                
+                                if (daysVal >= 365) {
+                                    tag = "Gói tiết kiệm (Gợi ý)";
+                                    accent = new Color(245, 158, 11); // Orange
+                                } else if (daysVal <= 7) {
+                                    tag = "Gói dùng thử";
+                                    accent = new Color(16, 185, 129); // Green
+                                }
+                                
+                                String formattedPrice = String.format("%,d", (long)priceVal).replace(",", ".");
+                                cardsContainer.add(createModernCard(name, formattedPrice, days, tag, accent));
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        cardsContainer.add(new JLabel("Lỗi xử lý dữ liệu: " + e.getMessage()));
+                    }
+                }
+                cardsContainer.revalidate();
+                cardsContainer.repaint();
+            });
+        }).start();
     }
 
     private JPanel createModernCard(String name, String price, String days, String tag, Color accentColor) {
@@ -125,7 +182,10 @@ public class PremiumPanel extends JPanel {
         buyBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         buyBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         buyBtn.setMaximumSize(new Dimension(250, 45));
-        buyBtn.addActionListener(e -> startPayment(name.contains("Tháng") ? "monthly" : "yearly", price.replace(".", "")));
+        
+        // Fix: Lấy tên gói và giá thực tế
+        String cleanPrice = price.replace(".", "");
+        buyBtn.addActionListener(e -> startPayment(name, cleanPrice));
         
         card.add(buyBtn);
 
@@ -171,7 +231,7 @@ public class PremiumPanel extends JPanel {
         infoSide.add(Box.createVerticalStrut(30));
 
         addInfoRow(infoSide, "Số tiền:", amount + " VNĐ");
-        addInfoRow(infoSide, "Gói:", packageName.equals("monthly") ? "Premium Tháng" : "Premium Năm");
+        addInfoRow(infoSide, "Gói:", packageName);
         addInfoRow(infoSide, "Mã đơn hàng:", orderCode);
         addInfoRow(infoSide, "Trạng thái:", "Đang chờ quét mã...");
 
