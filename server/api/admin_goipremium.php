@@ -30,10 +30,12 @@ try {
 
         if (isset($input['copy_id']) && (int)$input['copy_id'] > 0) {
             $success = $model->copy((int)$input['copy_id']);
+            $message = $success ? 'Sao chép gói thành công' : ($_SESSION['error'] ?? 'Không thể sao chép gói');
+            unset($_SESSION['error']);
             Api::json([
                 'success' => $success,
-                'message' => $success ? 'Sao chép gói thành công' : 'Không thể sao chép gói'
-            ]);
+                'message' => $message
+            ], $success ? 200 : 409);
         }
 
         if (empty($input['ten_goi']) || empty($input['gia']) || empty($input['thoihan_ngay']) || empty($input['mieuta'])) {
@@ -66,10 +68,12 @@ try {
             }
 
             $success = $model->restore($id);
+            $message = $success ? 'Khôi phục gói premium thành công' : ($_SESSION['error'] ?? 'Không thể khôi phục gói này');
+            unset($_SESSION['error']);
             Api::json([
                 'success' => $success,
-                'message' => $success ? 'Khôi phục gói premium thành công' : 'Không thể khôi phục gói này'
-            ]);
+                'message' => $message
+            ], $success ? 200 : 409);
         }
 
         if (empty($data['ten_goi']) || empty($data['gia']) || empty($data['thoihan_ngay']) || empty($data['mieuta'])) {

@@ -42,7 +42,23 @@ public class APIHelper {
         try {
             URL url = new java.net.URI(BASE_URL + endpoint).toURL();
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("PATCH");
+            
+            // Fix: Một số phiên bản Java không hỗ trợ PATCH trực tiếp qua HttpURLConnection
+            // Sử dụng Reflection để ghi đè method
+            try {
+                conn.setRequestMethod("PATCH");
+            } catch (java.net.ProtocolException e) {
+                try {
+                    java.lang.reflect.Field methodField = HttpURLConnection.class.getDeclaredField("method");
+                    methodField.setAccessible(true);
+                    methodField.set(conn, "PATCH");
+                } catch (Exception ex) {
+                    // Fallback: Nếu vẫn lỗi, thử dùng POST với Header override (nếu Server hỗ trợ)
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+                }
+            }
+
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setRequestProperty("Accept", "application/json");
             if (UserSession.token != null && !UserSession.token.isEmpty()) {
@@ -165,8 +181,12 @@ public class APIHelper {
             return new APIResponse(true, message, responseStr);
         } else {
             String error = extractJsonValue(responseStr, "error");
-            if (error.isEmpty())
+            if (error.isEmpty()) {
+                error = extractJsonValue(responseStr, "message");
+            }
+            if (error.isEmpty()) {
                 error = "Có lỗi xảy ra, mã HTTP: " + code;
+            }
             return new APIResponse(false, error, responseStr);
         }
     }

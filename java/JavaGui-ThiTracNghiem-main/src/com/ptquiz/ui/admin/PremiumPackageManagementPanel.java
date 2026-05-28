@@ -14,6 +14,8 @@ public class PremiumPackageManagementPanel extends JPanel {
     private JTable table;
     private DefaultTableModel model;
     private JButton btnAdd;
+    private String currentStatus = "active";
+    private JButton btnActiveTab, btnTrashTab;
 
     public PremiumPackageManagementPanel() {
         setLayout(new BorderLayout());
@@ -42,13 +44,35 @@ public class PremiumPackageManagementPanel extends JPanel {
         subtitle.setForeground(Color.BLACK);
         titleBox.add(subtitle);
 
-        btnAdd = new JButton("THÊM GÓI PREMIUM");
-        styleStandardButton(btnAdd, new Color(219, 234, 254));
+        btnAdd = new JButton("+ THÊM GÓI MỚI");
+        styleStandardButton(btnAdd, new Color(79, 70, 229));
+        btnAdd.setForeground(Color.BLACK);
         btnAdd.addActionListener(e -> showPackageDialog(-1, "", "10000", "2", ""));
+
+        JPanel tabContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        tabContainer.setBackground(Color.WHITE);
+        tabContainer.setBorder(new EmptyBorder(10, 0, 10, 0));
+
+        btnActiveTab = new JButton("Đang bán");
+        btnTrashTab = new JButton("Thùng rác");
+        styleTabButton(btnActiveTab, true);
+        styleTabButton(btnTrashTab, false);
+
+        btnActiveTab.addActionListener(e -> switchTab("active"));
+        btnTrashTab.addActionListener(e -> switchTab("inactive"));
+
+        tabContainer.add(btnActiveTab);
+        tabContainer.add(btnTrashTab);
 
         header.add(titleBox, BorderLayout.WEST);
         header.add(btnAdd, BorderLayout.EAST);
-        add(header, BorderLayout.NORTH);
+        
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.setBackground(Color.WHITE);
+        northPanel.add(header, BorderLayout.NORTH);
+        northPanel.add(tabContainer, BorderLayout.SOUTH);
+        
+        add(northPanel, BorderLayout.NORTH);
 
         String[] columns = {"STT", "ID", "Tên gói", "Giá (VNĐ)", "Thời hạn (ngày)", "Miêu tả", "Hành động"};
         model = new DefaultTableModel(columns, 0) {
@@ -87,7 +111,7 @@ public class PremiumPackageManagementPanel extends JPanel {
 
     public void loadData() {
         new Thread(() -> {
-            String json = APIHelper.sendGet("admin/goipremium");
+            String json = APIHelper.sendGet("admin/goipremium?status=" + currentStatus);
             SwingUtilities.invokeLater(() -> {
                 if (json == null || json.isEmpty()) return;
                 model.setRowCount(0);
@@ -106,6 +130,8 @@ public class PremiumPackageManagementPanel extends JPanel {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+                table.repaint();
+                table.revalidate();
             });
         }).start();
     }
@@ -167,10 +193,12 @@ public class PremiumPackageManagementPanel extends JPanel {
 
         JButton btnCancel = new JButton("HỦY");
         styleStandardButton(btnCancel, Color.WHITE);
+        btnCancel.setForeground(Color.BLACK);
         btnCancel.addActionListener(e -> dialog.dispose());
 
         JButton btnSave = new JButton(editMode ? "CẬP NHẬT" : "LƯU GÓI");
         styleStandardButton(btnSave, new Color(187, 247, 208));
+        btnSave.setForeground(Color.BLACK);
         btnSave.addActionListener(e -> {
             String packageName = txtName.getText().trim();
             String priceValue = txtPrice.getText().trim();
@@ -267,76 +295,124 @@ public class PremiumPackageManagementPanel extends JPanel {
 
     private void styleStandardButton(JButton button, Color bg) {
         button.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        button.setForeground(Color.BLACK);
         button.setBackground(bg);
-        button.setBorder(new LineBorder(Color.BLACK, 1));
+        button.setBorder(new LineBorder(new Color(209, 213, 219), 1));
         button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.setPreferredSize(new Dimension(180, 38));
+    }
+
+    private void styleTabButton(JButton button, boolean active) {
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        if (active) {
+            button.setBackground(new Color(238, 242, 255));
+            button.setForeground(new Color(79, 70, 229));
+            button.setBorder(new LineBorder(new Color(79, 70, 229), 2));
+        } else {
+            button.setBackground(Color.WHITE);
+            button.setForeground(new Color(107, 114, 128));
+            button.setBorder(new LineBorder(new Color(229, 231, 235), 1));
+        }
+        button.setPreferredSize(new Dimension(120, 35));
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    private void switchTab(String status) {
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
+        }
+        table.clearSelection();
+        this.currentStatus = status;
+        styleTabButton(btnActiveTab, status.equals("active"));
+        styleTabButton(btnTrashTab, status.equals("inactive"));
+        btnAdd.setVisible(status.equals("active"));
+        loadData();
     }
 
     private JPanel buildActionPanel(int row) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
         panel.setBackground(Color.WHITE);
 
-        JButton btnEdit = new JButton("SỬA");
-        styleActionButton(btnEdit);
-        btnEdit.addActionListener(e -> {
-            int id = Integer.parseInt(model.getValueAt(row, 1).toString());
-            String name = model.getValueAt(row, 2).toString();
-            String price = model.getValueAt(row, 3).toString();
-            String days = model.getValueAt(row, 4).toString();
-            String desc = model.getValueAt(row, 5).toString();
-            showPackageDialog(id, name, price, days, desc);
-        });
+        int id = Integer.parseInt(model.getValueAt(row, 1).toString());
 
-        JButton btnCopy = new JButton("SAO CHÉP");
-        styleActionButton(btnCopy);
-        btnCopy.addActionListener(e -> {
-            int id = Integer.parseInt(model.getValueAt(row, 1).toString());
-            new Thread(() -> {
-                APIHelper.APIResponse response = APIHelper.sendPost("admin/goipremium", "{\"copy_id\": " + id + "}");
-                SwingUtilities.invokeLater(() -> {
-                    if (response.success) {
-                        loadData();
-                    } else {
-                        JOptionPane.showMessageDialog(this, response.message, "Lỗi", JOptionPane.ERROR_MESSAGE);
-                    }
-                });
-            }).start();
-        });
+        if (currentStatus.equals("active")) {
+            JButton btnEdit = new JButton("SỬA");
+            styleActionButton(btnEdit, new Color(79, 70, 229));
+            btnEdit.addActionListener(e -> {
+                String name = model.getValueAt(row, 2).toString();
+                String price = model.getValueAt(row, 3).toString();
+                String days = model.getValueAt(row, 4).toString();
+                String desc = model.getValueAt(row, 5).toString();
+                showPackageDialog(id, name, price, days, desc);
+            });
 
-        JButton btnDelete = new JButton("XÓA");
-        styleActionButton(btnDelete);
-        btnDelete.addActionListener(e -> {
-            int id = Integer.parseInt(model.getValueAt(row, 1).toString());
-            int choice = JOptionPane.showConfirmDialog(this,
-                    "Bạn có chắc muốn xóa gói Premium này?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
-            if (choice == JOptionPane.YES_OPTION) {
+            JButton btnCopy = new JButton("SAO CHÉP");
+            styleActionButton(btnCopy, new Color(16, 185, 129));
+            btnCopy.addActionListener(e -> {
                 new Thread(() -> {
-                    APIHelper.APIResponse response = APIHelper.sendDelete("admin/goipremium", "{\"id_goi\": " + id + "}");
+                    APIHelper.APIResponse response = APIHelper.sendPost("admin/goipremium", "{\"copy_id\": " + id + "}");
                     SwingUtilities.invokeLater(() -> {
                         if (response.success) {
                             loadData();
                         } else {
-                            JOptionPane.showMessageDialog(this, response.message, "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(this, response.message, "Lỗi bảo mật API", JOptionPane.ERROR_MESSAGE);
                         }
                     });
                 }).start();
-            }
-        });
+            });
 
-        panel.add(btnEdit);
-        panel.add(btnCopy);
-        panel.add(btnDelete);
+            JButton btnDelete = new JButton("XÓA");
+            styleActionButton(btnDelete, new Color(239, 68, 68));
+            btnDelete.addActionListener(e -> {
+                int choice = JOptionPane.showConfirmDialog(this,
+                        "Bạn có chắc muốn chuyển gói này vào thùng rác?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+                if (choice == JOptionPane.YES_OPTION) {
+                    new Thread(() -> {
+                        APIHelper.APIResponse response = APIHelper.sendDelete("admin/goipremium", "{\"id_goi\": " + id + "}");
+                        SwingUtilities.invokeLater(() -> {
+                            if (response.success) {
+                                loadData();
+                            } else {
+                                JOptionPane.showMessageDialog(this, response.message, "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            }
+                        });
+                    }).start();
+                }
+            });
+
+            panel.add(btnEdit);
+            panel.add(btnCopy);
+            panel.add(btnDelete);
+        } else {
+            JButton btnRestore = new JButton("KHÔI PHỤC");
+            styleActionButton(btnRestore, new Color(16, 185, 129));
+            btnRestore.setPreferredSize(new Dimension(120, 30));
+            btnRestore.addActionListener(e -> {
+                new Thread(() -> {
+                    APIHelper.APIResponse response = APIHelper.sendPatch("admin/goipremium", "{\"action\": \"restore\", \"id_goi\": " + id + "}");
+                    SwingUtilities.invokeLater(() -> {
+                        if (response.success) {
+                            loadData();
+                        } else {
+                            JOptionPane.showMessageDialog(this, response.message, "Lỗi trùng lặp API", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                }).start();
+            });
+            panel.add(btnRestore);
+        }
+
         return panel;
     }
 
-    private void styleActionButton(JButton button) {
+    private void styleActionButton(JButton button, Color color) {
         button.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        button.setForeground(Color.BLACK);
+        button.setForeground(color);
         button.setBackground(Color.WHITE);
-        button.setBorder(new LineBorder(new Color(209, 213, 219), 1));
+        button.setBorder(new LineBorder(color, 1));
         button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.setPreferredSize(new Dimension(90, 30));
     }
 
@@ -358,6 +434,10 @@ public class PremiumPackageManagementPanel extends JPanel {
 
         @Override public Object getCellEditorValue() {
             return "";
+        }
+
+        @Override public boolean stopCellEditing() {
+            return super.stopCellEditing();
         }
     }
 }

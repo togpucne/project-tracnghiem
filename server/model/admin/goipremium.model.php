@@ -62,6 +62,18 @@ class GoiPremiumModel {
     }
 
     public function restore($id) {
+        // Lấy thông tin gói hiện tại (đang ở trạng thái inactive)
+        $goi = $this->getById($id);
+        if (!$goi) return false;
+
+        // Kiểm tra xem tên gói có bị trùng với gói nào đang 'active' không
+        if (!$this->checkUniqueName($goi['ten_goi'])) {
+            // Nếu trùng, không cho khôi phục
+            if (session_status() === PHP_SESSION_NONE) session_start();
+            $_SESSION["error"] = "Không thể khôi phục vì tên gói '" . $goi['ten_goi'] . "' đã tồn tại ở danh sách đang bán.";
+            return false;
+        }
+
         $stmt = $this->db->prepare("UPDATE goi_premium SET trangthai = 'active' WHERE id_goi = ? AND trangthai = 'inactive'");
         $stmt->bind_param("i", $id);
         $success = $stmt->execute();
@@ -75,6 +87,14 @@ class GoiPremiumModel {
         if (!$goi) return false;
 
         $new_name = $goi['ten_goi'] . " (Copy)";
+        
+        // Kiểm tra trùng tên cho bản copy mới
+        if (!$this->checkUniqueName($new_name)) {
+            if (session_status() === PHP_SESSION_NONE) session_start();
+            $_SESSION["error"] = "Bản sao '" . $new_name . "' đã tồn tại trong danh sách đang bán.";
+            return false;
+        }
+
         $stmt = $this->db->prepare("INSERT INTO goi_premium (ten_goi, gia, thoihan_ngay, mieuta, trangthai) VALUES (?, ?, ?, ?, 'active')");
         $stmt->bind_param("sdis", $new_name, $goi['gia'], $goi['thoihan_ngay'], $goi['mieuta']);
         $success = $stmt->execute();
