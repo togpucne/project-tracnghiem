@@ -12,11 +12,17 @@ if (empty($order_code)) {
 
 $conn = Database::connect();
 
-// 1. Kiểm tra trạng thái đơn hàng cụ thể
-$stmt = $conn->prepare("SELECT status, user_id FROM payments WHERE order_code = ?");
+// 1. Kiểm tra trạng thái đơn hàng cụ thể và thời gian hết hạn
+$stmt = $conn->prepare("SELECT status, user_id, 
+    CASE WHEN expires_at < NOW() AND status = 'pending' THEN 1 ELSE 0 END as is_expired 
+    FROM payments WHERE order_code = ?");
 $stmt->bind_param("s", $order_code);
 $stmt->execute();
 $payment = $stmt->get_result()->fetch_assoc();
+
+if ($payment && $payment['is_expired'] == 1) {
+    $payment['status'] = 'expired';
+}
 
 // 2. Kiểm tra trạng thái Premium tổng thể của user (đề phòng user đã thanh toán mã khác)
 $is_premium = false;

@@ -113,7 +113,13 @@ if ($is_premium && !empty($_SESSION['user']['premium_expire'])) {
 </style>
 
 <script>
+let currentTimer = null;
+let currentPollInterval = null;
+
 async function createPayment(amount, packageType) {
+    if (currentTimer) clearInterval(currentTimer);
+    if (currentPollInterval) clearInterval(currentPollInterval);
+
     const resultDiv = document.getElementById('payment-result');
     resultDiv.innerHTML = `
         <div class="d-flex justify-content-center align-items-center p-4">
@@ -191,19 +197,26 @@ async function createPayment(amount, packageType) {
             
             // Countdown timer
             let timeLeft = 15 * 60;
-            const timer = setInterval(() => {
+            currentTimer = setInterval(() => {
                 const minutes = Math.floor(timeLeft / 60);
                 const seconds = timeLeft % 60;
                 document.getElementById('countdown').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
                 if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    resultDiv.innerHTML = `<div class="alert alert-danger">❌ Đã hết thời gian thanh toán. Vui lòng tạo đơn mới.</div>`;
+                    clearInterval(currentTimer);
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger d-flex justify-content-between align-items-center">
+                            <span>❌ Đã hết thời gian thanh toán. Vui lòng tạo đơn mới.</span>
+                            <button onclick="location.reload()" class="btn btn-sm btn-outline-danger ms-3">
+                                <i class="fas fa-sync-alt me-1"></i> Nhấn để tải lại trang
+                            </button>
+                        </div>
+                    `;
                 }
                 timeLeft--;
             }, 1000);
 
             // Bắt đầu kiểm tra trạng thái thanh toán (polling)
-            startPolling(data.order_code, timer);
+            startPolling(data.order_code);
 
         } else {
             const errorMsg = data.message || data.error || 'Lỗi không xác định';
@@ -221,14 +234,14 @@ function copyToClipboard(text) {
     });
 }
 
-async function startPolling(order_code, timer) {
-    const pollInterval = setInterval(async () => {
+async function startPolling(order_code) {
+    currentPollInterval = setInterval(async () => {
         try {
             const response = await fetch(apiUrl('premium/check-status', { order_code: order_code }));
             const data = await response.json();
-            if (data.status === 'completed' || data.is_premium === true) {
-                clearInterval(pollInterval);
-                clearInterval(timer);
+            if (data.status === 'completed') {
+                clearInterval(currentPollInterval);
+                clearInterval(currentTimer);
                 Swal.fire({
                     icon: 'success',
                     title: 'Nâng cấp thành công!',
@@ -237,6 +250,18 @@ async function startPolling(order_code, timer) {
                 }).then(() => {
                     window.location.href = 'index.php'; // Quay lại trang chủ
                 });
+            } else if (data.status === 'expired') {
+                clearInterval(currentPollInterval);
+                clearInterval(currentTimer);
+                const resultDiv = document.getElementById('payment-result');
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+                        <span>❌ Đã hết thời gian thanh toán (Server). Vui lòng tạo đơn mới.</span>
+                        <button onclick="location.reload()" class="btn btn-sm btn-outline-danger ms-3">
+                            <i class="fas fa-sync-alt me-1"></i> Tải lại trang
+                        </button>
+                    </div>
+                `;
             }
         } catch (error) {
             console.error('Polling error:', error);

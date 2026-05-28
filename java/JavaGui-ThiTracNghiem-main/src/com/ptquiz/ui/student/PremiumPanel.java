@@ -332,10 +332,15 @@ public class PremiumPanel extends JPanel {
         if (pollingTimer != null) pollingTimer.stop();
         pollingTimer = new Timer(3000, e -> {
             String res = APIHelper.sendGet("premium/check-status?order_code=" + currentOrderCode);
-            if (res.contains("\"is_premium\":true") || res.contains("\"status\":\"completed\"")) {
+            if (res.contains("\"status\":\"completed\"")) {
                 stopPolling();
                 JOptionPane.showMessageDialog(this, "Nâng cấp Premium thành công!");
                 refreshGlobalStatus();
+            } else if (res.contains("\"status\":\"expired\"")) {
+                stopPolling();
+                JOptionPane.showMessageDialog(this, "Mã thanh toán đã hết hạn (15 phút). Vui lòng chọn lại gói cước.");
+                CardLayout cl = (CardLayout) getLayout();
+                cl.show(this, "SELECTION");
             }
         });
         pollingTimer.start();
