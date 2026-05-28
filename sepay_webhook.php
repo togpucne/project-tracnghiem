@@ -58,7 +58,7 @@ if (!$data) {
 if (!$is_test_mode) {
     $headers = getallheaders();
     $received_signature = $headers['X-Sepay-Signature'] ?? $headers['x-sepay-signature'] ?? '';
-    
+
     // Log signature mismatch clearly
     if (!empty($received_signature)) {
         $computed_signature = hash_hmac('sha256', $payload, $API_KEY);
@@ -104,7 +104,7 @@ if (!$order) {
     exit;
 }
 
-if ((float)$amount < (float)$order['amount']) {
+if ((float) $amount < (float) $order['amount']) {
     file_put_contents(__DIR__ . '/sepay_log.txt', "Error: Amount mismatch (received $amount, expected {$order['amount']})\n", FILE_APPEND);
     echo json_encode(['success' => false, 'message' => 'Amount mismatch']);
     exit;
@@ -119,8 +119,25 @@ try {
 
     // 2. Grant premium to user
     $user_id = $order['user_id'];
-    $package_type = $order['package_type'];
-    $days = ($package_type === 'year') ? 365 : 30;
+    $package_name = $order['package_type']; // Ví dụ: "Premium Năm", "Premium Tuần"
+    $order_amount = $order['amount'];
+
+    // Lấy số ngày từ bảng goi_premium dựa trên tên gói hoặc giá tiền
+    $stmt = $conn->prepare("SELECT thoihan_ngay FROM goi_premium WHERE ten_goi = ? AND trangthai = 'active' LIMIT 1");
+    $stmt->bind_param("s", $package_name);
+    $stmt->execute();
+    $goi_info = $stmt->get_result()->fetch_assoc();
+
+    if (!$goi_info) {
+        // Nếu không tìm thấy theo tên, thử tìm theo giá (để phòng lỗi đồng bộ tên)
+        $stmt = $conn->prepare("SELECT thoihan_ngay FROM goi_premium WHERE gia = ? AND trangthai = 'active' LIMIT 1");
+        $stmt->bind_param("d", $order_amount);
+        $stmt->execute();
+        $goi_info = $stmt->get_result()->fetch_assoc();
+    }
+
+    // Lấy số ngày thực tế của gói, mặc định 30 nếu có lỗi dữ liệu
+    $days = $goi_info ? (int)$goi_info['thoihan_ngay'] : 30;
 
     $stmt = $conn->prepare("SELECT premium_expire, premium_status FROM nguoidung WHERE id_nguoidung = ?");
     $stmt->bind_param("i", $user_id);
