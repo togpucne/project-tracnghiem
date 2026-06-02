@@ -1,96 +1,228 @@
-# HỆ THỐNG THI TRẮC NGHIỆM AN TOÀN PT QUIZ
+# PT QUIZ — Secure Online Examination System
 
-## Nghiên cứu an toàn cho API và ứng dụng xây dựng hệ thống thi trắc nghiệm
+> **Research project on API Security applied to an Online Multiple-Choice Examination System**
 
-## 1. Giới thiệu
+---
 
-PT QUIZ là dự án nghiên cứu và phát triển hệ thống thi trắc nghiệm trực tuyến, tập trung vào việc nghiên cứu API và các giải pháp đảm bảo an toàn thông tin cho hệ thống sử dụng API.
+## 1. Introduction
 
-Dự án được thực hiện nhằm mô phỏng môi trường thi trực tuyến trong thực tế, kết hợp giữa ứng dụng Web và ứng dụng Desktop. Hệ thống cho phép người dùng tham gia làm bài thi trắc nghiệm, quản lý dữ liệu bài thi và xử lý thông tin thông qua API trung gian.
+**PT Quiz** is a research and development project focused on building a secure online multiple-choice examination system, with an emphasis on studying RESTful API design and information security best practices.
 
+The project simulates a real-world online examination environment by combining a **Web Application** and a **Desktop Application**, both communicating through a central, secured API layer. The system enables users to take multiple-choice quizzes, manage exam data, and process results — all orchestrated through the API.
 
-Mục tiêu chính của dự án là nghiên cứu các phương pháp thiết kế API an toàn và áp dụng vào việc xây dựng một hệ thống demo phục vụ học tập và nghiên cứu trong lĩnh vực An toàn thông tin.
+The primary goal is to research secure API design methodologies and apply them in building a practical demonstration system for studying and research in the field of **Information Security**.
 
-## 2. Mục tiêu dự án
+---
 
-- Nghiên cứu về API và mô hình lập trình API.
-- Phân tích các nguy cơ bảo mật phổ biến đối với API.
-- Áp dụng các giải pháp an toàn thông tin vào hệ thống thực tế.
-- Xây dựng hệ thống thi trắc nghiệm gồm Web Application và Desktop Application.
-- Thiết kế hệ thống đảm bảo tính bảo mật, tính toàn vẹn dữ liệu và kiểm soát truy cập.
+## 🌐 Live Demo
 
-## 3. Phạm vi nghiên cứu
+| Component | URL | Role |
+|---|---|---|
+| **Web Client (Student)** | [https://ptquizz.onrender.com/client/](https://ptquizz.onrender.com/client/) | Student (`thisinh`) |
+| **Web Server (Admin / Lecturer)** | [https://ptquizz.onrender.com/server/](https://ptquizz.onrender.com/server/) | Lecturer (`giangvien`), Admin |
+| **Desktop App (.exe)** | [Download from Google Drive](https://drive.google.com/drive/folders/11VJWaiHnWW4qAy2azdyf_3HjznmvD5CL?usp=sharing) | Student (`thisinh`) |
 
-Dự án tập trung vào các nội dung:
+> The desktop application has been compiled and packaged as a standalone `.exe` file using NetBeans — no Java installation required on the target machine. Simply download and run.
 
-- Xây dựng API phục vụ giao tiếp giữa các thành phần hệ thống.
-- Nghiên cứu cơ chế xác thực và phân quyền.
-- Kiểm tra và xử lý dữ liệu đầu vào nhằm đảm bảo an toàn.
-- Xây dựng hệ thống thi trắc nghiệm sử dụng API làm trung tâm.
+---
 
-## 4. Kiến trúc hệ thống
+## 2. Project Objectives
 
-Hệ thống được thiết kế theo mô hình client-server với API làm trung gian:
+- Study the concept of APIs and the API programming model.
+- Analyze common security threats targeting APIs.
+- Apply information security solutions to a real system.
+- Build an online examination system consisting of a Web Application and a Desktop Application.
+- Design the system to ensure **security**, **data integrity**, and **access control**.
+
+---
+
+## 3. Scope of Research
+
+The project focuses on the following areas:
+
+- Building a RESTful API to facilitate communication between system components.
+- Researching authentication and authorization mechanisms (JWT-based).
+- Input validation and sanitization to prevent injection attacks.
+- Securing API endpoints against unauthorized and malicious access.
+- Implementing security logging and activity auditing.
+
+---
+
+## 4. System Architecture
+
+The system follows a **Client–Server** architecture with the API acting as the central intermediary:
 
 <p align="center">
   <img src="client/public/img/kientruc.png" width="700">
 </p>
 
-Trong đó:
+**Components:**
 
-- Web Application và Desktop Application giao tiếp với hệ thống thông qua API.
-- API chịu trách nhiệm xử lý logic nghiệp vụ và kiểm soát bảo mật.
-- Database lưu trữ dữ liệu người dùng, câu hỏi và kết quả bài thi.
+| Component | Role |
+|---|---|
+| **Web Application** | PHP-based frontend for students and administrators |
+| **Desktop Application** | Java-based desktop client for exam-taking |
+| **RESTful API (Server)** | Central backend — handles business logic, authentication, and security |
+| **Database (MySQL)** | Stores users, questions, exams, and results |
 
-## 5. Công nghệ sử dụng
+- Both clients communicate exclusively through the API.
+- The API is responsible for all business logic and security enforcement.
+- The database is never accessed directly by the clients.
 
-### Web Application
+---
 
-- PHP
-- HTML/CSS
-- JavaScript
-- Bootstrap
+## 5. Technology Stack
 
-### Desktop Application
+### Web Application (`/client`)
+- **PHP** — server-side rendering and API communication
+- **HTML / CSS / JavaScript** — frontend structure and interactivity
+- **Bootstrap** — responsive UI framework
 
-- Java
-- NetBeans IDE
+### Desktop Application (`/java`)
+- **Java** — application logic
+- **NetBeans IDE** — development environment
+- **Swing** — graphical user interface
 
-### API & Backend
+### API & Backend (`/server`)
+- **PHP** — RESTful API implementation
+- **JWT (JSON Web Token)** — stateless authentication
+- **MySQL / PDO** — database access with prepared statements
+- **Composer** — dependency management
 
-- RESTful API
-- Xử lý dữ liệu phía server
+### Development Environment
+- **XAMPP** (Apache + MySQL)
+- **NetBeans IDE**
 
-## 6. Các chức năng chính
+---
 
-### Website (PHP)
+## 6. Key Features
 
-- Đăng ký và đăng nhập người dùng
-- Hiển thị danh sách bài thi
-- Thực hiện bài thi trắc nghiệm online
-- Tính điểm tự động
-- Quản lý câu hỏi và đề thi
-- Giao tiếp với API
+### Web Application (PHP Client)
+- User registration and login
+- Browse and search available exams
+- Take online multiple-choice exams
+- Automatic scoring and result display
+- Manage questions, question banks, and exams (admin)
+- Export results to CSV (admin)
+- Import questions from Word documents (admin)
+- User management and account status control (admin)
+- Premium account upgrade via SePay payment gateway
 
-### Desktop Application (Java)
+### Desktop Application (Java Client)
+- Authenticate via API (JWT token-based)
+- Browse and take exams on a desktop interface
+- Synchronize exam results with the server in real-time
 
-- Kết nối API để lấy dữ liệu
-- Thực hiện bài thi trên môi trường desktop
-- Đồng bộ dữ liệu với server
+---
 
-## 7. Giải pháp an toàn thông tin
+## 7. Information Security Solutions
 
-Một số kỹ thuật bảo mật được nghiên cứu và áp dụng:
+The following security techniques have been researched and implemented:
 
-- Xác thực người dùng (Authentication)
-- Phân quyền truy cập (Authorization)
-- Kiểm tra dữ liệu đầu vào (Input Validation)
-- Bảo vệ endpoint API
-- Ngăn chặn truy cập trái phép
+| Security Layer | Implementation |
+|---|---|
+| **Authentication** | JWT (JSON Web Tokens) with expiry validation |
+| **Authorization** | Role-based access control (admin / student) enforced on every API endpoint |
+| **Input Validation** | Server-side sanitization of all user inputs to prevent XSS and injection |
+| **SQL Injection Prevention** | PDO with prepared statements throughout the entire data layer |
+| **API Endpoint Protection** | `.htaccess` rules + token verification middleware (`ApiSecurityValidator.php`) |
+| **Security Logging** | `SecurityLogger.php` records suspicious activity and access violations |
+| **CSRF Protection** | Anti-CSRF token generation and validation on state-changing requests |
+| **Cache-Control Headers** | Sensitive API responses set with `no-store, no-cache` to prevent data leakage |
+| **Token Management** | `TokenManager.php` handles JWT signing, parsing, and revocation |
 
-## 8. Môi trường phát triển
+---
 
-- PHP (Web Server)
-- Java (Desktop Application)
-- NetBeans IDE
-- XAMPP (Apache & MySQL)
+## 8. Project Structure
+
+```
+project-tracnghiem/
+├── client/                   # Web Application (PHP frontend)
+│   ├── api/                  # Client-side API call handlers
+│   ├── core/                 # Core client utilities
+│   ├── public/               # Public assets (CSS, JS, images)
+│   ├── routes/               # Client routing
+│   ├── views/                # Page templates
+│   └── index.php             # Client entry point
+│
+├── server/                   # RESTful API Backend
+│   ├── api/                  # API endpoint handlers (41 endpoints)
+│   ├── core/                 # Security core (JWT, Validator, Logger, etc.)
+│   ├── controller/           # Business logic controllers
+│   ├── model/                # Database models
+│   ├── database/             # Database connection
+│   ├── routes/               # API routing
+│   └── index.php             # API entry point
+│
+├── java/                     # Desktop Application (Java/Swing)
+│   └── JavaGui-ThiTracNghiem-main/
+│
+├── sepay_webhook.php          # SePay payment webhook handler
+└── README.md
+```
+
+---
+
+## 9. Getting Started
+
+### ✅ Option A — Use the Hosted Version (Recommended)
+
+No installation needed. Access the system directly online:
+
+| Role | URL |
+|---|---|
+| **Student** (take exams) | [https://ptquizz.onrender.com/client/](https://ptquizz.onrender.com/client/) |
+| **Lecturer / Admin** (manage exams) | [https://ptquizz.onrender.com/server/](https://ptquizz.onrender.com/server/) |
+
+**Desktop Application (.exe):**
+- Download the pre-built `.exe` from [Google Drive](https://drive.google.com/drive/folders/11VJWaiHnWW4qAy2azdyf_3HjznmvD5CL?usp=sharing)
+- No Java installation required — just run the `.exe` directly
+- The app connects to the hosted API automatically
+
+---
+
+### 🛠️ Option B — Run Locally
+
+#### Prerequisites
+- XAMPP (Apache + MySQL) installed and running
+- Java JDK 8+ and NetBeans IDE (for desktop app)
+- Composer (for PHP dependencies)
+
+#### Setup Steps
+
+1. **Clone / copy** the project into your XAMPP `htdocs` directory:
+   ```
+   C:\xampp\htdocs\project-tracnghiem\
+   ```
+
+2. **Import the database** — Import the SQL schema file into MySQL via phpMyAdmin.
+
+3. **Install PHP dependencies** (in the `server/` directory):
+   ```bash
+   cd server
+   composer install
+   ```
+
+4. **Start XAMPP** — Make sure Apache and MySQL services are running.
+
+5. **Access the Web Client** (Student):
+   ```
+   http://localhost/project-tracnghiem/client/
+   ```
+
+6. **Access the Web Server** (Lecturer / Admin):
+   ```
+   http://localhost/project-tracnghiem/server/
+   ```
+
+7. **Run the Desktop Application** — Open the Java project in NetBeans and run it, or use the compiled `.exe` from [Google Drive](https://drive.google.com/drive/folders/11VJWaiHnWW4qAy2azdyf_3HjznmvD5CL?usp=sharing).
+
+---
+
+## 10. Authors
+
+This project was developed as an academic research project in the field of **Information Security**, focusing on secure API design and implementation.
+
+---
+
+*Built with PHP · Java · MySQL · JWT · Bootstrap*
