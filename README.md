@@ -1,228 +1,156 @@
-# PT QUIZ — Secure Online Examination System
+# PT Quiz — Secure Online Examination System
 
-> **Research project on API Security applied to an Online Multiple-Choice Examination System**
+A research and development project on RESTful API security, applied to an online multiple-choice examination platform combining a Web Application, a Desktop Application, and a centralized API backend.
 
----
+**Live Demo:**
+- Student portal: https://ptquizz.onrender.com/client/
+- Admin / Lecturer portal: https://ptquizz.onrender.com/server/
+- Desktop application (.exe): https://drive.google.com/drive/folders/11VJWaiHnWW4qAy2azdyf_3HjznmvD5CL?usp=sharing
 
-## 1. Introduction
+## 1. Project Overview
 
-**PT Quiz** is a research and development project focused on building a secure online multiple-choice examination system, with an emphasis on studying RESTful API design and information security best practices.
+PT Quiz is an academic project in the domain of Information Security. The system simulates a real-world online examination environment and serves as a research platform for studying secure API design, authentication mechanisms, and data protection techniques.
 
-The project simulates a real-world online examination environment by combining a **Web Application** and a **Desktop Application**, both communicating through a central, secured API layer. The system enables users to take multiple-choice quizzes, manage exam data, and process results — all orchestrated through the API.
+The architecture consists of three components — a PHP-based web client for students, a PHP-based admin portal for lecturers and administrators, and a Java desktop application — all communicating through a single secured RESTful API layer. The database is never accessed directly by any client; all data operations are mediated through the API.
 
-The primary goal is to research secure API design methodologies and apply them in building a practical demonstration system for studying and research in the field of **Information Security**.
+## 2. Objectives
 
----
+- Study the structure and programming model of RESTful APIs.
+- Analyze common security vulnerabilities targeting API-based systems.
+- Apply information security techniques to a functional, end-to-end system.
+- Build an examination platform covering both web and desktop environments.
+- Ensure the system upholds the principles of confidentiality, integrity, and access control.
 
-## 🌐 Live Demo
+## 3. System Architecture
 
-| Component | URL | Role |
+The system follows a Client–Server architecture with the API as the central security boundary.
+
+```
+[Web Client]         [Desktop Client]
+      \                    /
+       \                  /
+        [RESTful API (PHP)]
+               |
+          [MySQL Database]
+```
+
+| Component | Technology | Role |
 |---|---|---|
-| **Web Client (Student)** | [https://ptquizz.onrender.com/client/](https://ptquizz.onrender.com/client/) | Student (`thisinh`) |
-| **Web Server (Admin / Lecturer)** | [https://ptquizz.onrender.com/server/](https://ptquizz.onrender.com/server/) | Lecturer (`giangvien`), Admin |
-| **Desktop App (.exe)** | [Download from Google Drive](https://drive.google.com/drive/folders/11VJWaiHnWW4qAy2azdyf_3HjznmvD5CL?usp=sharing) | Student (`thisinh`) |
+| Web Client | PHP, HTML, CSS, JavaScript, Bootstrap | Student examination interface |
+| Admin Portal | PHP, HTML, CSS, JavaScript, Bootstrap | Exam and user management for lecturers and admins |
+| Desktop Client | Java (Swing), NetBeans | Standalone exam-taking application |
+| API Backend | PHP, JWT, PDO, Composer | Business logic, authentication, and security enforcement |
+| Database | MySQL | Persistent storage for users, questions, exams, and results |
 
-> The desktop application has been compiled and packaged as a standalone `.exe` file using NetBeans — no Java installation required on the target machine. Simply download and run.
+## 4. Technology Stack
 
----
+**Backend (API Server)**
+- PHP with a custom MVC structure
+- JWT (JSON Web Token) for stateless authentication
+- PDO with prepared statements for all database operations
+- Composer for dependency management
 
-## 2. Project Objectives
+**Web Frontend (Client and Admin)**
+- PHP for server-side rendering and API communication
+- Bootstrap, HTML5, CSS3, and vanilla JavaScript
 
-- Study the concept of APIs and the API programming model.
-- Analyze common security threats targeting APIs.
-- Apply information security solutions to a real system.
-- Build an online examination system consisting of a Web Application and a Desktop Application.
-- Design the system to ensure **security**, **data integrity**, and **access control**.
+**Desktop Application**
+- Java with Swing for the graphical interface
+- Compiled and packaged as a standalone `.exe` using NetBeans; no Java installation required on the target machine
 
----
+**Infrastructure**
+- XAMPP (Apache + MySQL) for local development
+- Render.com for cloud hosting
 
-## 3. Scope of Research
+## 5. Features
 
-The project focuses on the following areas:
-
-- Building a RESTful API to facilitate communication between system components.
-- Researching authentication and authorization mechanisms (JWT-based).
-- Input validation and sanitization to prevent injection attacks.
-- Securing API endpoints against unauthorized and malicious access.
-- Implementing security logging and activity auditing.
-
----
-
-## 4. System Architecture
-
-The system follows a **Client–Server** architecture with the API acting as the central intermediary:
-
-<p align="center">
-  <img src="client/public/img/kientruc.png" width="700">
-</p>
-
-**Components:**
-
-| Component | Role |
-|---|---|
-| **Web Application** | PHP-based frontend for students and administrators |
-| **Desktop Application** | Java-based desktop client for exam-taking |
-| **RESTful API (Server)** | Central backend — handles business logic, authentication, and security |
-| **Database (MySQL)** | Stores users, questions, exams, and results |
-
-- Both clients communicate exclusively through the API.
-- The API is responsible for all business logic and security enforcement.
-- The database is never accessed directly by the clients.
-
----
-
-## 5. Technology Stack
-
-### Web Application (`/client`)
-- **PHP** — server-side rendering and API communication
-- **HTML / CSS / JavaScript** — frontend structure and interactivity
-- **Bootstrap** — responsive UI framework
-
-### Desktop Application (`/java`)
-- **Java** — application logic
-- **NetBeans IDE** — development environment
-- **Swing** — graphical user interface
-
-### API & Backend (`/server`)
-- **PHP** — RESTful API implementation
-- **JWT (JSON Web Token)** — stateless authentication
-- **MySQL / PDO** — database access with prepared statements
-- **Composer** — dependency management
-
-### Development Environment
-- **XAMPP** (Apache + MySQL)
-- **NetBeans IDE**
-
----
-
-## 6. Key Features
-
-### Web Application (PHP Client)
+**Student Web Portal**
 - User registration and login
-- Browse and search available exams
-- Take online multiple-choice exams
-- Automatic scoring and result display
-- Manage questions, question banks, and exams (admin)
-- Export results to CSV (admin)
-- Import questions from Word documents (admin)
-- User management and account status control (admin)
-- Premium account upgrade via SePay payment gateway
+- Browse and search available examinations
+- Take multiple-choice exams with automatic scoring
+- View personal exam history and results
 
-### Desktop Application (Java Client)
-- Authenticate via API (JWT token-based)
-- Browse and take exams on a desktop interface
-- Synchronize exam results with the server in real-time
+**Admin and Lecturer Portal**
+- Manage subjects, question banks, and exam papers
+- Create and edit questions individually or via Word document import
+- Manage user accounts and toggle account status
+- View, filter, and export exam results to CSV
+- Premium account management via SePay payment gateway integration
 
----
+**Desktop Application**
+- Authenticate against the live API using JWT
+- Browse available exams and complete them in a desktop environment
+- Submit results directly to the server upon completion
 
-## 7. Information Security Solutions
+## 6. Security Implementation
 
-The following security techniques have been researched and implemented:
+The following security measures have been researched and applied across the system:
 
-| Security Layer | Implementation |
+| Security Mechanism | Implementation Detail |
 |---|---|
-| **Authentication** | JWT (JSON Web Tokens) with expiry validation |
-| **Authorization** | Role-based access control (admin / student) enforced on every API endpoint |
-| **Input Validation** | Server-side sanitization of all user inputs to prevent XSS and injection |
-| **SQL Injection Prevention** | PDO with prepared statements throughout the entire data layer |
-| **API Endpoint Protection** | `.htaccess` rules + token verification middleware (`ApiSecurityValidator.php`) |
-| **Security Logging** | `SecurityLogger.php` records suspicious activity and access violations |
-| **CSRF Protection** | Anti-CSRF token generation and validation on state-changing requests |
-| **Cache-Control Headers** | Sensitive API responses set with `no-store, no-cache` to prevent data leakage |
-| **Token Management** | `TokenManager.php` handles JWT signing, parsing, and revocation |
+| Authentication | JWT-based stateless token authentication with expiry validation |
+| Authorization | Role-based access control (admin, giangvien, thisinh) enforced per endpoint |
+| Input Validation | Server-side sanitization of all user-supplied data to prevent XSS and injection |
+| SQL Injection Prevention | PDO with parameterized queries used throughout the entire data layer |
+| API Endpoint Protection | Apache `.htaccess` rules combined with `ApiSecurityValidator.php` middleware |
+| Security Logging | `SecurityLogger.php` records suspicious requests and access violations |
+| CSRF Protection | Anti-CSRF token generation and validation on all state-changing operations |
+| Cache-Control Headers | Sensitive API responses served with `Cache-Control: no-store, no-cache` |
+| Token Management | `TokenManager.php` handles JWT signing, verification, and revocation |
 
----
-
-## 8. Project Structure
+## 7. Project Structure
 
 ```
 project-tracnghiem/
-├── client/                   # Web Application (PHP frontend)
-│   ├── api/                  # Client-side API call handlers
-│   ├── core/                 # Core client utilities
-│   ├── public/               # Public assets (CSS, JS, images)
-│   ├── routes/               # Client routing
-│   ├── views/                # Page templates
-│   └── index.php             # Client entry point
+├── client/                        # Web Application — Student Portal
+│   ├── api/                       # API call handlers
+│   ├── core/                      # Core routing and utility classes
+│   ├── public/                    # Static assets (CSS, JS, images)
+│   ├── views/                     # Page templates
+│   └── index.php                  # Entry point
 │
-├── server/                   # RESTful API Backend
-│   ├── api/                  # API endpoint handlers (41 endpoints)
-│   ├── core/                 # Security core (JWT, Validator, Logger, etc.)
-│   ├── controller/           # Business logic controllers
-│   ├── model/                # Database models
-│   ├── database/             # Database connection
-│   ├── routes/               # API routing
-│   └── index.php             # API entry point
+├── server/                        # RESTful API Backend and Admin Portal
+│   ├── api/                       # API endpoint handlers (41 endpoints)
+│   ├── core/                      # Security core: JWT, Validator, Logger, TokenManager
+│   ├── controller/                # Business logic controllers
+│   ├── model/                     # Database model layer
+│   ├── database/                  # Database connection
+│   ├── routes/                    # API and page routing
+│   └── index.php                  # Entry point
 │
-├── java/                     # Desktop Application (Java/Swing)
+├── java/                          # Desktop Application
 │   └── JavaGui-ThiTracNghiem-main/
 │
-├── sepay_webhook.php          # SePay payment webhook handler
+├── sepay_webhook.php              # SePay payment gateway webhook handler
 └── README.md
 ```
 
----
+## 8. Getting Started
 
-## 9. Getting Started
+### Option A — Hosted Version
 
-### ✅ Option A — Use the Hosted Version (Recommended)
+The system is deployed and accessible without any local setup.
 
-No installation needed. Access the system directly online:
+| Access Point | URL | Role |
+|---|---|---|
+| Student Web Portal | https://ptquizz.onrender.com/client/ | thisinh |
+| Admin / Lecturer Portal | https://ptquizz.onrender.com/server/ | giangvien, admin |
+| Desktop Application | https://drive.google.com/drive/folders/11VJWaiHnWW4qAy2azdyf_3HjznmvD5CL?usp=sharing | thisinh |
 
-| Role | URL |
-|---|---|
-| **Student** (take exams) | [https://ptquizz.onrender.com/client/](https://ptquizz.onrender.com/client/) |
-| **Lecturer / Admin** (manage exams) | [https://ptquizz.onrender.com/server/](https://ptquizz.onrender.com/server/) |
+Download the `.exe` file from the Google Drive link above, run it directly, and it will connect to the hosted API automatically.
 
-**Desktop Application (.exe):**
-- Download the pre-built `.exe` from [Google Drive](https://drive.google.com/drive/folders/11VJWaiHnWW4qAy2azdyf_3HjznmvD5CL?usp=sharing)
-- No Java installation required — just run the `.exe` directly
-- The app connects to the hosted API automatically
+### Option B — Local Setup
 
----
+**Prerequisites:** XAMPP (Apache + MySQL), Composer, Java JDK 8+, NetBeans IDE
 
-### 🛠️ Option B — Run Locally
+1. Place the project folder inside the XAMPP `htdocs` directory.
+2. Import the database schema into MySQL via phpMyAdmin.
+3. Install PHP dependencies by running `composer install` inside the `server/` directory.
+4. Start Apache and MySQL from the XAMPP control panel.
+5. Access the student portal at `http://localhost/project-tracnghiem/client/`.
+6. Access the admin portal at `http://localhost/project-tracnghiem/server/`.
+7. Open and run the Java project in NetBeans, or use the compiled `.exe` from Google Drive.
 
-#### Prerequisites
-- XAMPP (Apache + MySQL) installed and running
-- Java JDK 8+ and NetBeans IDE (for desktop app)
-- Composer (for PHP dependencies)
+## 9. Authors
 
-#### Setup Steps
-
-1. **Clone / copy** the project into your XAMPP `htdocs` directory:
-   ```
-   C:\xampp\htdocs\project-tracnghiem\
-   ```
-
-2. **Import the database** — Import the SQL schema file into MySQL via phpMyAdmin.
-
-3. **Install PHP dependencies** (in the `server/` directory):
-   ```bash
-   cd server
-   composer install
-   ```
-
-4. **Start XAMPP** — Make sure Apache and MySQL services are running.
-
-5. **Access the Web Client** (Student):
-   ```
-   http://localhost/project-tracnghiem/client/
-   ```
-
-6. **Access the Web Server** (Lecturer / Admin):
-   ```
-   http://localhost/project-tracnghiem/server/
-   ```
-
-7. **Run the Desktop Application** — Open the Java project in NetBeans and run it, or use the compiled `.exe` from [Google Drive](https://drive.google.com/drive/folders/11VJWaiHnWW4qAy2azdyf_3HjznmvD5CL?usp=sharing).
-
----
-
-## 10. Authors
-
-This project was developed as an academic research project in the field of **Information Security**, focusing on secure API design and implementation.
-
----
-
-*Built with PHP · Java · MySQL · JWT · Bootstrap*
+Developed as an academic research project in the field of Information Security, with a focus on secure API design and implementation practices.
