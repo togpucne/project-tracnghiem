@@ -13,6 +13,15 @@ PT Quiz is an academic project in the domain of Information Security. The system
 
 The architecture consists of three components — a PHP-based web client for students, a PHP-based admin portal for lecturers and administrators, and a Java desktop application — all communicating through a single secured RESTful API layer. The database is never accessed directly by any client; all data operations are mediated through the API.
 
+## Test Accounts
+
+The following accounts are available for testing different user roles:
+
+| Role | Email | Password |
+|---|---|---|
+| Teacher | giangvien@gmail.com | Giangvien@123 |
+| Admin | admin@gmail.com | Admin@123 |
+| Student | nguyenvana@gmail.com | Nguyenvana@123 |
 ## 2. Objectives
 
 - Study the structure and programming model of RESTful APIs.
