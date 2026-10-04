@@ -19,9 +19,9 @@ The following accounts are available for testing different user roles:
 
 | Role | Email | Password |
 |---|---|---|
-| Teacher | giangvien@gmail.com | Giangvien@123 |
-| Admin | admin@gmail.com | Admin@123 |
-| Student | nguyenvana@gmail.com | Nguyenvana@123 |
+| Teacher | giangvien@gmail.com | User@123456 |
+| Admin | admin@gmail.com | Admin@123456 |
+| Student | levana@gmail.com | User@123456 |
 ## 2. Objectives
 
 - Study the structure and programming model of RESTful APIs.
