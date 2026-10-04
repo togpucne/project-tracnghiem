@@ -3,8 +3,8 @@
 A research and development project on RESTful API security, applied to an online multiple-choice examination platform combining a Web Application, a Desktop Application, and a centralized API backend.
 
 **Live Demo:**
-- Student portal: https://ptquizz.onrender.com/client/
-- Admin / Lecturer portal: https://ptquizz.onrender.com/server/
+- Student portal: http://ptquizz.duckdns.org/project-tracnghiem/client/index.php
+- Admin / Lecturer portal: http://ptquizz.duckdns.org/project-tracnghiem/server/index.php
 - Desktop application (.exe): https://drive.google.com/drive/folders/11VJWaiHnWW4qAy2azdyf_3HjznmvD5CL?usp=sharing
 
 ## 1. Project Overview
